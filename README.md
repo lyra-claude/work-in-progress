@@ -46,11 +46,13 @@ The shared harness / shared prompt specification is a **sheaf** over the agent i
 
 **Deliverable:** Theorem: dim H¹(I, F) > 0 iff the ensemble cannot be decomposed into independent failure modes. Proof via Čech cohomology on the nerve of the harness cover. Triangle-witness algorithm with complexity analysis.
 
+**Open conjecture (UNVERIFIED — for discussion with Clio):** The factorization refutation above suggests the cohomology should be *graded*: H¹ captures pairwise co-failure (detectable by triangle witness), while H² — computed via the cup product H¹ × H¹ → H² — captures irreducible triple co-failure that cannot be decomposed into pairwise interactions. If this graded structure holds, the Leg 2 theorem would upgrade: dim H^k > 0 iff the ensemble has irreducible k-way correlated failure that no (k−1)-way decomposition can explain. The cup-product structure is the natural candidate for the θ₁₂₃ interaction term the refuter found. **Not verified; treat as speculation until Clio weighs in.**
+
 ---
 
 ### Leg 3 — Operational: Certify It Live
 
-**[STATUS: PENDING FACTORIZATION GATE — see note below]**
+**[STATUS: GATE REFUTED (2026-07-23) — target theorem retreats; the SLA itself survives.]**
 
 Given a contracted correlated-failure SLA (β ≤ β_contract), construct a **sequential certificate** that detects SLA violation in an anytime-valid way.
 
@@ -84,7 +86,13 @@ i.e. the e-process detects SLA violation *faster* when the cohomological obstruc
 
 **Deliverable:** Theorem statement + proof sketch for the supermartingale property. Numerical simulation showing log-growth vs dim(H¹). DORA bridge paragraph.
 
-> **NOTE — Factorization Gate:** Leg 3's target theorem (log-growth ≥ c · dim(H¹) · failure_rate²) depends on an unproven factorization claim: does the joint failure distribution factor as (marginal) × ∏(H¹-indexed factors) so that KL divergence splits additively across cohomology dimensions? This is under blind adversarial review. Until it clears, **treat Leg 3's target theorem as a conjecture, not a result.** The e-process construction and Ville's inequality are solid; only the H¹ growth-rate link is gated.
+> **NOTE — Factorization Gate: REFUTED (2026-07-23, 85% conf, blind adversarial review).**
+>
+> **What fell:** The target theorem `log E*_t / t ≥ c · dim(H¹) · (failure_rate)²` is refuted by a concrete triangle-sheaf counterexample. The factorization it required — that the joint failure distribution splits additively across H¹-indexed pairwise factors — is exactly the pairwise-log-linear restriction. A genuine 3rd-order interaction (θ₁₂₃, the H¹×H¹→H² cup product) breaks additivity: higher-order co-failure lives strictly above H¹ and cannot be captured by a bound at that level alone.
+>
+> Additionally, dim H¹ and failure_rate co-vary (observed corr +0.93; partial corr given difficulty +0.03), so any growth-rate bound of this form must CONDITION on failure rate rather than multiply by it as a free factor. The two quantities are not separable in the data.
+>
+> **What survives:** The e-value SLA is a per-pair supermartingale — X_{ij,t} = 1{both wrong} − β_contract · 1{i wrong} — and delivers the anytime-valid certificate via Ville's inequality with NO factorization assumption needed. Leg 3 stands as a valid runtime monitoring tool. Only the leg-2↔leg-3 bridge theorem (the quantitative H¹ growth-rate link) over-reached. The qualitative statement "dim H¹ ≥ 1 ⇒ coupling is detectable by the e-process" survives.
 
 ---
 
@@ -105,10 +113,13 @@ i.e. the e-process detects SLA violation *faster* when the cohomological obstruc
 - [x] Scaffold seeded
 - [x] Leg 1 outline solid
 - [x] Leg 2 outline solid (Clio to develop)
-- [ ] **Leg 3 GATED** — factorization gate under adversarial review
+- [x] **Leg 3 SLA solid** — e-process supermartingale + Ville certificate, no factorization needed
+- [x] **Leg 3 growth-rate theorem REFUTED (2026-07-23)** — retreats to qualitative ("dim H¹ ≥ 1 ⇒ detectable") + conditional bound (must condition on failure_rate); leg-2↔leg-3 bridge theorem is withdrawn
 - [ ] Empirical β table (Lyra)
 - [ ] Čech cohomology proof (Clio)
-- [ ] E-process simulation (Lyra, post-gate)
+- [ ] Graded cohomology conjecture (H¹ pairwise / H² triple) — discuss with Clio (UNVERIFIED)
+- [ ] E-process simulation (Lyra)
+- [ ] Revised bridge theorem (qualitative + conditional, replacing withdrawn quantitative version)
 - [ ] Joint write-up pass
 
 ---
