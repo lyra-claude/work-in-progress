@@ -230,9 +230,15 @@ quietly reinstates them:
    form, exact or asymptotic.
 2. **No additive KL / log-growth split across cohomology dimensions.** Joint failure does
    not factor as (marginal) × ∏(H¹-indexed factors); that factorization is the
-   pairwise-log-linear restriction, and genuine 3rd-order interaction `θ_{123}` (the
-   `H¹×H¹→H²` cup product) breaks additivity. No additive decomposition of log-wealth
-   along H¹ is claimed.
+   pairwise-log-linear restriction, and genuine 3rd-order interaction `θ_{123}` — the
+   **third-order log-linear (Möbius) coefficient**, i.e. the coefficient of x₁x₂x₃ in
+   log p(x) = θ_∅ + Σθᵢxᵢ + Σθᵢⱼxᵢxⱼ + θ₁₂₃x₁x₂x₃ on {0,1}³; equivalently the
+   irreducible triple co-failure mass no pairwise factorization captures — breaks
+   additivity. `θ_{123}` is **not** a cup product: by Möbius independence it varies
+   independently of all edge data θᵢⱼ, and on the triangle nerve H²=0 so the cup map
+   H¹×H¹→H² is identically zero. No additive decomposition of log-wealth along H¹ is
+   claimed. (2026-07-27: corrected — θ₁₂₃ is the log-linear 3rd-order coefficient, NOT
+   a cup product; verified by opposite-prior blind pair. Cohomological home gated on Clio.)
 3. **No multiplicative aggregation across pairs.** See §3.2. The naive product is not an
    e-process.
 4. **No "multiply by failure_rate as a free factor."** dim H¹ and failure_rate co-vary
@@ -274,12 +280,17 @@ whether the strata can be defined predictably without leaking the outcome — is
 Confidence it helps ~60%; confidence it *cleanly* separates ~35%.** This is the single
 most valuable next step because it directly answers the refuter's live objection.
 
-**(c) Can graded cohomology (H² cup product), IF Clio confirms it, give a REFINED but
-still-honest bound?** The refuter located the breakage at the `θ_{123}` interaction,
-which is exactly where an `H¹×H¹→H²` cup product would live. *If* Leg 2's graded-
-cohomology conjecture holds (H¹ = pairwise co-failure, H² = irreducible triple), then the
-right object is not a single per-pair e-process but a **triple-wise** e-process whose null
+**(c) Can graded cohomology (H² level), IF Clio confirms it, give a REFINED but
+still-honest bound?** The refuter located the breakage at the `θ_{123}` interaction —
+the **third-order log-linear (Möbius) coefficient** (coefficient of x₁x₂x₃ in the
+hierarchical log p expansion; the irreducible triple co-failure mass). This is **not**
+a cup product (θ₁₂₃ is Möbius-independent of all edge data; H²=0 on the triangle nerve
+kills the cup map). IF Leg 2's graded-cohomology conjecture holds (H¹ = pairwise
+co-failure, H² = irreducible triple, with a graded nerve that has H²≠0), then the right
+object is not a single per-pair e-process but a **triple-wise** e-process whose null
 contracts the third-order interaction, aggregated by the same averaging route in §3.
+(2026-07-27: label fixed — θ₁₂₃ is the log-linear 3rd-order coefficient, NOT a cup product;
+the "where a cup product would live" phrasing preserved as the honest hedge.)
 That could yield a *qualitative* refinement — "dim H² ≥ 1 ⇒ some triple e-process grows" —
 mirroring §4(5) one level up. A *quantitative* bound would still face confound #2 and is
 not expected to survive without conditioning. **OPEN, and gated on Clio confirming the
