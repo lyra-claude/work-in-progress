@@ -35,7 +35,7 @@ The shared harness / shared prompt specification is a **sheaf** over the agent i
 
 - Model the agents I = {1, …, n} as a simplicial complex. A **presheaf** F assigns to each agent i the space of possible failure events F({i}), and to each pair {i,j} the space of joint failure events F({i,j}), with restriction maps enforcing compatibility.
 - A **global section** of F corresponds to a joint failure distribution that *glues* from independent local sections — i.e. independent failures.
-- **H¹(I, F) is the common-cause obstruction:** H¹ = 0 if and only if every compatible family of local failure events extends to a global section (no correlated tail); dim H¹ > 0 measures the irreducible shared-failure dimension.
+- **H¹(I, F) is the common-cause obstruction:** dim H¹ > 0 witnesses a common-cause obstruction: some compatible family of local failure events fails to extend to a global section. (The converse does not hold — H¹ = 0 is ambiguous between genuine independence and monoculture-by-degeneracy, so H¹ = 0 never certifies independence.) dim H¹ > 0 measures the irreducible shared-failure dimension.
 - This is the categorical form of "the brief is the deme": the common prompt spec is precisely the data that prevents local sections from gluing independently.
 
 **Concrete detector — triangle witness:**
@@ -44,7 +44,7 @@ The shared harness / shared prompt specification is a **sheaf** over the agent i
 - Extend to K₄ for a higher-rank witness (dim H¹ = 3 on K₄ with trivial F).
 - The witness is a **computable** object: it requires only pairwise and triple co-failure rates, which are estimable from holdout data.
 
-**Deliverable:** Theorem: dim H¹(I, F) > 0 iff the ensemble cannot be decomposed into independent failure modes. Proof via Čech cohomology on the nerve of the harness cover. Triangle-witness algorithm with complexity analysis.
+**Deliverable:** Theorem: dim H¹(I, F) > 0 obstructs any decomposition into independent failure modes; H¹ = 0 alone does NOT certify such a decomposition (it can also arise from degeneracy). Proof via Čech cohomology on the nerve of the harness cover. Triangle-witness algorithm with complexity analysis.
 
 **Open conjecture (UNVERIFIED — for discussion with Clio):** The factorization refutation above suggests the cohomology should be *graded*: H¹ captures pairwise co-failure (detectable by triangle witness), while H² captures irreducible triple co-failure that cannot be decomposed into pairwise interactions. The relevant object the refuter found is **θ₁₂₃ — the third-order log-linear (Möbius) interaction coefficient**, i.e. the coefficient of x₁x₂x₃ in log p(x) = θ_∅ + Σθᵢxᵢ + Σθᵢⱼxᵢxⱼ + θ₁₂₃x₁x₂x₃ on {0,1}³; equivalently the irreducible triple co-failure mass that no pairwise factorization captures. This is **NOT the H¹×H¹→H² cup product** (Möbius independence: θ₁₂₃ varies independently of all θᵢⱼ; and on the triangle nerve H²=0, so the cup map is zero). If the graded structure holds, θ₁₂₃ is a genuine H²-level obstruction — but pinning it to a specific cohomological home requires Clio to build the graded construction first (exhibiting two named 1-cocycles whose Alexander–Whitney product equals θ₁₂₃ on a nerve with H²≠0). **Not verified; treat as speculation until Clio weighs in.** (2026-07-27: corrected — θ₁₂₃ is the log-linear 3rd-order coefficient, NOT a cup product; verified by opposite-prior blind pair. Cohomological home gated on Clio.)
 
