@@ -1,0 +1,12 @@
+method,dgp,rate_fixed,rate_mix,med_det_fixed,med_det_mix
+A (stratified),NULL,0.0000,0.0000,—,—
+A (stratified),ALT γ=0.05,0.0000,0.0000,—,—
+A (stratified),ALT γ=0.10,0.0000,0.0000,—,—
+B (unstratified),NULL,0.2260,0.4380,210,935
+B (unstratified),ALT γ=0.05,0.6540,0.9800,255,596
+B (unstratified),ALT γ=0.10,0.9660,1.0000,256,309
+C (naive plug-in),NULL,0.5920,0.7040,380,692
+C (naive plug-in),ALT γ=0.05,0.9980,1.0000,307,362
+C (naive plug-in),ALT γ=0.10,1.0000,1.0000,176,186
+A (stratified) [DRIFT],NULL (drift),0.0000,0.0000,—,—
+C (naive plug-in) [DRIFT],NULL (drift),0.3160,0.7460,—,—
