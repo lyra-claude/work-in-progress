@@ -1,0 +1,430 @@
+% references.bib — workshop paper bibliography
+% Generated 2026-08-24 by citation/bibliography agent.
+% Base: /home/lyra/projects/memory/for-claudius/2026-08-22-references.bib
+%        (arXiv-API-verified 2026-08-22; 29 entries)
+% This file: extended with FailureScope (2606.09878) + Ville 1939 classic.
+% All 12 required arXiv IDs spot-checked against arXiv API on 2026-08-24.
+%
+% PROSE CITATION RESTRICTIONS (apply at write-time, not bib-time):
+%   - NEVER cite delapena2606 (2606.17426) as anytime/sequential — BATCH only.
+%   - NEVER cite ming2603 (2603.10329) as anytime — BATCH only.
+%   - NEVER cite wangzhong2608 (2608.06621) Prop 3 as anytime-valid — BATCH only.
+%   - NEVER cite evaluator2512 (2512.03109) as a cross-judge co-failure monitor;
+%     it is a single-trajectory agent-verifier ("same-name trap").
+%   - NEVER cite jo2602 (2602.24086) with exact numeric magnitudes for co-failure
+%     attenuation — finding is qualitative; no exact flip magnitudes published.
+%   - he2607 (2607.16109) = BFT/Honest Quorum paper by Jun He & Deying Yu.
+%     he2606 (2606.18993) = SKCI by Zheng He & Danica J. Sutherland.
+%     These are DISTINCT entries; NEVER conflate them.
+%   - kohli2605 (2605.29800) is a SOLO-AUTHOR paper (Guneet Kohli). Never "et al."
+%
+
+%% ── REQUIRED: 12 CITED IDs ──────────────────────────────────────────────────
+
+@misc{jo2602,
+  title         = {The Subjectivity of Monoculture},
+  author        = {Nathanael Jo and Nikhil Garg and Manish Raghavan},
+  year          = {2026},
+  eprint        = {2602.24086},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG},
+}
+% Verified 2026-08-24: title, author list, year match arXiv API exactly.
+% Difficulty confound: "drastically different inferences when using a null
+% model with item difficulty." QUALITATIVE only — no numeric flip magnitudes.
+
+@misc{ming2603,
+  title         = {Combining e-values using demi-supermartingales},
+  author        = {Jiahao Ming and Aaditya Ramdas and Yi Shen and Ruodu Wang and Ian Waudby-Smith},
+  year          = {2026},
+  eprint        = {2603.10329},
+  archivePrefix = {arXiv},
+  primaryClass  = {math.ST},
+}
+% Verified 2026-08-24. BATCH — demi-supermartingale is over poly-degree k, fixed-n.
+% NOT anytime. Cite only for batch combiner / demi-supermartingale machinery.
+
+@misc{kuai2604,
+  title         = {A Statistical Framework for Auditing Behavioral Dependence and Induced Bias in {LLM} Judges},
+  author        = {Chenchen Kuai and Jiwan Jiang and Zihao Zhu and Hao Wang and Keshu Wu and Zihao Li and Yunlong Zhang and Chenxi Liu and Zhengzhong Tu and Zhiwen Fan and Yang Zhou},
+  year          = {2026},
+  eprint        = {2604.07650},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CL},
+}
+% Verified 2026-08-24. Closest batch co-failure competitor: same cond-indep-given-diff
+% null, but BATCH + margins-fitted (no Ville, no cross-item pairing).
+
+@misc{kohli2605,
+  title         = {Nine Judges, Two Effective Votes: Correlated Errors Undermine {LLM} Evaluation Panels},
+  author        = {Guneet Kohli},
+  year          = {2026},
+  eprint        = {2605.29800},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CL},
+}
+% Verified 2026-08-24: SOLO AUTHOR — Guneet Kohli only. Never "et al."
+% n_eff ≈ 2.18 (mean agg) → 1.93 (one-judge-per-family) → 1.94 (CoT).
+
+@misc{he2606,
+  title         = {Sequential Kernel-based Conditional Independence Testing via Adaptive Betting},
+  author        = {Zheng He and Danica J. Sutherland},
+  year          = {2026},
+  eprint        = {2606.18993},
+  archivePrefix = {arXiv},
+  primaryClass  = {stat.ML},
+}
+% Verified 2026-08-24. SKCI — He & Sutherland. ICML 2026.
+% ⚠ NOT the same as he2607 (2607.16109, He & Yu, BFT paper). Completely different paper.
+
+@misc{celeus2606,
+  title         = {{CELEUS}: Certifiable and Efficient {LLM} Evaluation via {E}-Processes},
+  author        = {Zhijian Zhou and Zesheng Ye and Zhaorun Chen and Bo Li and Feng Liu},
+  year          = {2026},
+  eprint        = {2606.20820},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG},
+}
+% Verified 2026-08-24. Single-stream anytime e-process (Ville), NOT co-failure monitor.
+
+@misc{saban2606,
+  title         = {{FailureScope}: Cross-Regime Behavioral Diagnosis of Language Model Weaknesses},
+  author        = {Nicholas Saban},
+  year          = {2026},
+  eprint        = {2606.09878},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG},
+}
+% Verified 2026-08-24 from arXiv API. Single author: Nicholas Saban.
+% FailureScope: LOMO-based cross-model pass/fail clustering for capability diagnosis.
+% Cited in §4.4 as real dataset for demonstration.
+
+@misc{han2607,
+  title         = {Partially Correlated Verifier Cascades in {LLM} Harnesses: Concave Log-Odds, Polynomial Reliability, and Blind-Spot Ceilings},
+  author        = {Jiangang Han},
+  year          = {2026},
+  eprint        = {2607.13918},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.AI},
+}
+% Verified 2026-08-24. Solo author J. Han. de Finetti blind-spot ceiling = -ln(1-pi).
+% BATCH only — serial→parallel transfer is a gate, not a theorem.
+
+@misc{he2607,
+  title         = {The Honest Quorum Problem: Epistemic {B}yzantine Fault Tolerance for Agentic Infrastructure},
+  author        = {Jun He and Deying Yu},
+  year          = {2026},
+  eprint        = {2607.16109},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.DC},
+}
+% Verified 2026-08-24. BFT / distributed systems paper — NOT SKCI.
+% ⚠ DO NOT confuse with he2606 (2606.18993, He & Sutherland, SKCI). Completely different.
+% Use for §1 pedigree hook: frames co-failure as BFT, cites Knight-Leveson 1986.
+
+@misc{hsu2607,
+  title         = {Efficient Sequential Evaluation of Large Language Models},
+  author        = {Chia-Yu Hsu and Shubhanshu Shekhar},
+  year          = {2026},
+  eprint        = {2607.17409},
+  archivePrefix = {arXiv},
+  primaryClass  = {stat.ML},
+}
+% Verified 2026-08-24. Single-model mean-accuracy CS; no joint judge null, no cross-item pairing.
+% Neighbour paper, not a co-failure monitor.
+
+@misc{saharamdas2607,
+  title         = {Non-partitioned e-detectors for nonparametric sequential change detection},
+  author        = {Aytijhya Saha and Aaditya Ramdas},
+  year          = {2026},
+  eprint        = {2607.28322},
+  archivePrefix = {arXiv},
+  primaryClass  = {math.ST},
+}
+% Verified 2026-08-24. Single-stream scalar changepoint; nearest anytime changepoint paper.
+% NOT a joint monitor; per-pair REGROW indexing is ours.
+
+@misc{wangzhong2608,
+  title         = {{N{\texttimes}N} {E}-valuation: {H}ypothesis Certification via a Conformal {CRT} Null},
+  author        = {Bin Wang and Yan Zhong},
+  year          = {2026},
+  eprint        = {2608.06621},
+  archivePrefix = {arXiv},
+  primaryClass  = {stat.ML},
+}
+% Verified 2026-08-24. BATCH — do NOT cite Prop 3 as anytime-valid.
+
+%% ── CLASSIC NON-arXiv REFERENCES ────────────────────────────────────────────
+
+@book{ville1939,
+  title         = {{\'E}tude critique de la notion de collectif},
+  author        = {Jean Ville},
+  publisher     = {Gauthier-Villars},
+  address       = {Paris},
+  year          = {1939},
+}
+% Ville 1939 — original source of the martingale / e-process nonnegative supermartingale idea.
+% Author, title, publisher, year verified from standard probability citations. % VERIFY
+
+@book{kish1965,
+  title         = {Survey Sampling},
+  author        = {Leslie Kish},
+  publisher     = {Wiley},
+  address       = {New York},
+  year          = {1965},
+}
+% Kish 1965 — design effect / effective sample size n_eff = n / deff.
+
+@article{knight1986,
+  title         = {An experimental evaluation of the assumption of independence in multiversion programming},
+  author        = {John C. Knight and Nancy G. Leveson},
+  journal       = {{IEEE} Transactions on Software Engineering},
+  volume        = {12},
+  number        = {1},
+  pages         = {96--109},
+  year          = {1986},
+  doi           = {10.1109/TSE.1986.6312924},
+}
+% Knight-Leveson 1986 — N-version programming independence assumption refuted experimentally.
+
+@article{brilliant1990,
+  title         = {Analysis of faults in an N-version software experiment},
+  author        = {S. S. Brilliant and John C. Knight and Nancy G. Leveson},
+  journal       = {{IEEE} Transactions on Software Engineering},
+  volume        = {16},
+  number        = {2},
+  pages         = {238--247},
+  year          = {1990},
+  doi           = {10.1109/32.44387},
+}
+% Brilliant-Knight-Leveson 1990 — follow-up fault analysis on N-version software.
+
+@inproceedings{eckhardtlee1985,
+  title         = {A conceptual analysis of N-version programming},
+  author        = {Walt Eckhardt and Lee D. Lee},
+  booktitle     = {Digest of Papers: {FTCS-15}, {IEEE} 15th International Symposium on Fault-Tolerant Computing},
+  pages         = {36--41},
+  year          = {1985},
+}
+% Eckhardt-Lee 1985 — N-version diversity theorem.
+% NOTE: page numbers above are best-effort; verify from primary before final submission. % VERIFY
+
+@misc{delapena2606,
+  title         = {Bounded Difference Concentration for Infinitely Exchangeable Sequences with Applications to {AI} Benchmark Uncertainty},
+  author        = {Fangyuan Lin and Spencer Frei and Victor H. de la Pe{\~n}a},
+  year          = {2026},
+  eprint        = {2606.17426},
+  archivePrefix = {arXiv},
+  primaryClass  = {math.ST},
+}
+% de la Peña self-normalized martingale reference (Prop 5.1).
+% ⚠ WARNING: cite ONLY for the Prop 5.1 self-normalized martingale result.
+% NEVER cite as anytime/sequential — this paper is BATCH only.
+% Author order on arXiv: Lin, Frei, de la Peña (senior/notable author).
+
+%% ── ADDITIONAL SUPPORTING REFERENCES ────────────────────────────────────────
+
+@misc{balasubramanian2601,
+  title         = {Dependence-Aware Label Aggregation for {LLM}-as-a-Judge via Ising Models},
+  author        = {Krishnakumar Balasubramanian and Aleksandr Podkopaev and Shiva Prasad Kasiviswanathan},
+  year          = {2026},
+  eprint        = {2601.22336},
+  archivePrefix = {arXiv},
+  primaryClass  = {stat.ML},
+}
+
+@misc{laumann2605,
+  title         = {A Martingale Kernel Independence Test},
+  author        = {Felix Laumann and Zhaolu Liu and Mauricio Barahona},
+  year          = {2026},
+  eprint        = {2605.22549},
+  archivePrefix = {arXiv},
+  primaryClass  = {stat.ML},
+}
+% mdHSIC. Fixed-sample (batch), NOT anytime-valid. Not a theta_123 home.
+
+@misc{clerico2605,
+  title         = {Time-sensitive anytime-valid testing},
+  author        = {Eugenio Clerico and Tobias Wegel and Iskander Azangulov and Patrick Rebeschini},
+  year          = {2026},
+  eprint        = {2605.06521},
+  archivePrefix = {arXiv},
+  primaryClass  = {stat.ML},
+}
+% EDO = exponential-decay-optimal; optimality (Props 3/4) is simple-null + i.i.d. ONLY.
+
+@misc{clerico2606,
+  title         = {Sequential testing of conditionally constrained hypotheses},
+  author        = {Eugenio Clerico},
+  year          = {2026},
+  eprint        = {2606.06769},
+  archivePrefix = {arXiv},
+  primaryClass  = {math.ST},
+}
+% Complete-class / affine e-value family; Leg-3 bet kernel is an instance.
+
+@misc{corradaemmanuel2509,
+  title         = {No-Knowledge Alarms for Misaligned {LLMs}-as-Judges},
+  author        = {Andr{\'e}s Corrada-Emmanuel},
+  year          = {2025},
+  eprint        = {2509.08593},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.AI},
+}
+
+@misc{bhardwaj2608,
+  title         = {Agent Behavioral Contracts {II}: Certifying Compositional Reliability Without Assuming Independence},
+  author        = {Varun Pratap Bhardwaj and Garima Singh and Arun Pratap Bhardwaj},
+  year          = {2026},
+  eprint        = {2608.12895},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.MA},
+}
+% ⚠ Thm 4.2 paraphrase "naive independence bounds more dangerous as n grows" is
+%   directionally consistent with abstract but NOT confirmed from full text.
+%   Verify before citing specific theorem number.
+
+@misc{afrin2608,
+  title         = {Evaluator Ensembles Under Reward Hacking: Covariance Geometry and Finite-Search Guarantees},
+  author        = {Fariya Afrin and Ibne Farabi Shihab},
+  year          = {2026},
+  eprint        = {2608.08002},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG},
+}
+
+@misc{zhou2605,
+  title         = {Adaptive auditing of {AI} systems with anytime-valid guarantees},
+  author        = {Siyu Zhou and Patrick Vossler and Venkatesh Sivaraman and Yifan Mai and Jean Feng},
+  year          = {2026},
+  eprint        = {2605.07002},
+  archivePrefix = {arXiv},
+  primaryClass  = {stat.ML},
+}
+
+@misc{shihab2510,
+  title         = {Anytime-Valid Answer Sufficiency Certificates for {LLM} Generation via Sequential Information Lift},
+  author        = {Sanjeda Akter and Ibne Farabi Shihab and Anuj Sharma},
+  year          = {2025},
+  eprint        = {2510.06478},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CL},
+}
+
+@misc{landesberg2603,
+  title         = {When {LLM} Judge Scores Look Good but Best-of-{N} Decisions Fail},
+  author        = {Eddie Landesberg},
+  year          = {2026},
+  eprint        = {2603.12520},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CL},
+}
+
+@misc{nogueira2607,
+  title         = {A Systematic Methodology for Evaluating Failure Independence in {LLM}-Generated Code},
+  author        = {Rodrigo Pato Nogueira and Karthik Pattabiraman and Marco Vieira and Jo{\~a}o R. Campos},
+  year          = {2026},
+  eprint        = {2607.02808},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.SE},
+}
+
+@misc{xie2606,
+  title         = {Sequential statistical inference for Large Language Models: {R}epresentation, validity, and monitoring},
+  author        = {Yao Xie},
+  year          = {2026},
+  eprint        = {2606.07624},
+  archivePrefix = {arXiv},
+  primaryClass  = {stat.ML},
+}
+
+@misc{ali2607,
+  title         = {Quantifying Diversity of Thought: {A} Predictive Law of Weighted {LLM} Ensemble Lift},
+  author        = {Junade Ali},
+  year          = {2026},
+  eprint        = {2607.17384},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG},
+}
+
+@misc{soumik2604,
+  title         = {Judging the Judges: {A} Systematic Evaluation of Bias Mitigation Strategies in {LLM}-as-a-Judge Pipelines},
+  author        = {Sadman Kabir Soumik},
+  year          = {2026},
+  eprint        = {2604.23178},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CL},
+}
+
+@misc{denisov2603,
+  title         = {Consensus is Not Verification: {W}hy Crowd Wisdom Strategies Fail for {LLM} Truthfulness},
+  author        = {Yegor Denisov-Blanch and Joshua Kazdan and Jessica Chudnovsky and Rylan Schaeffer and Sheng Guan and Soji Adeshina and Sanmi Koyejo},
+  year          = {2026},
+  eprint        = {2603.06612},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CL},
+}
+
+@misc{evaluator2512,
+  title         = {{E}-valuator: Reliable Agent Verifiers with Sequential Hypothesis Testing},
+  author        = {Shuvom Sadhuka and Drew Prinster and Clara Fannjiang and Gabriele Scalia and Bonnie Berger and Aviv Regev and Hanchen Wang},
+  year          = {2025},
+  eprint        = {2512.03109},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.AI},
+}
+% SAME-NAME TRAP: single agent trajectory, NOT cross-judge co-failure monitor.
+
+@misc{prinster2505,
+  title         = {{WATCH}: Adaptive Monitoring for {AI} Deployments via Weighted-Conformal Martingales},
+  author        = {Drew Prinster and Xing Han and Anqi Liu and Suchi Saria},
+  year          = {2025},
+  eprint        = {2505.04608},
+  archivePrefix = {arXiv},
+  primaryClass  = {stat.ML},
+}
+
+@misc{ramdas2608,
+  title         = {Universality of e-detectors for {ARL} control},
+  author        = {Aaditya Ramdas},
+  year          = {2026},
+  eprint        = {2608.12660},
+  archivePrefix = {arXiv},
+  primaryClass  = {math.ST},
+}
+
+@article{ladha1993,
+  title         = {The {C}ondorcet jury theorem, free speech, and correlated votes},
+  author        = {Krishna K. Ladha},
+  journal       = {American Journal of Political Science},
+  volume        = {37},
+  number        = {4},
+  pages         = {1276--1295},
+  year          = {1993},
+  doi           = {10.2307/2111580},
+}
+
+%% ── UNRESOLVED / NEEDS MANUAL VERIFY ────────────────────────────────────────
+%
+% Littlewood-Strigini (Var(Theta) decomposition): the specific result
+%   P(co-fail) = E[Theta]^2 + Var(Theta) appears in Littlewood-Strigini
+%   reliability literature. Entry below is best-effort placeholder.
+%   VERIFY exact cite (may be a later Strigini paper, City U. openaccess 1630)
+%   before submission. % VERIFY
+%
+@incollection{littlewood1987,
+  title         = {The risk of catastrophic failure and how to achieve ultrahigh reliability},
+  author        = {Bev Littlewood and David Miller},
+  booktitle     = {Software Reliability: Achievement and Assessment},
+  editor        = {B. Littlewood},
+  publisher     = {Blackwell Scientific},
+  year          = {1987},
+}
+%
+% Meucci 2009 ENB / managing diversification: no arXiv ID. % VERIFY
+%   Best known as: Attilio Meucci, "Managing Diversification," Risk, 2009. SSRN 1358533.
+%   Add manually when confirmed.
+%
+% Marshall-Olkin 1967 common shock: % VERIFY
+%   Marshall, A.W. and Olkin, I. (1967). "A multivariate exponential distribution."
+%   Journal of the American Statistical Association, 62(317), 30--44.

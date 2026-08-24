@@ -118,6 +118,20 @@ Type-I stays ≤ 0.022 across the full sweep — validity never degrades as stra
 
 **Why power is suppressed at small Q.** The bias slack δ=2ε is adversarially worst-case: marginals anywhere within a stratum of width 2ε, no smoothness assumed. At coarse Q (e.g. Q=5, ε=0.1), the realised within-stratum bias from shared difficulty is ~8×10⁻⁴ while δ ≈ 0.058 — a 72.6× overestimate — forcing λ into a conservative regime. As strata narrow, the ratio falls: at Q=80, δ/realised-bias ≈ 2×. Construction is rigorous; the efficiency cost is real and Q is the explicit operating-characteristic dial.
 
+### 4.4 Real-data validation (FailureScope)
+
+To ground the synthetic results in observed behaviour, we probe the FailureScope corpus (Saban et al., arXiv 2606.09878; 1,253 adversarially frontier-hard items, per-model pass/fail with gold labels; CC-BY-4.0/MIT). Six frontier judges — claude-haiku, claude-sonnet, gpt-4o, gpt-4o-mini, gpt-5.4, gpt-5.4-nano — are evaluated on every item.
+
+**Measured co-failure (full 1,253-item set).** Mean pairwise co-failure correlation φ̄ = 0.534, mean pairwise excess = 0.090, Kish n_eff = 1.635. These figures must be read as "on frontier-hard items": the corpus selects for items at least one model fails, so absolute fail rates are high (0.75–0.87 per model) and excess co-failure is correspondingly large.
+
+**Difficulty-conditional survival (218-item subset).** For the 218 items with ≥10 open-source model evaluations, we use those open-source fail rates as an *independent* difficulty proxy (12 models: Falcon, LLaMA-2/3, Mistral, Mixtral, Phi, Qwen, Yi, Zephyr), stratified into 5 quintile bins. Mean raw excess on this subset = 0.089; difficulty-conditional excess = 0.084. Only **6.2% of the raw excess is attributable to shared item difficulty; 93.8% survives conditioning** — stable across n_bins=3..10. This re-derives on real data the paper's central design motivation: stratification is not a nicety but the decisive anti-confound step.
+
+**Caveats.** (i) The 218-item difficulty-control subset covers knowledge/math benchmarks (GSM8K, MMLU, ARC-Challenge) only — no code or IFEval; generality is asserted but not demonstrated here. (ii) The corpus is intentionally hard: these numbers cannot be taken as representative of typical evaluation settings where fail rates are lower.
+
+![Real-data co-failure on FailureScope](../code/evalue/failurescope_real.png)
+
+*Figure: (Left) 6×6 pairwise co-failure correlation φ matrix on 1,253 FailureScope items; φ̄=0.534, n_eff=1.635. (Right) Mean pairwise excess co-failure — raw (0.089) vs. difficulty-conditional (0.084) on the 218-item held-out subset; 93.8% of the raw excess survives conditioning on an independent open-source difficulty proxy.*
+
 ### 4.3 Limitation: γ=0.05 not reachable at 0.80 power, Q≤80
 
 Against a weaker common shock γ=0.05, the best achieved power within Q≤80 (mixture) is 0.202. Small-atom co-failure needs either longer streams (N > 2000) or a smoothness-adaptive tighter δ (see §6 future work). We state this plainly rather than claiming a regime we haven't demonstrated.
