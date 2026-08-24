@@ -17,15 +17,26 @@ The γ=0.05 caveat closes the section: an honest acknowledgment of practical ran
 
 ### §5b. Why Fixed λ=0.5 Fails, and What the Mixture Fixes
 
-The empirical contrast in §5 has a structural explanation. A fixed λ=0.5 is
-calibrated for an edge geometry of γ=0.5: it bets symmetrically on either side
-of the null, which is log-optimal exactly when the true edge is at the midpoint
-of the natural parameter space. Under a small shock (γ=0.10), this calibration
-is wrong in a specific direction: λ=0.5 *over-bets* relative to the log-optimal
-strategy λ*(γ=0.10) ≈ 0.10. The consequence is visible in the simulation output:
-wealth decreases across the initial accumulation window before the signal
-overcomes the miscalibration tax, and power at Q=80 collapses to 0.43 — less
-than half what the mixture achieves.
+**Difficulty stratification as the validity axis.** Apparent co-failure correlation is
+substantially attenuated by shared item difficulty (Jo, Garg & Raghavan, 2602.24086);
+their parametric IRT-1 null removes the confound via model fitting. Our construction
+removes it structurally: the cross-item stratified baseline ensures the partner item is
+drawn from the same difficulty band, bounding shared-difficulty leakage by δ=2ε rather
+than estimating it parametrically. The cost of skipping stratification is direct in the
+§4 contrast: Method B (unstratified cross-item, δ=0) inflates to Type-I 0.226–0.438;
+Method A (stratified) holds ≤ 0.022 across the full Q-sweep. Per-stratum e-processes
+combine into the panel via a plain convex e-value mixture (w_k ≥ 0, Σ w_k = 1) — a
+convex combination of e-values is Ville-valid with no independence assumption. This
+stratum-mixture is distinct from the λ-mixture below, which mixes over betting fractions
+within a stratum; the two should not be conflated.
+
+**The miscalibration failure.** By §3, a fixed λ is log-optimal for exactly one shock
+magnitude — suboptimal elsewhere. Under small shocks (γ=0.10), λ=0.5 over-bets: the
+log-optimal λ* is substantially smaller than 0.5 (§3 constrains λ ∈ [0, 1/(1+2ε)];
+the realized increment edge at γ=0.10 keeps λ* ≪ 0.5). The consequence is visible in
+the §4 simulation output: wealth decreases across the initial accumulation window before
+the signal overcomes the miscalibration tax, and power at Q=80 collapses to 0.428 —
+less than half what the mixture achieves.
 
 The mixture prior M(λ; Λ) over a grid Λ ⊂ (0,1) fixes this by concentrating
 weight where the data are informative. Under γ=0.10, posterior weight rapidly
