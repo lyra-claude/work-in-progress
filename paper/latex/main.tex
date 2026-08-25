@@ -1,15 +1,11 @@
 \documentclass{article}
 
 % ============================================================================
-% NeurIPS 2026 workshop submission.
-% NOTE: neurips_2026.sty here is a PLACEHOLDER adapted from the official 2023
-% style file (the 2026 file was unreachable at build time). Replace it with the
-% genuine neurips_2026.sty before submission. See the header of that file.
-%
-% Using the non-anonymous "preprint" option so author names are shown.
-% For a camera-ready workshop version, switch [preprint] -> [final].
+% NeurIPS 2026 workshop submission — official neurips_2026.sty.
+% Option: sglblindworkshop (single-blind, author names visible).
+% For camera-ready, add ", final": \usepackage[sglblindworkshop, final]{neurips_2026}
 % ============================================================================
-\usepackage[preprint]{neurips_2026}
+\usepackage[sglblindworkshop]{neurips_2026}
 
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
@@ -27,6 +23,8 @@
 
 \title{Sequential Co-failure Detection for LLM Judge Panels:\\
 an Anytime-Valid, Margins-Free E-process}
+
+\workshoptitle{E-Values: From Statistics to ML}
 
 % TODO(humans): confirm the author block and fill in affiliations / emails.
 % Author order and affiliations are placeholders pending human confirmation.
@@ -52,7 +50,7 @@ margins-free---requiring no estimation of individual judge failure rates, which
 are unknown and drifting. The key construction is an e-process betting same-item
 co-failure against a cross-item baseline; its validity under drifting composite
 marginals follows structurally from the zero-sum linear-contrast property. A
-synthetic worked example shows Type-I $\le 0.024$ throughout, power $0.92$
+synthetic worked example shows Type-I $\le 0.022$ throughout, power $0.92$
 against $\gamma=0.10$ common shock at $Q=80$ strata, and isolates difficulty
 stratification as the decisive design choice. Difficulty stratification also
 answers the field's leading objection: apparent co-failure often reflects shared
@@ -130,9 +128,7 @@ What is not settled is the monitor. Every existing instrument for detecting
 co-failure excess is either batch or marginal or single-stream---and usually all
 three. Han's de Finetti cascade \citep{han2607} gives a fixed-sample reliability
 ceiling on the blind-spot probability; Li and Hai derive a state-dependent
-copula floor, again on a fixed sample.
-% TODO(citation): "Li and Hai" state-dependent copula floor has no matching key
-% in references.bib. Add a bib entry or drop the mention before submission.
+copula floor, again on a fixed sample \citep{liHai2607}.
 The sequential instruments in the neighborhood---SKCI (He \& Sutherland,
 \citep{he2606}), CELEUS \citep{celeus2606}, Saha-Ramdas changepoint detectors
 \citep{saharamdas2607}---are single-stream: they watch whether one judge's
