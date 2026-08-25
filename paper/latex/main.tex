@@ -65,99 +65,87 @@ confound structurally.
 
 In late July 2026, two frontier AI laboratories each reported that a language
 model had escaped its cybersecurity evaluation sandbox. The incidents were
-disclosed separately, described as independent, and initially read that way.
-They were not. Both evaluations ran on the same 35-person vendor, Irregular
-(formerly Pattern Labs, Tel Aviv); Irregular's spokesperson subsequently
-confirmed that the Meta incident shared the same evaluation-environment
-misconfiguration as Anthropic's. Two labs, one eval vendor, one
-misconfiguration---reported as two independent accidents. A third laboratory's
-model escaped a sandbox the same fortnight via a self-run JFrog Artifactory
-zero-day and a separate Modal sandbox, a thematically similar but mechanistically
-distinct incident. Whether or not it was noticed at the time, the evaluator layer
-was exhibiting the same structure the paper is about: nominally independent
-agents sharing a latent failure source, so that their failures arrive correlated
-despite surface diversity.
+disclosed separately and described as independent. They were not: both
+evaluations ran on the same 35-person vendor, Irregular (formerly Pattern Labs,
+Tel Aviv), and Irregular's spokesperson confirmed that the Meta incident shared
+the same evaluation-environment misconfiguration as Anthropic's. Two labs, one
+eval vendor, one misconfiguration---reported as two independent accidents. (A
+third laboratory's model escaped a sandbox the same fortnight via a self-run
+JFrog Artifactory zero-day and a separate Modal sandbox: thematically similar but
+mechanistically distinct.) The evaluator layer was exhibiting the structure this
+paper is about: nominally independent agents sharing a latent failure source, so
+their failures arrive correlated despite surface diversity.
 
 The immediate lesson is narrow: buy diversity at the model layer, but if the
 shared harness remains, independence is an illusion. The deeper point is that
-this is not new. The same structure recurs at every level of the modern AI
-stack. At the model-weight layer, Kohli \citep{kohli2605} measures the
-error-vector co-failure correlation across judge panels and finds that nine
-nominally independent judges deliver approximately two effective independent
-votes---an effective panel size of $n_{\mathrm{eff}} \approx 2.18$, falling to
-$1.93$ when the panel is restricted to the strongest judge from each model
-family, and to $1.94$ when chain-of-thought prompting is added (both changes,
-intended to increase independence, instead raise the mean pairwise co-failure
-correlation $\bar\varphi$ from $0.391$ to $0.456$). The same collapse at the
-reasoning-scaffold layer, the same at the harness-protocol layer, the same now
-confirmed at the eval-vendor layer. The co-failure surface migrates upstream:
-whatever unit of diversity is purchased---model weights, agent scaffolds,
-evaluation vendors, whole laboratories---independence is capped by the
-least-diverse shared component one layer up. The quantity $n_{\mathrm{eff}}
-\approx 2$--$3$ has been rediscovered, independently, at least four times: as the
-Kish \citep{kish1965} effective sample size applied to error-vector correlations
-\citep{kohli2605}, as an Ising-coupling saturation point
-\citep{balasubramanian2601}, as an embedding-Gram spectral entropy (the
-Hill/Vendi order-1 functional applied to judge similarity spectra), and as the
-ecological effective-number-of-species applied to the distribution of
-per-demand failure probabilities.
+this is not new---the same structure recurs at every level of the AI stack. At
+the model-weight layer, Kohli \citep{kohli2605} measures error-vector co-failure
+correlation across judge panels and finds nine nominally independent judges
+deliver about two effective votes: $n_{\mathrm{eff}} \approx 2.18$, falling to
+$1.93$ when restricted to the strongest judge per model family and to $1.94$
+under chain-of-thought (both changes, intended to raise independence, instead
+lift the mean pairwise co-failure correlation $\bar\varphi$ from $0.391$ to
+$0.456$). The co-failure surface migrates upstream: whatever unit of diversity is
+purchased---model weights, scaffolds, eval vendors, whole laboratories---%
+independence is capped by the least-diverse shared component one layer up. The
+quantity $n_{\mathrm{eff}} \approx 2$--$3$ has been rediscovered independently at
+least four times: as the Kish \citep{kish1965} effective sample size on
+error-vector correlations \citep{kohli2605}, as an Ising-coupling saturation
+point \citep{balasubramanian2601}, as an embedding-Gram spectral entropy (the
+Hill/Vendi order-1 functional on judge similarity spectra), and as the ecological
+effective-number-of-species on the distribution of per-demand failure
+probabilities.
 
 This convergence has a 40-year pedigree. In 1986, Knight and Leveson
 \citep{knight1986} ran the definitive empirical test of the assumption
 underpinning N-version programming---that independently written software modules
-fail independently on the same input. They did not. The co-failure excess was
-not marginal; it was systematic. The quantity that explains it is
-$\mathrm{Var}(\Theta)$, the variance of the per-demand failure probability
-$\Theta$ across the population of inputs: by de Finetti's theorem, exchangeable
-failures have $\mathbb{P}(\text{co-failure}) = \mathbb{E}[\Theta^2] =
-(\mathbb{E}[\Theta])^2 + \mathrm{Var}(\Theta)$, so the co-failure probability
-exceeds the independence baseline by exactly $\mathrm{Var}(\Theta)$. This
-identity unifies the N-version software reliability literature (Knight-Leveson
+fail independently on the same input. They did not; the co-failure excess was
+systematic. The quantity that explains it is $\mathrm{Var}(\Theta)$, the variance
+of the per-demand failure probability $\Theta$ across inputs: by de Finetti's
+theorem, exchangeable failures have $\mathbb{P}(\text{co-failure}) =
+\mathbb{E}[\Theta^2] = (\mathbb{E}[\Theta])^2 + \mathrm{Var}(\Theta)$, so
+co-failure exceeds the independence baseline by exactly $\mathrm{Var}(\Theta)$.
+This identity unifies N-version software reliability (Knight-Leveson
 \citep{knight1986}; Brilliant, Knight \& Leveson \citep{brilliant1990}; the
-common-cause-failure alpha-factor model in nuclear and actuarial reliability),
-the ecological response-diversity literature (the portfolio effect;
-Littlewood-Strigini's analytical difficulty function \citep{littlewood1987}), and
-the financial common-factor literature (the one-factor Vasicek/Gaussian copula,
-which applies the same de Finetti identity to credit-default correlation). The
-diagnostic quantity---equivalently $\mathrm{Var}(\Theta)$, the
-effective-number-of-independents $n_{\mathrm{eff}} = 1 / \mathbb{E}[\Theta^2]$
-normalized appropriately, or the Kish deflator $n / (1 + (n-1)\bar\varphi)$---is
-settled, credited, and not ours. We concede this entirely.
+common-cause-failure alpha-factor model), the ecological response-diversity
+literature (the portfolio effect; Littlewood-Strigini's difficulty function
+\citep{littlewood1987}), and the financial common-factor literature (the
+one-factor Vasicek/Gaussian copula, the same de Finetti identity on
+credit-default correlation). The diagnostic quantity---equivalently
+$\mathrm{Var}(\Theta)$, the effective-number-of-independents $n_{\mathrm{eff}} = 1
+/ \mathbb{E}[\Theta^2]$ suitably normalized, or the Kish deflator $n / (1 +
+(n-1)\bar\varphi)$---is settled, credited, and not ours. We concede this
+entirely.
 
-What is not settled is the monitor. Every existing instrument for detecting
-co-failure excess is either batch or marginal or single-stream---and usually all
-three. Han's de Finetti cascade \citep{han2607} gives a fixed-sample reliability
-ceiling on the blind-spot probability; Li and Hai derive a state-dependent
-copula floor, again on a fixed sample \citep{liHai2607}.
-The sequential instruments in the neighborhood---SKCI (He \& Sutherland,
-\citep{he2606}), CELEUS \citep{celeus2606}, Saha-Ramdas changepoint detectors
-\citep{saharamdas2607}---are single-stream: they watch whether one judge's
-failure rate is drifting, but they say nothing about whether judge $i$ and judge
-$j$ are failing \emph{together} beyond what their individual rates predict. Kuai
-et al.\ \citep{kuai2604} test the conditional-independence-given-difficulty null
-we test, on real panels, but via a batch permutation procedure with no Ville
-inequality and hence no anytime-valid guarantee. The cell that is empty is:
-\textbf{anytime-valid} (Ville e-process, false-alarm guarantee holding at every
-stopping time) $\times$ \textbf{cross-item} (second-order, detecting dependence
-between two streams, not marginal drift in one) $\times$ \textbf{margins-free}
-(no estimation of the individual failure rates $p_i, p_j$, which are unknown and
-drifting). Nobody watches the co-failure collapse happen sequentially, as it
-happens, without fitting the marginals.
+What is not settled is the monitor. Every existing instrument for co-failure
+excess is batch, marginal, or single-stream---usually all three. Han's de Finetti
+cascade \citep{han2607} gives a fixed-sample ceiling on the blind-spot
+probability; Li and Hai derive a state-dependent copula floor, again on a fixed
+sample \citep{liHai2607}. The sequential instruments nearby---SKCI (He \&
+Sutherland, \citep{he2606}), CELEUS \citep{celeus2606}, Saha-Ramdas changepoint
+detectors \citep{saharamdas2607}---are single-stream: they watch whether one
+judge's failure rate drifts, not whether judges $i$ and $j$ fail \emph{together}
+beyond what their individual rates predict. Kuai et al.\ \citep{kuai2604} test the
+conditional-independence-given-difficulty null we test, on real panels, but via a
+batch permutation with no Ville inequality and hence no anytime-valid guarantee.
+The empty cell is: \textbf{anytime-valid} (Ville e-process, guarantee at every
+stopping time) $\times$ \textbf{cross-item} (second-order, dependence between two
+streams, not marginal drift in one) $\times$ \textbf{margins-free} (no estimation
+of $p_i, p_j$, which are unknown and drifting). Nobody watches the co-failure
+collapse sequentially, as it happens, without fitting the marginals.
 
 This paper fills that cell. Leg 3 constructs an anytime-valid co-failure
-e-process using a cross-item pairing: the same-item co-failure indicator $U =
-W_i^s W_j^s$ is compared against the cross-item product $V = W_i^s W_j^t$ for a
-\emph{different} item $t$. Because $s \ne t$, the indicators $W_i^s$ and $W_j^t$
-come from different items and are therefore independent regardless of any
-within-item coupling---so $\mathbb{E}[V] = p_i p_j$ exactly, without estimating
-$p_i$ or $p_j$ anywhere. The bet $e = 1 + \lambda(U - V)$ is a martingale
-increment under the null, the running product $M_t = \prod_{s \le t} e_s$ is a
-nonnegative test martingale, and Ville's inequality \citep{ville1939} delivers
-$\mathbb{P}(\sup_t M_t \ge 1/\alpha) \le \alpha$---a level-$\alpha$ alarm that is
-valid at every stopping time and under drifting, unknown marginals. The
-construction is the unclaimed cell; the Irregular incident, the Kohli panel
-measurements, and the 40-year reliability pedigree are the motivation for
-filling it.
+e-process via cross-item pairing: the same-item co-failure indicator $U = W_i^s
+W_j^s$ is compared against the cross-item product $V = W_i^s W_j^t$ for a
+\emph{different} item $t$. Because $s \ne t$, $W_i^s$ and $W_j^t$ come from
+different items and are independent regardless of within-item coupling---so
+$\mathbb{E}[V] = p_i p_j$ exactly, without estimating $p_i$ or $p_j$. The bet $e =
+1 + \lambda(U - V)$ is a martingale increment under the null, $M_t = \prod_{s \le
+t} e_s$ is a nonnegative test martingale, and Ville's inequality \citep{ville1939}
+delivers $\mathbb{P}(\sup_t M_t \ge 1/\alpha) \le \alpha$---a level-$\alpha$ alarm
+valid at every stopping time under drifting, unknown marginals. The construction
+is the unclaimed cell; the Irregular incident, the Kohli measurements, and the
+40-year reliability pedigree are the motivation for filling it.
 
 \section{Setup and the Leg-3 Claim}
 \label{sec:setup}
@@ -173,16 +161,12 @@ common shock creates excess joint failure probability beyond $p_i(\theta^s)
 p_j(\theta^s)$.
 
 \paragraph{Why existing monitors don't fit.}
-The sequential instruments nearest to our null---SKCI (He \& Sutherland,
-\citep{he2606}), CELEUS \citep{celeus2606}, Saha-Ramdas changepoint
-\citep{saharamdas2607}---are single-stream: they test whether one judge's
-failure rate drifts, but cannot detect whether judges $i$ and $j$ fail
-\emph{together} beyond what their individual rates predict. Kuai et al.\
-\citep{kuai2604} test the same conditional-independence-given-difficulty null, on
-real panels, but via a batch permutation test with no Ville inequality and no
-anytime-valid guarantee. Ming et al.\ \citep{ming2603} is a fixed-$n$ batch
-combiner. The empty cell is: \textbf{anytime-valid $\times$ cross-item $\times$
-margins-free}.
+The nearest sequential instruments---SKCI \citep{he2606}, CELEUS
+\citep{celeus2606}, Saha-Ramdas \citep{saharamdas2607}---are single-stream (they
+detect marginal drift in one judge, not joint co-failure); Kuai et al.\
+\citep{kuai2604} test our exact null but batch, with no Ville guarantee; Ming et
+al.\ \citep{ming2603} is a fixed-$n$ combiner. The empty cell is
+\textbf{anytime-valid $\times$ cross-item $\times$ margins-free}.
 
 \paragraph{The Leg-3 claim (one sentence).}
 We construct an anytime-valid, dependency-robust, margins-free co-failure
@@ -253,11 +237,8 @@ is exactly conditional independence given $\theta$. The alternative is
 Marshall-Olkin common shock \citep{marshallOlkin1967}: with probability
 $\gamma$, both judges fail together beyond what difficulty explains. Parameters:
 $N=2000$ items, $R=500$ Monte-Carlo runs, $\alpha=0.05$, Ville threshold
-$1/\alpha = 20$.
-
-All results exactly reproducible from seeded numpy; code at
-\path{code/evalue/} (files: \texttt{dgp.py}, \texttt{eprocess.py},
-\texttt{run\_experiment.py}, \texttt{run\_qsweep.py}).
+$1/\alpha = 20$. All results reproducible from seeded numpy (code at
+\path{code/evalue/}; see Reproducibility below).
 
 \subsection{Validity contrast}
 \label{sec:validity}
@@ -291,110 +272,32 @@ fraction of 500 runs crossing threshold 20 under the null ($\gamma=0$).
   \end{tabular}
 \end{table}
 
-Method A is the only valid construction. The failure modes are instructive and
-directly motivate the design. Method B inflates because the cross-item partner
-$W_j^t$ is drawn from a different difficulty band than $W_i^s$: shared difficulty
-leaks through the baseline exactly as predicted by the difficulty-confound
-literature (Jo, Garg \& Raghavan \citep{jo2602} show this confound substantially
-attenuates apparent co-failure correlation under an IRT-1 null). Method C fails
-harder: the global sample mean estimators $\hat{a} \cdot \hat{b}$ are confounded
-by marginal-difficulty correlation from the start, and under marginal drift the
-naive estimator drifts too, keeping the false-rejection rate catastrophically
-high. The contrast A vs B directly answers Jo--Garg--Raghavan's implicit
-critique: stratification is not a rigor nicety but the decisive design choice.
-Difficulty stratification removes the confound \emph{structurally}---no
-parametric IRT model required.
+Method A is the only valid construction, and the failure modes motivate the
+design. Method B inflates because the cross-item partner $W_j^t$ is drawn from a
+different difficulty band than $W_i^s$: shared difficulty leaks through the
+baseline, exactly as the difficulty-confound literature predicts (Jo, Garg \&
+Raghavan \citep{jo2602} show this confound substantially attenuates apparent
+co-failure correlation under an IRT-1 null). Method C fails harder: the global
+sample-mean estimators $\hat{a}\hat{b}$ are confounded by marginal-difficulty
+correlation and drift with the marginals, keeping false-rejection catastrophically
+high. The A-vs-B contrast answers Jo--Garg--Raghavan's implicit critique:
+stratification is not a nicety but the decisive design choice, removing the
+confound \emph{structurally}---no parametric IRT model required.
 
-\subsection{Power vs. Q --- the operating dial}
-\label{sec:power}
+\paragraph{Power vs.\ $Q$ --- the operating dial.}
+With the $\lambda$-mixture over $\{0.1,\ldots,0.9\}$, power against a
+$\gamma=0.10$ common shock rises from $\sim 0$ to $0.920$ as the number of
+difficulty strata $Q$ goes $5 \to 80$, while Type-I stays $\le 0.022$
+throughout; the knee is $Q=80$ and the $\lambda$-mixture is load-bearing
+($0.428$ fixed vs.\ $0.920$ mixture). Full sweep and the small-$Q$
+power-suppression analysis in Appendix~\ref{app:qsweep}.
 
-Method A with $\lambda$-mixture over $\{0.1, \ldots, 0.9\}$. $Q$ = number of
-equal-width strata in $\theta$. Primary metric: power at $\gamma=0.10$
-common-shock probability. $N=2000$ items.
-
-\begin{table}[h]
-  \centering
-  \caption{$\lambda$-mixture power sweep, $\gamma=0.10$. Type-I stays $\le 0.022$
-  across the full sweep; the knee is $Q=80$.}
-  \label{tab:power}
-  \small
-  \begin{tabular}{@{}rrrrr@{}}
-    \toprule
-    $Q$ & $N/Q$ per stratum & Type-I & Power ($\gamma=0.10$) & Med. detection step \\
-    \midrule
-    5  & 400 & 0.000          & 0.000          & --- \\
-    10 & 200 & 0.000          & 0.018          & --- \\
-    20 & 100 & 0.002          & 0.240          & --- \\
-    40 & 50  & 0.014          & 0.724          & --- \\
-    80 & 25  & \textbf{0.022} & \textbf{0.920} & $\sim 885$ \\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
-Type-I stays $\le 0.022$ across the full sweep---validity never degrades as
-strata become finer. The knee is $Q=80$: smallest $Q$ achieving Type-I $\le 0.05$
-and Power $\ge 0.80$ against $\gamma=0.10$.
-
-\paragraph{Fixed $\lambda=0.5$ vs.\ mixture at $Q=80$.}
-Power $= 0.428$ (fixed) vs.\ $0.920$ (mixture). The $\lambda$-mixture is
-load-bearing, not cosmetic: it detects a broader class of common-shock magnitudes
-by hedging over unknown $\gamma$ rather than betting a single mis-specified
-operating point.
-
-\paragraph{Why power is suppressed at small $Q$.}
-The bias slack $\delta=2\varepsilon$ is adversarially worst-case: marginals
-anywhere within a stratum of width $2\varepsilon$, no smoothness assumed. At
-coarse $Q$ (e.g.\ $Q=5$, $\varepsilon=0.1$), the realised within-stratum bias
-from shared difficulty is $\sim 8\times10^{-4}$ while $\delta \approx 0.058$---a
-$72.6\times$ overestimate---forcing $\lambda$ into a conservative regime. As
-strata narrow, the ratio falls: at $Q=80$, $\delta/\text{realised-bias} \approx
-2\times$. Construction is rigorous; the efficiency cost is real and $Q$ is the
-explicit operating-characteristic dial.
-
-\subsection{Real-data validation (FailureScope)}
-\label{sec:realdata}
-
-To ground the synthetic results in observed behaviour, we probe the FailureScope
-corpus (Saban \citep{saban2606}; 1{,}253 adversarially frontier-hard items,
-per-model pass/fail with gold labels; CC-BY-4.0/MIT). Six frontier judges ---
-claude-haiku, claude-sonnet, gpt-4o, gpt-4o-mini, gpt-5.4, gpt-5.4-nano --- are
-evaluated on every item.
-
-\paragraph{Measured co-failure (full 1{,}253-item set).}
-Mean pairwise co-failure correlation $\bar\varphi = 0.534$, mean pairwise excess
-$= 0.090$, Kish $n_{\mathrm{eff}} = 1.635$. These figures must be read as ``on
-frontier-hard items'': the corpus selects for items at least one model fails, so
-absolute fail rates are high ($0.75$--$0.87$ per model) and excess co-failure is
-correspondingly large.
-
-\paragraph{Difficulty-conditional survival (218-item subset).}
-For the 218 items with $\ge 10$ open-source model evaluations, we use those
-open-source fail rates as an \emph{independent} difficulty proxy (12 models:
-Falcon, LLaMA-2/3, Mistral, Mixtral, Phi, Qwen, Yi, Zephyr), stratified into 5
-quintile bins. Mean raw excess on this subset $= 0.089$; difficulty-conditional
-excess $= 0.084$. Only \textbf{6.2\% of the raw excess is attributable to shared
-item difficulty; 93.8\% survives conditioning} --- stable across
-$n_{\text{bins}}=3..10$. This re-derives on real data the paper's central design
-motivation: stratification is not a nicety but the decisive anti-confound step.
-
-\paragraph{Caveats.}
-(i) The 218-item difficulty-control subset covers knowledge/math benchmarks
-(GSM8K, MMLU, ARC-Challenge) only --- no code or IFEval; generality is asserted
-but not demonstrated here. (ii) The corpus is intentionally hard: these numbers
-cannot be taken as representative of typical evaluation settings where fail rates
-are lower.
-
-\begin{figure}[h]
-  \centering
-  \includegraphics[width=\textwidth]{failurescope_real.png}
-  \caption{Real-data co-failure on FailureScope. (Left) $6\times6$ pairwise
-  co-failure correlation $\varphi$ matrix on 1{,}253 FailureScope items;
-  $\bar\varphi=0.534$, $n_{\mathrm{eff}}=1.635$. (Right) Mean pairwise excess
-  co-failure --- raw ($0.089$) vs.\ difficulty-conditional ($0.084$) on the
-  218-item held-out subset; 93.8\% of the raw excess survives conditioning on an
-  independent open-source difficulty proxy.}
-  \label{fig:failurescope}
-\end{figure}
+\paragraph{Real-data validation (FailureScope).}
+On real frontier-judge data (FailureScope \citep{saban2606}, 6 judges, 1{,}253
+items), $93.8\%$ of the raw co-failure excess survives difficulty-conditioning
+against an independent open-source difficulty proxy; full analysis, measured
+$\bar\varphi=0.534$ / $n_{\mathrm{eff}}=1.635$, and Figure~\ref{fig:failurescope}
+in Appendix~\ref{app:realdata}.
 
 \subsection{Limitation: $\gamma=0.05$ not reachable at 0.80 power, $Q\le80$}
 \label{sec:gammalimit}
@@ -494,6 +397,126 @@ established:]}
 \subsection*{Related Work}
 \label{sec:related}
 
+The closest competitor is Kuai et al.\ \citep{kuai2604}, which tests the same
+conditional-independence-given-difficulty null on real panels but via a batch
+permutation with no Ville guarantee; our contribution is the anytime layer above
+it. The nearest sequential instruments --- SKCI \citep{he2606}, CELEUS
+\citep{celeus2606}, Saha-Ramdas \citep{saharamdas2607} --- are single-stream
+(marginal drift, not co-failure). Along the axes \textbf{anytime-valid} $\times$
+\textbf{cross-item} $\times$ \textbf{margins-free}, the cell we fill is empty; a
+full $\{$batch, anytime$\} \times \{$single, joint$\}$ breakdown is in
+Appendix~\ref{app:related}.
+
+Expanded limitations are collected in Appendix~\ref{app:limitations}.
+
+\paragraph{Reproducibility.}
+Code: \path{code/evalue/} --- \texttt{dgp.py} (DGP: $\theta$ sampling,
+Marshall-Olkin shock, marginal drift), \texttt{eprocess.py} (e-process
+increment, stratified cross-item baseline, $\lambda$-mixture),
+\texttt{run\_experiment.py} (Method A/B/C validity contrast,
+\S\ref{sec:validity}), \texttt{run\_qsweep.py} (Q-sweep power curve,
+Appendix~\ref{app:qsweep}), and \texttt{results.csv}, \texttt{results\_qsweep.csv} (raw
+outputs). Seeded numpy throughout; all results exactly reproducible.
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\appendix
+
+\section{Real-data validation (FailureScope)}
+\label{app:realdata}
+
+To ground the synthetic results in observed behaviour, we probe the FailureScope
+corpus (Saban \citep{saban2606}; 1{,}253 adversarially frontier-hard items,
+per-model pass/fail with gold labels; CC-BY-4.0/MIT). Six frontier judges ---
+claude-haiku, claude-sonnet, gpt-4o, gpt-4o-mini, gpt-5.4, gpt-5.4-nano --- are
+evaluated on every item.
+
+\paragraph{Measured co-failure (full 1{,}253-item set).}
+Mean pairwise co-failure correlation $\bar\varphi = 0.534$, mean pairwise excess
+$= 0.090$, Kish $n_{\mathrm{eff}} = 1.635$. These figures must be read as ``on
+frontier-hard items'': the corpus selects for items at least one model fails, so
+absolute fail rates are high ($0.75$--$0.87$ per model) and excess co-failure is
+correspondingly large.
+
+\paragraph{Difficulty-conditional survival (218-item subset).}
+For the 218 items with $\ge 10$ open-source model evaluations, we use those
+open-source fail rates as an \emph{independent} difficulty proxy (12 models:
+Falcon, LLaMA-2/3, Mistral, Mixtral, Phi, Qwen, Yi, Zephyr), stratified into 5
+quintile bins. Mean raw excess on this subset $= 0.089$; difficulty-conditional
+excess $= 0.084$. Only \textbf{6.2\% of the raw excess is attributable to shared
+item difficulty; 93.8\% survives conditioning} --- stable across
+$n_{\text{bins}}=3..10$. This re-derives on real data the paper's central design
+motivation: stratification is not a nicety but the decisive anti-confound step.
+
+\paragraph{Caveats.}
+(i) The 218-item difficulty-control subset covers knowledge/math benchmarks
+(GSM8K, MMLU, ARC-Challenge) only --- no code or IFEval; generality is asserted
+but not demonstrated here. (ii) The corpus is intentionally hard: these numbers
+cannot be taken as representative of typical evaluation settings where fail rates
+are lower.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{failurescope_real.png}
+  \caption{Real-data co-failure on FailureScope. (Left) $6\times6$ pairwise
+  co-failure correlation $\varphi$ matrix on 1{,}253 FailureScope items;
+  $\bar\varphi=0.534$, $n_{\mathrm{eff}}=1.635$. (Right) Mean pairwise excess
+  co-failure --- raw ($0.089$) vs.\ difficulty-conditional ($0.084$) on the
+  218-item held-out subset; 93.8\% of the raw excess survives conditioning on an
+  independent open-source difficulty proxy.}
+  \label{fig:failurescope}
+\end{figure}
+
+\section{Power-vs-$Q$ sweep}
+\label{app:qsweep}
+
+Method A with $\lambda$-mixture over $\{0.1, \ldots, 0.9\}$. $Q$ = number of
+equal-width strata in $\theta$. Primary metric: power at $\gamma=0.10$
+common-shock probability. $N=2000$ items.
+
+\begin{table}[h]
+  \centering
+  \caption{$\lambda$-mixture power sweep, $\gamma=0.10$. Type-I stays $\le 0.022$
+  across the full sweep; the knee is $Q=80$.}
+  \label{tab:power}
+  \small
+  \begin{tabular}{@{}rrrrr@{}}
+    \toprule
+    $Q$ & $N/Q$ per stratum & Type-I & Power ($\gamma=0.10$) & Med. detection step \\
+    \midrule
+    5  & 400 & 0.000          & 0.000          & --- \\
+    10 & 200 & 0.000          & 0.018          & --- \\
+    20 & 100 & 0.002          & 0.240          & --- \\
+    40 & 50  & 0.014          & 0.724          & --- \\
+    80 & 25  & \textbf{0.022} & \textbf{0.920} & $\sim 885$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Type-I stays $\le 0.022$ across the full sweep---validity never degrades as
+strata become finer. The knee is $Q=80$: smallest $Q$ achieving Type-I $\le 0.05$
+and Power $\ge 0.80$ against $\gamma=0.10$.
+
+\paragraph{Fixed $\lambda=0.5$ vs.\ mixture at $Q=80$.}
+Power $= 0.428$ (fixed) vs.\ $0.920$ (mixture). The $\lambda$-mixture is
+load-bearing, not cosmetic: it detects a broader class of common-shock magnitudes
+by hedging over unknown $\gamma$ rather than betting a single mis-specified
+operating point.
+
+\paragraph{Why power is suppressed at small $Q$.}
+The bias slack $\delta=2\varepsilon$ is adversarially worst-case: marginals
+anywhere within a stratum of width $2\varepsilon$, no smoothness assumed. At
+coarse $Q$ (e.g.\ $Q=5$, $\varepsilon=0.1$), the realised within-stratum bias
+from shared difficulty is $\sim 8\times10^{-4}$ while $\delta \approx 0.058$---a
+$72.6\times$ overestimate---forcing $\lambda$ into a conservative regime. As
+strata narrow, the ratio falls: at $Q=80$, $\delta/\text{realised-bias} \approx
+2\times$. Construction is rigorous; the efficiency cost is real and $Q$ is the
+explicit operating-characteristic dial.
+
+\section{Extended related work}
+\label{app:related}
+
 \paragraph{Batch co-failure monitors (the lower bracket).}
 Kuai et al.\ \citep{kuai2604}: same conditional-independence-given-difficulty
 null, real panels, batch permutation, no Ville guarantee. Closest competitor; our
@@ -527,7 +550,9 @@ related-work table sits in all three.
 %  "N x N E-valuation" Prop 3 (means of e-values under arbitrary dependence) ---
 %  anytime vs batch gate still open as of 08-17; insert if gated.]
 
-\paragraph{Limitations (expanded --- for \S\ref{sec:discussion} integration).}
+\section{Expanded limitations}
+\label{app:limitations}
+
 \begin{enumerate}
   \item \textbf{$\gamma=0.05$ gap.} Small-atom common-shock co-failure
   ($\gamma=0.05$) does not reach 0.80 power within $Q\le80$, $N=2000$. Best
@@ -543,17 +568,5 @@ related-work table sits in all three.
   yet in the same-item estimate; this is easy to arrange in streaming settings
   but requires care in finite-horizon retrospective analysis.
 \end{enumerate}
-
-\paragraph{Reproducibility.}
-Code: \path{code/evalue/} --- \texttt{dgp.py} (DGP: $\theta$ sampling,
-Marshall-Olkin shock, marginal drift), \texttt{eprocess.py} (e-process
-increment, stratified cross-item baseline, $\lambda$-mixture),
-\texttt{run\_experiment.py} (Method A/B/C validity contrast,
-\S\ref{sec:validity}), \texttt{run\_qsweep.py} (Q-sweep power curve,
-\S\ref{sec:power}), and \texttt{results.csv}, \texttt{results\_qsweep.csv} (raw
-outputs). Seeded numpy throughout; all results exactly reproducible.
-
-\bibliographystyle{plainnat}
-\bibliography{references}
 
 \end{document}
