@@ -78,74 +78,45 @@ their failures arrive correlated despite surface diversity.
 
 The immediate lesson is narrow: buy diversity at the model layer, but if the
 shared harness remains, independence is an illusion. The deeper point is that
-this is not new---the same structure recurs at every level of the AI stack. At
-the model-weight layer, Kohli \citep{kohli2605} measures error-vector co-failure
-correlation across judge panels and finds nine nominally independent judges
-deliver about two effective votes: $n_{\mathrm{eff}} \approx 2.18$, falling to
-$1.93$ when restricted to the strongest judge per model family and to $1.94$
-under chain-of-thought (both changes, intended to raise independence, instead
-lift the mean pairwise co-failure correlation $\bar\varphi$ from $0.391$ to
-$0.456$). The co-failure surface migrates upstream: whatever unit of diversity is
-purchased---model weights, scaffolds, eval vendors, whole laboratories---%
-independence is capped by the least-diverse shared component one layer up. The
-quantity $n_{\mathrm{eff}} \approx 2$--$3$ has been rediscovered independently at
-least four times: as the Kish \citep{kish1965} effective sample size on
-error-vector correlations \citep{kohli2605}, as an Ising-coupling saturation
-point \citep{balasubramanian2601}, as an embedding-Gram spectral entropy (the
-Hill/Vendi order-1 functional on judge similarity spectra), and as the ecological
-effective-number-of-species on the distribution of per-demand failure
-probabilities.
+this structure recurs at every level of the AI stack. Kohli \citep{kohli2605}
+finds nine nominally independent judges deliver about two effective votes:
+$n_{\mathrm{eff}} \approx 2.18$ (falling to $1.93$--$1.94$ under changes
+intended to raise independence, which instead raise $\bar\varphi$). The
+quantity $n_{\mathrm{eff}} \approx 2$--$3$ has been rediscovered at least four
+times: as the Kish \citep{kish1965} effective sample size on error-vector
+correlations \citep{kohli2605}, as an Ising-coupling saturation point
+\citep{balasubramanian2601}, as an embedding-Gram spectral entropy, and as the
+ecological effective-number-of-species.
 
-This convergence has a 40-year pedigree. In 1986, Knight and Leveson
-\citep{knight1986} ran the definitive empirical test of the assumption
-underpinning N-version programming---that independently written software modules
-fail independently on the same input. They did not; the co-failure excess was
-systematic. The quantity that explains it is $\mathrm{Var}(\Theta)$, the variance
-of the per-demand failure probability $\Theta$ across inputs: by de Finetti's
-theorem, exchangeable failures have $\mathbb{P}(\text{co-failure}) =
-\mathbb{E}[\Theta^2] = (\mathbb{E}[\Theta])^2 + \mathrm{Var}(\Theta)$, so
-co-failure exceeds the independence baseline by exactly $\mathrm{Var}(\Theta)$.
-This identity unifies N-version software reliability (Knight-Leveson
-\citep{knight1986}; Brilliant, Knight \& Leveson \citep{brilliant1990}; the
-common-cause-failure alpha-factor model), the ecological response-diversity
-literature (the portfolio effect; Littlewood-Strigini's difficulty function
-\citep{littlewood1987}), and the financial common-factor literature (the
-one-factor Vasicek/Gaussian copula, the same de Finetti identity on
-credit-default correlation). The diagnostic quantity---equivalently
-$\mathrm{Var}(\Theta)$, the effective-number-of-independents $n_{\mathrm{eff}} = 1
-/ \mathbb{E}[\Theta^2]$ suitably normalized, or the Kish deflator $n / (1 +
-(n-1)\bar\varphi)$---is settled, credited, and not ours. We concede this
-entirely.
+This convergence has a 40-year pedigree. Knight and Leveson \citep{knight1986}
+showed that independently written software modules fail \emph{dependently} on
+the same input; the co-failure excess is explained by $\mathrm{Var}(\Theta)$,
+the variance of per-demand failure probability: by de Finetti's theorem,
+$\mathbb{P}(\text{co-failure}) = (\mathbb{E}[\Theta])^2 + \mathrm{Var}(\Theta)$.
+This identity unifies N-version reliability \citep{knight1986,brilliant1990},
+the ecological portfolio effect \citep{littlewood1987}, and the one-factor
+Vasicek/Gaussian copula in credit risk. The diagnostic quantity---$\mathrm{Var}(\Theta)$,
+or equivalently $n_{\mathrm{eff}}$, or the Kish deflator---is settled and not
+ours. We concede this entirely.
 
 What is not settled is the monitor. Every existing instrument for co-failure
-excess is batch, marginal, or single-stream---usually all three. Han's de Finetti
-cascade \citep{han2607} gives a fixed-sample ceiling on the blind-spot
-probability; Li and Hai derive a state-dependent copula floor, again on a fixed
-sample \citep{liHai2607}. The sequential instruments nearby---SKCI (He \&
-Sutherland, \citep{he2606}), CELEUS \citep{celeus2606}, Saha-Ramdas changepoint
-detectors \citep{saharamdas2607}---are single-stream: they watch whether one
-judge's failure rate drifts, not whether judges $i$ and $j$ fail \emph{together}
-beyond what their individual rates predict. Kuai et al.\ \citep{kuai2604} test the
-conditional-independence-given-difficulty null we test, on real panels, but via a
-batch permutation with no Ville inequality and hence no anytime-valid guarantee.
-The empty cell is: \textbf{anytime-valid} (Ville e-process, guarantee at every
-stopping time) $\times$ \textbf{cross-item} (second-order, dependence between two
-streams, not marginal drift in one) $\times$ \textbf{margins-free} (no estimation
-of $p_i, p_j$, which are unknown and drifting). Nobody watches the co-failure
-collapse sequentially, as it happens, without fitting the marginals.
+excess is batch, marginal, or single-stream---usually all three. Han \citep{han2607}
+gives a fixed-sample blind-spot ceiling; Li and Hai \citep{liHai2607} a
+state-dependent copula floor, again batch. Sequential instruments---SKCI
+\citep{he2606}, CELEUS \citep{celeus2606}, Saha-Ramdas \citep{saharamdas2607}---are
+single-stream (marginal drift, not joint co-failure). Kuai et al.\ \citep{kuai2604}
+test our exact null on real panels but via batch permutation with no Ville guarantee.
+The unclaimed cell is: \textbf{anytime-valid} $\times$ \textbf{cross-item}
+$\times$ \textbf{margins-free} (no estimation of $p_i, p_j$, which are unknown
+and drifting).
 
-This paper fills that cell. Leg 3 constructs an anytime-valid co-failure
-e-process via cross-item pairing: the same-item co-failure indicator $U = W_i^s
-W_j^s$ is compared against the cross-item product $V = W_i^s W_j^t$ for a
-\emph{different} item $t$. Because $s \ne t$, $W_i^s$ and $W_j^t$ come from
-different items and are independent regardless of within-item coupling---so
-$\mathbb{E}[V] = p_i p_j$ exactly, without estimating $p_i$ or $p_j$. The bet $e =
-1 + \lambda(U - V)$ is a martingale increment under the null, $M_t = \prod_{s \le
-t} e_s$ is a nonnegative test martingale, and Ville's inequality \citep{ville1939}
-delivers $\mathbb{P}(\sup_t M_t \ge 1/\alpha) \le \alpha$---a level-$\alpha$ alarm
-valid at every stopping time under drifting, unknown marginals. The construction
-is the unclaimed cell; the Irregular incident, the Kohli measurements, and the
-40-year reliability pedigree are the motivation for filling it.
+This paper fills that cell (\S\ref{sec:method}). The key idea: compare the
+same-item co-failure indicator $U=W_i^s W_j^s$ against a cross-item product
+$V=W_i^s W_j^t$ for a \emph{different} item $t \ne s$. Because $s\ne t$, $V$
+provides an exact baseline for $p_i p_j$ without estimating either marginal;
+the running product $M_t=\prod e_\tau$ is a nonnegative test martingale, and
+Ville's inequality \citep{ville1939} delivers a level-$\alpha$ alarm at every
+stopping time under drifting marginals.
 
 \section{Setup and the Leg-3 Claim}
 \label{sec:setup}
@@ -186,16 +157,13 @@ items; under any within-item coupling, they remain marginally independent across
 items, so $\mathbb{E}[V_s] = p_i(\theta^s) p_j(\theta^t)$ exactly---no estimation
 required.
 
-\paragraph{Why margins-free is structural, not a trick.}
+\paragraph{Why margins-free is structural.}
 The increment $U_s - V_s$ is a zero-sum linear contrast of $\{W_i^s, W_j^s,
-W_j^t\}$. By de la Pe\~na's Prop 5.1 \citep{delapena2606} (cited as motivation,
-not as an anytime result), zero-sum linear contrasts of bounded i.i.d.\
-variables have $\sigma^2_{\mathrm{mix}} = 0$, which is the structural reason the
-cross-item product is bias-free under composite marginals. The actual
-anytime-validity argument is Ville: the increment is a supermartingale increment
-under the null after difficulty stratification (see \S\ref{sec:strat}), so the
-running product $M_t = \prod_{\tau \le t}(1 + \lambda_\tau(U_\tau - V_\tau -
-\delta))$ satisfies $\mathbb{E}[M_t] \le 1$ for all $t$.
+W_j^t\}$; by de la Pe\~na's Prop 5.1 \citep{delapena2606}, zero-sum linear
+contrasts have $\sigma^2_{\mathrm{mix}}=0$, so the cross-item product is
+bias-free under composite marginals. Anytime-validity follows from Ville: after
+difficulty stratification the running product $M_t$ is a nonnegative
+supermartingale under the null.
 
 \paragraph{E-process construction.}
 The betting increment is:
@@ -210,15 +178,11 @@ anywhere within a stratum of width $2\varepsilon$) and $\lambda \in [0,
 level-$\alpha$ sequential alarm valid at every stopping time.
 
 \paragraph{$\lambda$-mixture.}
-A single fixed $\lambda$ is log-optimal for exactly one alternative. Against
-unknown common-shock magnitude $\gamma$, we use a convex mixture (Robbins
-mixture) over a grid $\lambda \in \{0.1, 0.2, \ldots, 0.9\}$. A convex mixture of
-e-processes is itself an e-process (still Ville-valid with no penalty), and it
-concentrates weight on the $\lambda$ matching the realized effect size, achieving
-near-log-optimal growth uniformly over a range of $\gamma$. This is the mechanism
-behind the $0.43 \to 0.92$ power improvement reported in \S\ref{sec:worked}. The
-cost is a $\log(\text{grid-size})$ overhead over an oracle-$\lambda$---negligible
-against the robustness gain.
+A fixed $\lambda$ is log-optimal for one $\gamma$ only. Against unknown $\gamma$,
+we use a Robbins mixture over $\lambda \in \{0.1,\ldots,0.9\}$: a convex mixture
+of e-processes is itself an e-process (Ville-valid, no penalty), concentrating
+weight on the $\lambda$ matching the realised effect size at a $\log(\text{grid})$
+overhead over oracle-$\lambda$.
 
 % [Notation: align $W_i^s$ with the co-failure indicator notation before merge.
 %  Also confirm derangement vs paired-item schedule---the code uses derangement
@@ -272,17 +236,13 @@ fraction of 500 runs crossing threshold 20 under the null ($\gamma=0$).
   \end{tabular}
 \end{table}
 
-Method A is the only valid construction, and the failure modes motivate the
-design. Method B inflates because the cross-item partner $W_j^t$ is drawn from a
-different difficulty band than $W_i^s$: shared difficulty leaks through the
-baseline, exactly as the difficulty-confound literature predicts (Jo, Garg \&
-Raghavan \citep{jo2602} show this confound substantially attenuates apparent
-co-failure correlation under an IRT-1 null). Method C fails harder: the global
-sample-mean estimators $\hat{a}\hat{b}$ are confounded by marginal-difficulty
-correlation and drift with the marginals, keeping false-rejection catastrophically
-high. The A-vs-B contrast answers Jo--Garg--Raghavan's implicit critique:
-stratification is not a nicety but the decisive design choice, removing the
-confound \emph{structurally}---no parametric IRT model required.
+Method A is the only valid construction. Method B inflates because the cross-item
+partner $W_j^t$ is drawn from a different difficulty band: shared difficulty leaks
+into the baseline (exactly as Jo--Garg--Raghavan \citep{jo2602} predict). Method
+C fails harder: global sample-mean estimators are confounded by marginal-difficulty
+correlation and drift. The A-vs-B contrast confirms stratification as the decisive
+design choice---removing the confound structurally, without a parametric IRT
+model.
 
 \paragraph{Power vs.\ $Q$ --- the operating dial.}
 With the $\lambda$-mixture over $\{0.1,\ldots,0.9\}$, power against a
@@ -299,117 +259,77 @@ against an independent open-source difficulty proxy; full analysis, measured
 $\bar\varphi=0.534$ / $n_{\mathrm{eff}}=1.635$, and Figure~\ref{fig:failurescope}
 in Appendix~\ref{app:realdata}.
 
-\subsection{Limitation: $\gamma=0.05$ not reachable at 0.80 power, $Q\le80$}
+\paragraph{Limitation: $\gamma=0.05$ gap.}
 \label{sec:gammalimit}
-
-Against a weaker common shock $\gamma=0.05$, the best achieved power within
-$Q\le80$ (mixture) is $0.202$. Small-atom co-failure needs either longer streams
-($N > 2000$) or a smoothness-adaptive tighter $\delta$ (see \S\ref{sec:discussion}
-future work). We state this plainly rather than claiming a regime we haven't
-demonstrated.
+Against $\gamma=0.05$, best power within $Q\le80$ is $0.202$. Small-atom
+co-failure needs longer streams ($N>2000$) or adaptive $\delta$ (future work).
 
 \section{Yule's Q / OR Framing and Difficulty Stratification}
 \label{sec:or}
 
-The e-process bets on co-failure \emph{excess}: the amount by which joint failure
-probability exceeds the product of independent marginals. An equivalent statement
-uses the odds ratio $\mathrm{OR}_{ij} = P(W_i\!=\!1,W_j\!=\!1)P(W_i\!=\!0,W_j\!=\!0) /
-[P(W_i\!=\!1,W_j\!=\!0)P(W_i\!=\!0,W_j\!=\!1)]$; the co-failure null is
-$\mathrm{OR}_{ij} = 1$. Yule's $Q_{ij} = (\mathrm{OR}-1)/(\mathrm{OR}+1)$ maps
-this null to $Q_{ij} = 0$.
-
-Yule's Q has a useful symmetry: it is invariant under simultaneous label-flip
-($0 \leftrightarrow 1$) for both judges. This \textbf{bilateral invariance}
-ensures the monitoring claim does not depend on whether we encode a failure as
-$0$ or $1$---the alarm fires at the same false-positive rate regardless of the
-labelling convention. The betting fraction $\lambda$ is bounded above by
-$1/(1+2\varepsilon)$ to ensure $e_\tau \ge 0$ under the worst-case within-stratum
-marginal configuration; the bound is tight: any $\lambda$ above it risks a
-negative increment for some admissible marginal pair.
+The e-process bets on co-failure \emph{excess}: by how much joint failure
+probability exceeds the independent product. Equivalently, the null is
+$\mathrm{OR}_{ij}=1$, and Yule's $Q_{ij}=(\mathrm{OR}-1)/(\mathrm{OR}+1)$
+maps it to $Q_{ij}=0$. Yule's Q is invariant under simultaneous label-flip
+($0\leftrightarrow1$)---\textbf{bilateral invariance} ensures the alarm fires at the
+same false-positive rate regardless of failure-encoding convention. The betting
+fraction $\lambda\le1/(1+2\varepsilon)$ ensures $e_\tau\ge0$ under the worst-case
+within-stratum marginal configuration; the bound is tight.
 
 \subsection{Difficulty stratification as the validity axis}
 \label{sec:strat}
 
-Item difficulty is the principal confound in co-failure monitoring. If harder
-items attract correlated failure from all judges, even conditionally independent
-judges will appear correlated on unstratified data: the empirical co-failure
-baseline is inflated by shared $\theta$, not by a genuine common shock.
-Jo, Garg \& Raghavan~\citep{jo2602} document this effect---difficulty
-substantially attenuates apparent co-failure correlation under an IRT-1
-null---and propose a parametric correction. Our construction removes the confound
-without a model: by drawing the cross-item partner $W_j^t$ from the \emph{same
-difficulty stratum} as item $s$, the expected baseline $\mathbb{E}[V] =
-p_i(\theta^s)p_j(\theta^t)$ is a valid proxy for $p_ip_j$ within that stratum,
-regardless of how difficulty varies across strata. No difficulty model is fit;
-the stratification is entirely nonparametric, positioning our approach as the
-sequential, nonparametric counterpart to their batch parametric solution.
+Item difficulty is the principal confound: harder items attract correlated failure
+from all judges, inflating the empirical co-failure baseline via shared $\theta$
+even under conditional independence. Jo, Garg \& Raghavan~\citep{jo2602} document
+this and propose a parametric IRT-1 correction. Our construction removes the
+confound without a model: drawing $W_j^t$ from the \emph{same difficulty stratum}
+as item $s$ makes $\mathbb{E}[V]=p_ip_j$ a valid within-stratum proxy,
+entirely nonparametrically---the sequential counterpart to their batch solution.
 
-The \textbf{number of strata $Q$} is the operating-characteristic dial
-(Appendix~\ref{app:qsweep}). Finer strata tighten the worst-case bias slack
-$\delta = 2\varepsilon$ proportionally, improving power. At $Q=80$, $\delta$
-overestimates realised within-stratum bias by approximately $2\times$; at $Q=5$,
-by $72.6\times$, suppressing power to near zero. The construction is valid
-throughout---Type-I stays $\le 0.022$ across the full sweep---but detection speed
-trades against strata granularity.
-
-The empirical demonstration is the A-vs-B contrast in Table~\ref{tab:validity}.
-Method~B (unstratified cross-item, $\delta=0$) inflates Type-I to
-$0.226$--$0.438$: the cross-item partner is drawn from a different difficulty
-band, leaking shared difficulty into the baseline exactly as Jo--Garg--Raghavan
-predict. Method~A (stratified, $\delta=2\varepsilon$) achieves Type-I $0.000$
-throughout. Stratification is not a nicety; it is the step that makes the null
-structural.
+The \textbf{number of strata $Q$} is the operating dial: finer strata tighten
+$\delta=2\varepsilon$ proportionally, improving power while Type-I stays $\le
+0.022$ throughout (full sweep in Appendix~\ref{app:qsweep}). Table~\ref{tab:validity}
+isolates the effect: Method~B (unstratified, $\delta=0$) inflates Type-I to
+$0.226$--$0.438$; Method~A (stratified, $\delta=2\varepsilon$) achieves $0.000$.
+Stratification is not a nicety; it is the step that makes the null structural.
 
 \paragraph{$\lambda$-mixture.}
-A single fixed $\lambda$ is log-optimal for exactly one common-shock magnitude
-$\gamma$. Against unknown $\gamma$, a Robbins mixture over a grid
-$\lambda \in \{0.1, \ldots, 0.9\}$ achieves near-log-optimal growth uniformly: a
-convex mixture of e-processes is itself an e-process under Ville's inequality,
-concentrating weight on the $\lambda$ matching the realised effect size. The
-power gain is the exhibit: $0.428$ (fixed $\lambda=0.5$) to $0.920$ (mixture) at
-$Q=80$, $\gamma=0.10$.
+A fixed $\lambda$ is log-optimal for one $\gamma$ only; against unknown $\gamma$,
+a Robbins mixture over $\{0.1,\ldots,0.9\}$ achieves near-log-optimal growth
+uniformly (power gain: $0.428\to0.920$; full analysis in
+Appendix~\ref{app:qsweep}).
 
-Three distinct convex objects appear in this paper and should not be conflated.
-The \textbf{$\lambda$-mixture} (here) hedges over $\gamma$ within the e-process
-proper. The \textbf{stratum-weight mixture} (Appendix~\ref{app:realdata}) is a
-separate object: the difficulty-stratified FailureScope validator re-weights
-stratum-level estimators by item count---distinct in role and scope from the
-anytime betting hedge. The \textbf{SKCI CME baseline}~\citep{he2606} is a third
-convex object in the related-work table, arising in the single-stream sequential
-test; it is not used in our construction. Ming et al.~\citep{ming2603} is
-explicitly not a $\lambda$-mixture substitute: their demi-supermartingale combiner
-operates over polynomial degree on a fixed sample and carries no anytime
-guarantee.
+Three distinct convex objects should not be conflated. The
+\textbf{$\lambda$-mixture} (here) hedges over $\gamma$ within the e-process. The
+\textbf{stratum-weight mixture} (Appendix~\ref{app:realdata}) re-weights
+stratum-level estimators by item count---a separate object, distinct in role from
+the anytime betting hedge. The \textbf{SKCI CME baseline}~\citep{he2606} is a
+third convex object from the related-work table; it is not used in our
+construction.\footnote{Ming et al.~\citep{ming2603}'s demi-supermartingale
+combiner is not a $\lambda$-mixture substitute: it operates over polynomial degree
+on a fixed sample, with no anytime guarantee.}
 
 \section{Discussion / Conclusion / Limitations}
 \label{sec:discussion}
 
-The Irregular incident (\S\ref{sec:intro}) illustrates the monitor's use case
-concretely: shared infrastructure is a latent co-failure source, and the failure
-structure appears as excess joint-failure probability above what individual lab
-failure rates predict. A deployed e-process would fire when cross-judge co-failure
-crosses the stratified baseline without estimating individual lab failure
-rates---which are undisclosed and drifting---providing a sequential alarm rather
-than a post-hoc audit.
+The monitor's use case is the Irregular incident (\S\ref{sec:intro}): a deployed
+e-process fires when cross-judge co-failure crosses the stratified baseline
+without estimating individual lab failure rates (undisclosed and drifting),
+providing a sequential alarm rather than a post-hoc audit.
 
-The broader contribution is filling the anytime-valid $\times$ cross-item $\times$
-margins-free cell that existing instruments leave empty. Batch monitors
-(Kuai~et~al.\ \citep{kuai2604}) test the same null but offer no guarantee before
-the final sample; single-stream instruments (SKCI, CELEUS, Saha-Ramdas) detect
-marginal drift in one judge, not joint dependence. Our e-process is the first to
-watch co-failure collapse sequentially, as it happens, under unknown and drifting
-marginals.
+The broader contribution is filling the \textbf{anytime-valid $\times$ cross-item
+$\times$ margins-free} cell. Batch monitors (Kuai~et~al.\ \citep{kuai2604}) test
+the same null with no guarantee before the final sample; single-stream instruments
+(SKCI, CELEUS, Saha-Ramdas) detect marginal drift in one judge, not joint
+dependence. Our e-process is the first to watch co-failure sequentially under
+unknown and drifting marginals.
 
 \paragraph{Limitations.}
-Four scope constraints apply. Current results cover binary outcomes,
-$\gamma \ge 0.10$ common-shock magnitude, and $Q \le 80$ strata; continuous
-outcomes and small-atom co-failure ($\gamma = 0.05$, best achieved power $0.202$)
-remain future work. All results are for $m=2$ judges; extension to $m>2$ via
-pairwise aggregation is natural but not proven here. The cross-item derangement
-schedule requires stream length to populate strata per pair. The circularity
-boundary (within-stratum bias bound $\delta = 2\varepsilon$) is adversarially
-tight and becomes the dominant power cost at coarse $Q$. Expanded treatment in
-Appendix~\ref{app:limitations}.
+Current results: binary outcomes, $\gamma\ge0.10$, $Q\le80$, $m=2$ judges. The
+$\gamma=0.05$ gap (best power $0.202$), extension to $m>2$, derangement-schedule
+finite-horizon care, and worst-case $\delta$ power cost are all future work.
+Expanded treatment in Appendix~\ref{app:limitations}.
 
 \paragraph{Future work.}
 Three directions follow directly. (i)~\textbf{Adaptive $\delta$}: replacing the
@@ -421,29 +341,18 @@ results to whole-panel aggregate power and error control.
 OpenReview-style panels where judge identities are hidden and marginals are
 genuinely unknown.
 
-\subsection*{Related Work}
+\paragraph{Related work.}
 \label{sec:related}
-
-The closest competitor is Kuai et al.\ \citep{kuai2604}, which tests the same
-conditional-independence-given-difficulty null on real panels but via a batch
-permutation with no Ville guarantee; our contribution is the anytime layer above
-it. The nearest sequential instruments --- SKCI \citep{he2606}, CELEUS
-\citep{celeus2606}, Saha-Ramdas \citep{saharamdas2607} --- are single-stream
-(marginal drift, not co-failure). Along the axes \textbf{anytime-valid} $\times$
-\textbf{cross-item} $\times$ \textbf{margins-free}, the cell we fill is empty; a
-full $\{$batch, anytime$\} \times \{$single, joint$\}$ breakdown is in
-Appendix~\ref{app:related}.
-
-Expanded limitations are collected in Appendix~\ref{app:limitations}.
-
-\paragraph{Reproducibility.}
-Code: \path{code/evalue/} --- \texttt{dgp.py} (DGP: $\theta$ sampling,
-Marshall-Olkin shock, marginal drift), \texttt{eprocess.py} (e-process
-increment, stratified cross-item baseline, $\lambda$-mixture),
-\texttt{run\_experiment.py} (Method A/B/C validity contrast,
-\S\ref{sec:validity}), \texttt{run\_qsweep.py} (Q-sweep power curve,
-Appendix~\ref{app:qsweep}), and \texttt{results.csv}, \texttt{results\_qsweep.csv} (raw
-outputs). Seeded numpy throughout; all results exactly reproducible.
+Closest competitor: Kuai et al.\ \citep{kuai2604} tests the same null but via
+batch permutation with no Ville guarantee; our contribution is the anytime layer.
+Sequential instruments (SKCI \citep{he2606}, CELEUS \citep{celeus2606},
+Saha-Ramdas \citep{saharamdas2607}) are single-stream (marginal drift, not
+co-failure). Full $\{\text{batch,anytime}\}\times\{\text{single,joint}\}$
+breakdown in Appendix~\ref{app:related}; expanded limitations in
+Appendix~\ref{app:limitations}.
+\textbf{Reproducibility:} Code at \path{code/evalue/} (DGP, e-process,
+validity-contrast, Q-sweep); seeded numpy; outputs in
+\texttt{results.csv}/\texttt{results\_qsweep.csv}.
 
 \bibliographystyle{plainnat}
 \bibliography{references}
