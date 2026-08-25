@@ -311,88 +311,115 @@ demonstrated.
 \section{Yule's Q / OR Framing and Difficulty Stratification}
 \label{sec:or}
 
-% ============================================================================
-% PLACEHOLDER SECTION (Claudius). Converted faithfully from the Markdown
-% scaffold; the following is the author-brief for this section, not final prose.
-% Three things should land here:
-% ============================================================================
+The e-process bets on co-failure \emph{excess}: the amount by which joint failure
+probability exceeds the product of independent marginals. An equivalent statement
+uses the odds ratio $\mathrm{OR}_{ij} = P(W_i\!=\!1,W_j\!=\!1)P(W_i\!=\!0,W_j\!=\!0) /
+[P(W_i\!=\!1,W_j\!=\!0)P(W_i\!=\!0,W_j\!=\!1)]$; the co-failure null is
+$\mathrm{OR}_{ij} = 1$. Yule's $Q_{ij} = (\mathrm{OR}-1)/(\mathrm{OR}+1)$ maps
+this null to $Q_{ij} = 0$.
 
-\emph{[Section to be written by Claudius. The scaffold specifies three
-components; reproduced here so nothing is lost in conversion.]}
-
-\begin{enumerate}
-  \item \textbf{OR / Yule's Q bilateral invariance (\S\ref{sec:or} opener,
-  $\sim$200 words).} The odds-ratio framing of the co-failure excess: state the
-  OR version of the null, explain why bilateral invariance under label-flip
-  (Yule's Q is a natural choice) matters for the monitoring claim, and connect it
-  to the $\lambda$-range constraint $\lambda \in [0, 1/(1+2\varepsilon)]$.
-
-  \item \textbf{Difficulty stratification as the validity axis
-  (\S\ref{sec:strat}, $\sim$300 words).} Narrative should cite Jo--Garg--Raghavan
-  \citep{jo2602} as motivating the confound (``substantially attenuated''---never
-  ``flips negative''; no numeric magnitudes published). State that our
-  construction removes the confound structurally via cross-item stratified
-  baseline, positioning this against their parametric IRT-1 solution. Granularity
-  $Q$ is the power dial; $\delta=2\varepsilon$ is the adversarial worst-case bias
-  bound. Reference the A-vs-B contrast from \S\ref{sec:validity} directly as the
-  empirical demonstration.
-
-  \item \textbf{$\lambda$-mixture mechanism (\S\ref{sec:strat} close or separate
-  paragraph, $\sim$150 words).} The convex mixture hedges over unknown $\gamma$
-  (the common-shock magnitude), achieving near-log-optimal growth uniformly ---
-  cite as method of mixtures / Robbins mixture. $0.43 \to 0.92$ power improvement
-  at $Q=80$ is the exhibit. Note: Ming et al.\ \citep{ming2603} is NOT an anytime
-  combiner; we keep the $\lambda$-mixture.
-\end{enumerate}
-
-\emph{Open question (resolve before merge): Lyra recommends option (a) --- keep
-$\delta=2\varepsilon$, present $Q$ as the operating-characteristic dial --- for
-the workshop paper, with smoothness-adaptive $\delta$ as a \S\ref{sec:discussion}
-future-work bullet. The alternative (option b: fitted local-model $\delta$) would
-need a validity argument not yet built.}
+Yule's Q has a useful symmetry: it is invariant under simultaneous label-flip
+($0 \leftrightarrow 1$) for both judges. This \textbf{bilateral invariance}
+ensures the monitoring claim does not depend on whether we encode a failure as
+$0$ or $1$---the alarm fires at the same false-positive rate regardless of the
+labelling convention. The betting fraction $\lambda$ is bounded above by
+$1/(1+2\varepsilon)$ to ensure $e_\tau \ge 0$ under the worst-case within-stratum
+marginal configuration; the bound is tight: any $\lambda$ above it risks a
+negative increment for some admissible marginal pair.
 
 \subsection{Difficulty stratification as the validity axis}
 \label{sec:strat}
 
-\emph{[To be written by Claudius --- see brief items 2 and 3 above.]}
+Item difficulty is the principal confound in co-failure monitoring. If harder
+items attract correlated failure from all judges, even conditionally independent
+judges will appear correlated on unstratified data: the empirical co-failure
+baseline is inflated by shared $\theta$, not by a genuine common shock.
+Jo, Garg \& Raghavan~\citep{jo2602} document this effect---difficulty
+substantially attenuates apparent co-failure correlation under an IRT-1
+null---and propose a parametric correction. Our construction removes the confound
+without a model: by drawing the cross-item partner $W_j^t$ from the \emph{same
+difficulty stratum} as item $s$, the expected baseline $\mathbb{E}[V] =
+p_i(\theta^s)p_j(\theta^t)$ is a valid proxy for $p_ip_j$ within that stratum,
+regardless of how difficulty varies across strata. No difficulty model is fit;
+the stratification is entirely nonparametric, positioning our approach as the
+sequential, nonparametric counterpart to their batch parametric solution.
+
+The \textbf{number of strata $Q$} is the operating-characteristic dial
+(Appendix~\ref{app:qsweep}). Finer strata tighten the worst-case bias slack
+$\delta = 2\varepsilon$ proportionally, improving power. At $Q=80$, $\delta$
+overestimates realised within-stratum bias by approximately $2\times$; at $Q=5$,
+by $72.6\times$, suppressing power to near zero. The construction is valid
+throughout---Type-I stays $\le 0.022$ across the full sweep---but detection speed
+trades against strata granularity.
+
+The empirical demonstration is the A-vs-B contrast in Table~\ref{tab:validity}.
+Method~B (unstratified cross-item, $\delta=0$) inflates Type-I to
+$0.226$--$0.438$: the cross-item partner is drawn from a different difficulty
+band, leaking shared difficulty into the baseline exactly as Jo--Garg--Raghavan
+predict. Method~A (stratified, $\delta=2\varepsilon$) achieves Type-I $0.000$
+throughout. Stratification is not a nicety; it is the step that makes the null
+structural.
+
+\paragraph{$\lambda$-mixture.}
+A single fixed $\lambda$ is log-optimal for exactly one common-shock magnitude
+$\gamma$. Against unknown $\gamma$, a Robbins mixture over a grid
+$\lambda \in \{0.1, \ldots, 0.9\}$ achieves near-log-optimal growth uniformly: a
+convex mixture of e-processes is itself an e-process under Ville's inequality,
+concentrating weight on the $\lambda$ matching the realised effect size. The
+power gain is the exhibit: $0.428$ (fixed $\lambda=0.5$) to $0.920$ (mixture) at
+$Q=80$, $\gamma=0.10$.
+
+Three distinct convex objects appear in this paper and should not be conflated.
+The \textbf{$\lambda$-mixture} (here) hedges over $\gamma$ within the e-process
+proper. The \textbf{stratum-weight mixture} (Appendix~\ref{app:realdata}) is a
+separate object: the difficulty-stratified FailureScope validator re-weights
+stratum-level estimators by item count---distinct in role and scope from the
+anytime betting hedge. The \textbf{SKCI CME baseline}~\citep{he2606} is a third
+convex object in the related-work table, arising in the single-stream sequential
+test; it is not used in our construction. Ming et al.~\citep{ming2603} is
+explicitly not a $\lambda$-mixture substitute: their demi-supermartingale combiner
+operates over polynomial degree on a fixed sample and carries no anytime
+guarantee.
 
 \section{Discussion / Conclusion / Limitations}
 \label{sec:discussion}
 
-% ============================================================================
-% PLACEHOLDER SECTION (Claudius). Converted faithfully from the Markdown
-% scaffold. Do NOT trim; Claudius will trim in LaTeX later.
-% ============================================================================
+The Irregular incident (\S\ref{sec:intro}) illustrates the monitor's use case
+concretely: shared infrastructure is a latent co-failure source, and the failure
+structure appears as excess joint-failure probability above what individual lab
+failure rates predict. A deployed e-process would fire when cross-judge co-failure
+crosses the stratified baseline without estimating individual lab failure
+rates---which are undisclosed and drifting---providing a sequential alarm rather
+than a post-hoc audit.
 
-\emph{[Section to be written by Claudius. Suggested beats, based on what is
-established:]}
+The broader contribution is filling the anytime-valid $\times$ cross-item $\times$
+margins-free cell that existing instruments leave empty. Batch monitors
+(Kuai~et~al.\ \citep{kuai2604}) test the same null but offer no guarantee before
+the final sample; single-stream instruments (SKCI, CELEUS, Saha-Ramdas) detect
+marginal drift in one judge, not joint dependence. Our e-process is the first to
+watch co-failure collapse sequentially, as it happens, under unknown and drifting
+marginals.
 
-\begin{itemize}
-  \item \textbf{What we claim:} an anytime-valid sequential alarm for co-failure
-  excess, valid under drifting composite marginals, without estimating individual
-  failure rates.
+\paragraph{Limitations.}
+Four scope constraints apply. Current results cover binary outcomes,
+$\gamma \ge 0.10$ common-shock magnitude, and $Q \le 80$ strata; continuous
+outcomes and small-atom co-failure ($\gamma = 0.05$, best achieved power $0.202$)
+remain future work. All results are for $m=2$ judges; extension to $m>2$ via
+pairwise aggregation is natural but not proven here. The cross-item derangement
+schedule requires stream length to populate strata per pair. The circularity
+boundary (within-stratum bias bound $\delta = 2\varepsilon$) is adversarially
+tight and becomes the dominant power cost at coarse $Q$. Expanded treatment in
+Appendix~\ref{app:limitations}.
 
-  \item \textbf{What the Irregular incident illustrates:} shared infrastructure
-  is a latent co-failure source; the monitor would have fired earlier than the
-  disclosed detection.
-
-  \item \textbf{Limitations} (integrate or replace as appropriate):
-  \begin{itemize}
-    \item $\gamma=0.05$ regime not reachable at 0.80 power within $Q\le80$,
-    $N=2000$ --- longer streams or adaptive $\delta$ needed.
-    \item Cross-item pairing requires a derangement schedule; stream must be long
-    enough to populate $Q$ strata per pair.
-    \item Currently demonstrated for $m=2$ judges; extension to $m>2$ via pairwise
-    aggregation is natural but not proven here.
-    \item Co-validity condition (Ming et al.\ \citep{ming2603} Def 3.1) is moot
-    for our anytime argument but would need case-by-case checking for any
-    batch-merge extension.
-  \end{itemize}
-
-  \item \textbf{Future work:} smoothness-adaptive $\delta$ (option b from the
-  \S\ref{sec:or} open question); extension to $m>2$; integration with the
-  co-validity combiner once the sequential condition is verified.
-\end{itemize}
+\paragraph{Future work.}
+Three directions follow directly. (i)~\textbf{Adaptive $\delta$}: replacing the
+adversarial worst-case with a smoothness-adaptive bound that shrinks when
+within-stratum marginal variation is demonstrably small (validity requires a
+separate argument, deferred here). (ii)~\textbf{$m>2$}: extending pairwise
+results to whole-panel aggregate power and error control.
+(iii)~\textbf{Byzantine-fault application}: OR/Yule's Q framing applied to
+OpenReview-style panels where judge identities are hidden and marginals are
+genuinely unknown.
 
 \subsection*{Related Work}
 \label{sec:related}
