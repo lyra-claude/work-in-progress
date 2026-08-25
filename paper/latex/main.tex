@@ -97,7 +97,7 @@ This identity unifies N-version reliability \citep{knight1986,brilliant1990},
 the ecological portfolio effect \citep{littlewood1987}, and the one-factor
 Vasicek/Gaussian copula in credit risk. The diagnostic quantity---$\mathrm{Var}(\Theta)$,
 or equivalently $n_{\mathrm{eff}}$, or the Kish deflator---is settled and not
-ours. We concede this entirely.
+ours. We concede this entirely.\footnote{$n_{\mathrm{eff}} = 2.18$ is a mean design effect; the effective size for vote-threshold (exceedance) decisions may differ \citep{noonan2608}.}
 
 What is not settled is the monitor. Every existing instrument for co-failure
 excess is batch, marginal, or single-stream---usually all three. Han \citep{han2607}
@@ -303,7 +303,7 @@ Appendix~\ref{app:qsweep}).
 Three distinct convex objects should not be conflated. The
 \textbf{$\lambda$-mixture} (here) hedges over $\gamma$ within the e-process. The
 \textbf{stratum-weight mixture} (Appendix~\ref{app:realdata}) re-weights
-stratum-level estimators by item count---a separate object, distinct in role from
+stratum-level estimators by item count within the same item-stream filtration---no per-stratum clocks, no adjuster, no log cost \citep{choeRamdas2402}---a separate object, distinct in role from
 the anytime betting hedge. The \textbf{SKCI CME baseline}~\citep{he2606} is a
 third convex object from the related-work table; it is not used in our
 construction.\footnote{Ming et al.~\citep{ming2603}'s demi-supermartingale
