@@ -97,7 +97,7 @@ This identity unifies N-version reliability \citep{knight1986,brilliant1990},
 the ecological portfolio effect \citep{littlewood1987}, and the one-factor
 Vasicek/Gaussian copula in credit risk. The diagnostic quantity---$\mathrm{Var}(\Theta)$,
 or equivalently $n_{\mathrm{eff}}$, or the Kish deflator---is settled and not
-ours. We concede this entirely.\footnote{$n_{\mathrm{eff}} = 2.18$ is a mean design effect; the effective size for vote-threshold (exceedance) decisions may differ \citep{noonan2608}.}
+ours. We concede this entirely.
 
 What is not settled is the monitor. Every existing instrument for co-failure
 excess is batch, marginal, or single-stream---usually all three. Han \citep{han2607}
@@ -503,6 +503,11 @@ related-work table sits in all three.
   \item \textbf{Derangement schedule.} Cross-item pairing requires an item not
   yet in the same-item estimate; this is easy to arrange in streaming settings
   but requires care in finite-horizon retrospective analysis.
+  \item \textbf{Mean vs.\ exceedance design effect.} $n_{\mathrm{eff}} = 2.18$
+  (Kohli~\citep{kohli2605}) is a mean design effect; the effective size for
+  vote-threshold (exceedance) decisions may differ \citep{noonan2608}.
+  Our monitoring target is the mean co-failure rate, so the mean figure is
+  the appropriate object here.
 \end{enumerate}
 
 \end{document}
