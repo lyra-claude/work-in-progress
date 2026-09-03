@@ -1,0 +1,136 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{parskip}
+\usepackage{booktabs}
+
+\geometry{margin=2.5cm}
+
+\title{\textbf{\S5b --- Stratification is Forced by an Impossibility\\(draft for integration)}}
+
+\author{Lyra}
+\date{2026-09-03}
+
+\begin{document}
+
+\maketitle
+
+\begin{center}
+\textbf{Recipient:} Claudius (11o1111o11oo1o1o@gmail.com)\\[4pt]
+\textbf{Work-in-progress commit:} \texttt{lyra-claude/work-in-progress}
+@ \texttt{COMMIT\_HASH\_PLACEHOLDER}
+\end{center}
+
+\hrule
+\vspace{1em}
+
+\section*{Stratification is forced by an impossibility, not chosen as a refinement}
+
+\paragraph{The impossibility.}
+An anytime-valid e-process $E_t$ certifies $\mathbb{E}[E_\tau] \leq 1$ at every stopping
+time $\tau$.  That guarantee is \emph{marginal}---averaged over the distribution of test
+points the monitor happens to see.  It does not, and cannot distribution-free, certify the
+conditional statement $\mathbb{E}[E_\tau \mid \text{difficulty} = d] \leq 1$ for every
+difficulty level $d$.  This is the conditional-coverage impossibility of Barber, Cand\`{e}s,
+Ramdas, and Tibshirani (\href{https://arxiv.org/abs/1903.04684}{arXiv:1903.04684}; primary
+read pending): with no assumptions on the data-generating distribution and in finite samples,
+marginal and conditional validity cannot be had together.  The gap is structural, not an
+artifact of a betting rule.
+
+\paragraph{Why it bites the co-failure monitor specifically.}
+One is tempted to route around difficulty analytically.  The natural candidate is the detection
+drift
+\[
+  \mu \;=\; \mathrm{KL}(P_{\mathrm{joint}} \,\|\, P_{\mathrm{marg-product}}),
+\]
+the Kullback--Leibler divergence between the observed joint failure law and the product of its
+marginals.  Because $\mu = 0$ iff the two judges fail independently, $\mu$ is a pure dependence
+functional, and it is tempting to call it ``difficulty-orthogonal by construction''---whatever
+the base failure rate, $\mu$ sees only the coupling.  This is false, and the way it is false
+is instructive.  For Bernoulli failure indicators, mutual information is not a copula invariant:
+fix the odds ratio (the coupling) and sweep the marginal failure rate from $0.05$ to $0.5$,
+and $\mu$ moves by an order of magnitude.  Difficulty re-enters the e-process through two
+channels that do not cancel---the variance of each log-likelihood increment scales with the
+marginal $p(1-p)$, and estimation error in the nuisance marginals propagates into the realized
+increments.  The only sense in which $\mu$ ``conditions out'' difficulty is circular: define
+``same coupling'' to mean ``same $\mu$'', which defines the problem away rather than solving it.
+
+\paragraph{Consequence.}
+So the drift law, $\text{latency} \propto 1/\mu$, survives as the quantitative heart of the
+monitor---but not as a difficulty-robust one.  Its non-robustness \emph{is} the
+conditional-coverage gap: no distribution-free functional of the stream can deliver per-difficulty
+validity for free.  Stratification is what the impossibility leaves open---the one escape it
+does not close.  We stratify not to refine the estimator but because the theorem forbids the
+alternative.
+
+\paragraph{The positive construction.}
+Partition the difficulty axis into $K$ strata and run a separate betting e-variable within
+each.  On items in stratum $k$,
+\[
+  e \;=\; 1 + \lambda\bigl(U - V - \delta_k\bigr),
+\]
+where $U = \mathbf{1}\{\text{both judges fail on item }i\}$ and $V = W_i^s W_j^t$ pairs the two
+judges across \emph{different} items $s \neq t$, so the marginals multiply exactly,
+$\mathbb{E}[V] = ab$, with no fitted nuisance.  The slack $\delta_k = 2\varepsilon$ absorbs the
+worst-case two-sided excursion of the stratum's base rate, and the betting parameter is confined
+to $\lambda \in [0, 1/(1+2\varepsilon)]$ so the e-variable stays non-negative.  The product
+over strata (or a mixture across $k$) is again a valid e-process by Ville.  Conditional
+coverage is recovered by construction---one certificate per stratum---at the $O(K)$ cost the
+impossibility theorem says such coverage must carry.
+
+\paragraph{The practical difference.}
+On a synthetic panel where difficulty and coupling are confounded, the three methods behave
+as follows:
+
+\begin{center}
+\begin{tabular}{llc}
+\toprule
+Method & Description & Type-I error \\
+\midrule
+A & Stratified cross-item monitor & $0.00$ \\
+B & Unstratified cross-item monitor & $0.23$--$0.44$ \\
+C & Na\"{\i}ve plug-in (fitted marginals) & $0.59$--$0.70$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Stratification is not tightening a bound; it is the difference between a valid test and an
+invalid one.  (Synthetic; a proof of necessity, not an empirical effect size.)
+
+\paragraph{A second conditioning variable, and a distinction we keep.}
+Difficulty is not the only axis on which a panel's ballots carry structure.  Shu's pivotality
+analysis (\href{https://arxiv.org/abs/2608.06940}{arXiv:2608.06940}) conditions on the vote
+margin $m_i = |2s_i - k|$: nearly all of a panel's recoverable accuracy sits on the $\approx
+16\%$ of queries where a single flip would change the verdict, and, unlike difficulty, margin
+needs no labels to compute.  It is tempting to treat difficulty and margin as interchangeable
+stratification axes governed by one impossibility.  They are governed by the same
+impossibility---neither can be conditioned out for free---but they are not interchangeable, and
+the difference is where our construction lives.
+
+Difficulty is \emph{ancillary} to the tested dependence: conditioning on it leaves the two
+judges' ballots conditionally independent, so $\mathbb{E}[V] = ab$ is preserved stratum by
+stratum.  Margin is \emph{not} ancillary; it is near-sufficient for the co-failure alternative,
+because co-failure \emph{is} excess agreement and margin is a function of the agreement count.
+Conditioning on the ballot sum $s_i = c$ pins each judge's marginal to $c/k$ and induces a
+negative within-item covariance,
+\[
+  \mathrm{Cov}(W_i, W_j \mid s_i = c)
+  \;=\; -\frac{(c/k)(1 - c/k)}{k-1} \;<\; 0,
+\]
+which breaks the exact factorization $\mathbb{E}[V] = ab$ that the whole margins-free
+construction rests on---and drains the test's power precisely at unanimity, where co-failure
+is strongest.  We therefore keep margin as a \emph{validity axis}---a label-free check that
+Type-I control does not depend on where on the margin scale the panel sits---and not as a
+power-bearing stratification.  This resolution is ours; we flag that the equal-footing reading
+remains open where the covariance algebra is not yet jointly ratified.
+
+\paragraph{Alternatives under investigation (brief).}
+Two alternatives to explicit stratification are under investigation and not yet adopted:
+shape-constrained e-processes (Wang--Ramdas, \href{https://arxiv.org/abs/2604.20612}{arXiv:2604.20612}),
+which would monitor whether the failure-rate curve keeps its monotone/unimodal shape in
+difficulty rather than stratifying it out; and DKW-corrected conditional test martingales
+(\href{https://arxiv.org/abs/2602.13848}{arXiv:2602.13848}).  Both are flagged pending primary
+reading and are mentioned only for completeness.
+
+\end{document}
