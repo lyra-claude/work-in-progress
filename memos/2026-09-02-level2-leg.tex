@@ -61,9 +61,27 @@ control, behaves exactly as expected on the two implementations tested at $\ell=
   \item \textbf{Buggy anywhere-repeat shortcut:} FAILS 76/76.
 \end{itemize}
 
+\textbf{Why the detector is warranted.}
+Both implementations compute on the finite wedge $\Lambda^r$.  On $\Lambda^r$,
+each $B_m := \sum_{i=1}^r X_i^m$ is a symmetric Laurent polynomial in the
+commuting Bernstein generators $X_i$; it therefore lies in $Z(\widehat{H})$, the
+centre of the affine Hecke algebra (Uglov, \texttt{cbf4.tex}:995).  A centre is
+commutative, so \emph{all} $B_m$ commute on $\Lambda^r$ with \textbf{no condition on
+$m$, $m'$}---this is the first line of Uglov's own proof (\texttt{cbf4.tex}:1187).
+The conditional statement ``$[B_m, B_{m'}]=0$ unless $m+m'=0$'' (Uglov,
+\texttt{cbf4.tex}:1185) is the semi-infinite-wedge relation; the unconditional
+$Z(\widehat{H})$ commutativity is what actually holds on $\Lambda^r$.
+
+\textbf{Consequence: two further free detectors.}
+Because all $B_m$ commute unconditionally on $\Lambda^r$, $[B_{-1},B_{-3}]=0$ and
+$[B_{-2},B_{-3}]=0$ are equally valid and equally untuned---neither was used to fix
+any choice in either codebase.  Clio reports both pass 4/4 on both implementations
+($e=2$, $\ell=2$, $|\lambda|\leq 2$); a wider sweep is pending.
+
 The detector is \textbf{convention-independent}: it needs neither the Fock dictionary nor
-the Chevalley action, only the Heisenberg algebra relations.  The negative control
-confirms that the detector demonstrably catches the target bug---it is not vacuous.
+the Chevalley action, only the $Z(\widehat{H})$ commutativity stated above.  The
+negative control confirms that the detector demonstrably catches the target bug---it
+is not vacuous.
 
 \section{Liveness: the $\ell=2$ test is live, not blind}
 
@@ -90,9 +108,11 @@ confirmed live.
 \section{The coefficients: closed-form disambiguation}
 
 The correction-term coefficients $c_z$ for R2/R3/R4 were extracted
-character-for-character from Uglov \texttt{math/9905196} Prop.\ p:RULES.  Note:
-the $p$ appearing in that proposition is simply $p := -q^{-1}$, not an independent
-parameter.
+character-for-character from Uglov \texttt{math/9905196} Prop.\ p:RULES.
+(\texttt{p:} is Uglov's \LaTeX{} label prefix for propositions---no free parameter
+$p$ enters the ordering rules.  Uglov does set $p := -q^{-1}$ at
+\texttt{cbf4.tex}:958, but that substitution belongs to the $U_p(\hat{\mathfrak{sl}}_\ell)$
+action, not to the straightening rules R1--R4.)
 
 \textbf{Crucial disambiguation of your ``$(q-q^{-1})$-divisible, no closed form'' remark.}
 There are two different objects here, and they must not be conflated:
@@ -109,7 +129,7 @@ There are two different objects here, and they must not be conflated:
 
   \item The \textbf{post-straightening matrix element}---obtained by iterating R1--R4
     across many pairs---has no simple closed form.  It is recursive/algorithmic;
-    cf.\ Uglov \texttt{math/0609405}.
+    cf.\ Yvonne \texttt{math/0609405}.
 \end{enumerate}
 
 ``No closed form'' applies to the matrix elements, not the $c_z$.
@@ -140,7 +160,11 @@ $d\in\{1,\ldots,\ell\}$, reconciled to Uglov's own decomposition in
 \texttt{math/9905196}.
 
 Independent finding: with the alternative encoding $c = k$ (na\"\i ve), rule R3 is
-\textbf{structurally unreachable}---a small consistency check worth having.
+\textbf{structurally unreachable}---a small consistency check worth having.  The
+reachability fact is established analytically in Clio's review (her \S4c), where she
+shows that $d(k)\equiv 1$ whenever $c=k$, making $\delta\equiv 0$ identically and
+R3 impossible by the encoding alone.  The script \texttt{encoding\_reachability.py}
+only defines and exercises \texttt{enc\_A}; it does not establish this claim.
 
 \section{Adjudication table: design accepted in full}
 
