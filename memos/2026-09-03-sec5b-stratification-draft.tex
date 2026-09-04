@@ -32,11 +32,15 @@ An anytime-valid e-process $E_t$ certifies $\mathbb{E}[E_\tau] \leq 1$ at every 
 time $\tau$.  That guarantee is \emph{marginal}---averaged over the distribution of test
 points the monitor happens to see.  It does not, and cannot distribution-free, certify the
 conditional statement $\mathbb{E}[E_\tau \mid \text{difficulty} = d] \leq 1$ for every
-difficulty level $d$.  This is the conditional-coverage impossibility of Barber, Cand\`{e}s,
-Ramdas, and Tibshirani (\href{https://arxiv.org/abs/1903.04684}{arXiv:1903.04684}; primary
-read pending): with no assumptions on the data-generating distribution and in finite samples,
-marginal and conditional validity cannot be had together.  The gap is structural, not an
+difficulty level $d$.  This is structurally analogous to the conditional-coverage impossibility
+of Barber, Cand\`{e}s, Ramdas, and Tibshirani
+(\href{https://arxiv.org/abs/1903.04684}{arXiv:1903.04684})%
+\footnote{That result is a conformal-prediction theorem, not an e-process result; we invoke it
+as a structural analogy only.}%
+: by an analogous argument, with no assumptions on the data-generating distribution and in finite
+samples, marginal and conditional validity cannot be had together.  The gap is structural, not an
 artifact of a betting rule.
+% TODO: Claudius to primary-read 1903.04684 before finalizing this cite (conformal result, analogy only).
 
 \paragraph{Why it bites the co-failure monitor specifically.}
 One is tempted to route around difficulty analytically.  The natural candidate is the detection
@@ -47,14 +51,15 @@ drift
 the Kullback--Leibler divergence between the observed joint failure law and the product of its
 marginals.  Because $\mu = 0$ iff the two judges fail independently, $\mu$ is a pure dependence
 functional, and it is tempting to call it ``difficulty-orthogonal by construction''---whatever
-the base failure rate, $\mu$ sees only the coupling.  This is false, and the way it is false
-is instructive.  For Bernoulli failure indicators, mutual information is not a copula invariant:
+the base failure rate, $\mu$ sees only the coupling.  This is false.  Difficulty re-enters the
+e-process through two channels that do not cancel---the variance of each log-likelihood increment
+scales with the marginal $p(1-p)$, and estimation error in the nuisance marginals propagates into
+the realized increments---so for Bernoulli failure indicators, mutual information is \emph{not} a
+copula invariant, and difficulty cannot be conditioned out for free.  The illustration is direct:
 fix the odds ratio (the coupling) and sweep the marginal failure rate from $0.05$ to $0.5$,
-and $\mu$ moves by an order of magnitude.  Difficulty re-enters the e-process through two
-channels that do not cancel---the variance of each log-likelihood increment scales with the
-marginal $p(1-p)$, and estimation error in the nuisance marginals propagates into the realized
-increments.  The only sense in which $\mu$ ``conditions out'' difficulty is circular: define
-``same coupling'' to mean ``same $\mu$'', which defines the problem away rather than solving it.
+and $\mu$ moves by an order of magnitude.  The only sense in which $\mu$ ``conditions out'' difficulty
+is circular: define ``same coupling'' to mean ``same $\mu$'', which defines the problem away rather
+than solving it.
 
 \paragraph{Consequence.}
 So the drift law, $\text{latency} \propto 1/\mu$, survives as the quantitative heart of the
@@ -120,9 +125,12 @@ negative within-item covariance,
 \]
 which breaks the exact factorization $\mathbb{E}[V] = ab$ that the whole margins-free
 construction rests on---and drains the test's power precisely at unanimity, where co-failure
-is strongest.  We therefore keep margin as a \emph{validity axis}---a label-free check that
-Type-I control does not depend on where on the margin scale the panel sits---and not as a
-power-bearing stratification.  This resolution is ours; we flag that the equal-footing reading
+is strongest.  The distinction is that difficulty is \emph{exogenous} to the ballots---so we
+stratify on it---whereas margin is \emph{endogenous}, a deterministic function of the very
+agreement count the test interrogates.  We therefore keep margin strictly as a \emph{post-hoc
+validity diagnostic}---a label-free check that Type-I control does not depend on where on the
+margin scale the panel sits---and \emph{not} as a stratification variable co-equal with
+difficulty.  This resolution is ours; we flag that the equal-footing reading
 remains open where the covariance algebra is not yet jointly ratified.
 
 \paragraph{Alternatives under investigation (brief).}
