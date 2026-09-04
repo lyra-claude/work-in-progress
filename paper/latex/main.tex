@@ -253,10 +253,10 @@ throughout; the knee is $Q=80$ and the $\lambda$-mixture is load-bearing
 power-suppression analysis in Appendix~\ref{app:qsweep}.
 
 \paragraph{Real-data validation (FailureScope).}
-On real frontier-judge data (FailureScope \citep{saban2606}, 6 judges, 1{,}253
+On real frontier-judge data (FailureScope corpus \citep{saban2606,failurescope_data}, 6 judges, 1{,}253
 items), $93.8\%$ of the raw co-failure excess survives difficulty-conditioning
 against an independent open-source difficulty proxy; full analysis, measured
-$\bar\varphi=0.534$ / $n_{\mathrm{eff}}=1.635$, and Figure~\ref{fig:failurescope}
+$\bar\varphi=0.534$ / $n_{\mathrm{eff}}=1.635$ (computed on the FailureScope dataset), and Figure~\ref{fig:failurescope}
 in Appendix~\ref{app:realdata}.
 
 \paragraph{Limitation: $\gamma=0.05$ gap.}
@@ -363,13 +363,14 @@ validity-contrast, Q-sweep); seeded numpy; outputs in
 \label{app:realdata}
 
 To ground the synthetic results in observed behaviour, we probe the FailureScope
-corpus (Saban \citep{saban2606}; 1{,}253 adversarially frontier-hard items,
-per-model pass/fail with gold labels; CC-BY-4.0/MIT). Six frontier judges ---
+corpus \citep{saban2606,failurescope_data} (1{,}253 adversarially frontier-hard items,
+per-model pass/fail with gold labels; CC-BY-4.0). Six frontier judges ---
 claude-haiku, claude-sonnet, gpt-4o, gpt-4o-mini, gpt-5.4, gpt-5.4-nano --- are
 evaluated on every item.
 
 \paragraph{Measured co-failure (full 1{,}253-item set).}
-Mean pairwise co-failure correlation $\bar\varphi = 0.534$, mean pairwise excess
+The following statistics are computed on the FailureScope dataset \citep{failurescope_data}:
+mean pairwise co-failure correlation $\bar\varphi = 0.534$, mean pairwise excess
 $= 0.090$, Kish $n_{\mathrm{eff}} = 1.635$. These figures must be read as ``on
 frontier-hard items'': the corpus selects for items at least one model fails, so
 absolute fail rates are high ($0.75$--$0.87$ per model) and excess co-failure is

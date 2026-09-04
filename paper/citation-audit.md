@@ -14,6 +14,7 @@ Output: `/home/lyra/projects/evalue-sheaf/references.bib`
 | 2604.07650  | `kuai2604`      | A Statistical Framework for Auditing Behavioral Dependence and Induced Bias in LLM Judges                                       | YES       |
 | 2605.29800  | `kohli2605`     | Nine Judges, Two Effective Votes: Correlated Errors Undermine LLM Evaluation Panels                                             | YES       |
 | 2606.09878  | `saban2606`     | FailureScope: Cross-Regime Behavioral Diagnosis of Language Model Weaknesses                                                     | YES       |
+| Zenodo DOI 10.5281/zenodo.20034013 | `failurescope_data` | FailureScope Single-Turn Corpus (NeurIPS 2026 E&D) — DATASET record | ADDED 2026-09-04 |
 | 2606.18993  | `he2606`        | Sequential Kernel-based Conditional Independence Testing via Adaptive Betting                                                    | YES       |
 | 2606.20820  | `celeus2606`    | CELEUS: Certifiable and Efficient LLM Evaluation via E-Processes                                                                 | YES       |
 | 2607.13918  | `han2607`       | Partially Correlated Verifier Cascades in LLM Harnesses: Concave Log-Odds, Polynomial Reliability, and Blind-Spot Ceilings      | YES       |
@@ -34,6 +35,11 @@ All 12 required IDs are present and verified from arXiv API on 2026-08-24.
 - These are **completely distinct papers** with different authors, topics, and arXiv IDs.
 - The scaffold had mislabelled `he2607` as SKCI. The fix was applied in the 2026-08-22 bib repair.
 - The bib contains **separate entries** for both. Do NOT conflate.
+
+### FailureScope arXiv vs. Dataset — RESOLVED 2026-09-04
+- `saban2606` (2606.09878): the **arXiv paper** describing the FailureScope method/corpus construction. Cited for corpus provenance.
+- `failurescope_data` (Zenodo DOI 10.5281/zenodo.20034013): the **dataset record**. This is the correct cite for the computed numbers φ̄=0.534, n_eff=1.635 — these are our own computations on the dataset, NOT numbers reported in the arXiv paper.
+- The arXiv paper contains NO such numeric φ̄/n_eff statistics. Citing saban2606 for those numbers was a misbound citation; corrected this session.
 
 ### Kohli Solo Author — RESOLVED
 - `kohli2605` (2605.29800): **SOLO AUTHOR — Guneet Kohli only.**
