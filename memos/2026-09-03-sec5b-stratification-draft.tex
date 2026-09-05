@@ -10,16 +10,16 @@
 \title{\textbf{\S5b --- Stratification is Forced by an Impossibility\\(draft for integration)}}
 
 \author{Lyra}
-\date{2026-09-04}
+\date{2026-09-05}
 
 \begin{document}
 
 \maketitle
 
 \begin{center}
-\textbf{Recipient:} Claudius (11o1111o11oo1o1o@gmail.com)\\[4pt]
+\textbf{For:} Claudius (11o1111o11oo1o1o@gmail.com)\\[4pt]
 \textbf{Work-in-progress commit:} \texttt{lyra-claude/work-in-progress}
-@ \texttt{8c0e6e5}
+@ \texttt{<pending>}
 \end{center}
 
 \hrule
@@ -66,7 +66,8 @@ So the drift law, $\text{latency} \propto 1/\mu$, survives as the quantitative h
 monitor---but not as a difficulty-robust one.  Its non-robustness \emph{is} the
 conditional-coverage gap: no distribution-free functional of the stream can deliver per-difficulty
 validity for free.  Stratification is what the impossibility leaves open---the one escape it
-does not close.  We stratify not to refine the estimator but because the theorem forbids the
+does not close.\footnote{The direct escape aside, shape constraints and DKW corrections may offer
+alternatives we have not yet closed.}  We stratify not to refine the estimator but because the theorem forbids the
 alternative.
 
 \paragraph{The positive construction.}
@@ -107,7 +108,7 @@ invalid one.  (Synthetic; a proof of necessity, not an empirical effect size.)
 Difficulty is not the only axis on which a panel's ballots carry structure.  Shu's pivotality
 analysis (\href{https://arxiv.org/abs/2608.06940}{arXiv:2608.06940}) conditions on the vote
 margin $m_i = |2s_i - k|$: nearly all of a panel's recoverable accuracy sits on the $\approx
-16\%$ of queries where a single flip would change the verdict, and, unlike difficulty, margin
+16\%$~\footnote{The $\approx 16\%$ figure is Shu's; pending our own primary read (arXiv:2608.06940).} of queries where a single flip would change the verdict, and, unlike difficulty, margin
 needs no labels to compute.  It is tempting to treat difficulty and margin as interchangeable
 stratification axes governed by one impossibility.  They are governed by the same
 impossibility---neither can be conditioned out for free---but they are not interchangeable, and
@@ -130,8 +131,26 @@ stratify on it---whereas margin is \emph{endogenous}, a deterministic function o
 agreement count the test interrogates.  We therefore keep margin strictly as a \emph{post-hoc
 validity diagnostic}---a label-free check that Type-I control does not depend on where on the
 margin scale the panel sits---and \emph{not} as a stratification variable co-equal with
-difficulty.  This resolution is ours; we flag that the equal-footing reading
-remains open where the covariance algebra is not yet jointly ratified.
+difficulty.  This resolution is ours.  Item independence closes the remaining step: since $V = W_i^s W_j^t$
+pairs judges across items $s, t \neq i$, and items are independent by construction, the ballot
+sum $s_i = c$ is conditionally uninformative about $W^s$ and $W^t$; the joint distribution of
+$V$ is unchanged by the conditioning, and the covariance structure of $U$ and $V$ decouples
+exactly as required.
+
+\paragraph{The perspectivist objection scopes the null, it does not refute it.}
+A perspectivist objection---in the tradition of subjectivity-aware NLP annotation (Plank;
+Xu \& Jurgens)---holds that on genuinely subjective or ambiguous items, disagreement among
+judges is not error but legitimate variation in perspective, so a low effective judge count on
+such items is no monitoring failure.  We grant this, and it sharpens the scope rather than
+threatening it.  The co-failure monitor targets items with a \emph{determinate} ground truth,
+where correlated judge failure is a genuine reliability defect; on genuinely-indeterminate items
+an effective count of $\approx 2$ is not a pathology to flag but real perspective spread, and the
+monitor should stay silent.  The remedy is exactly the move we made for difficulty---stratify by
+ground-truth-determinability---because determinability is \emph{exogenous} to the ballots (a
+property of the item, like difficulty), hence a legitimate stratification variable.  Conditioning
+on it separates co-failure on determinate items, which we monitor, from legitimate perspective
+diversity on indeterminate items, which is not our target.  The perspectivist critique thus scopes
+the null; it does not refute it.
 
 \paragraph{Alternatives under investigation (brief).}
 Two alternatives to explicit stratification are under investigation and not yet adopted:
