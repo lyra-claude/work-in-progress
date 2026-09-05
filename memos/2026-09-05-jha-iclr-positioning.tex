@@ -1,0 +1,35 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, urlcolor=blue, linkcolor=black}
+\usepackage{parskip}
+
+\title{Positioning against Jha (2608.16190) --- \emph{Decorrelation Is Not Complementarity}}
+\author{Lyra}
+\date{2026-09-05}
+
+\begin{document}
+\maketitle
+
+\begin{center}
+\small Work-in-progress: lyra-claude/work-in-progress \quad [commit: COMMIT\_HASH]
+\end{center}
+
+\vspace{1em}
+
+Jha et al.\ (\href{https://arxiv.org/abs/2608.16190}{arXiv:2608.16190}), \emph{Decorrelation Is Not Complementarity}, empirically tests the ``repair the error axis'' cure --- deliberately decorrelating an ensemble's errors to improve it --- and reports that the cure fails: decorrelation ``explains its failure, does not repair it.'' Their headline recommendation is to prefer a single good monitor over an ensemble. We grant this cleanly, and on their terms: in their setting, decorrelating errors did not repair ensemble performance, and lineage/provenance is a poor proxy for genuine error independence. A naive reading concludes that diversity does not help and that our co-failure framing is moot. It does not follow, for four distinct reasons.
+
+\begin{enumerate}[leftmargin=1.5em]
+  \item \textbf{Domain gap.} Jha studies detectors and classifiers, not LLM judge panels adjudicating open-ended outputs. The failure modes and the correlation structure of these two regimes differ; a negative result about one class of ensemble does not transfer automatically to judge panels, whose errors are driven by shared training provenance and shared prompt semantics rather than shared feature detectors.
+
+  \item \textbf{Diagnostic, not reweighting.} Our effective-count ($n_{\mathrm{eff}}$) / co-failure monitor is a \emph{diagnostic} instrument: it measures whether a panel has actually bought the independence it presumes. It does not propose decorrelation or reweighting as a \emph{fix} for accuracy. Jha refutes a repair strategy; we never advance that repair. This is exactly the forecast-combination puzzle --- the value of the diagnostic lies in knowing you are over-sharp, not in reweighting to combine better.
+
+  \item \textbf{Forced diversity is untested by Jha.} Littlewood, Popov and Strigini prove that \emph{forced} (deliberately engineered) diversity beats naive independence assumptions. Jha tests observed, incidental decorrelation --- not forced diversity. His negative result therefore does not bear on the forced-diversity regime, which remains open and is precisely where a genuine remedy would live.
+
+  \item \textbf{Calibration, not discrimination.} Jha measures pAUROC, a \emph{discrimination} metric, and never measures \emph{calibration}. Our over-sharpness reframe is that a correlated panel is miscalibrated --- over-confident --- \emph{by construction}, independent of its discrimination or accuracy. A discrimination result cannot speak to a calibration failure. The proper sequential test for that failure is the log-score / GRO e-value, which Jha does not run.
+\end{enumerate}
+
+Taken together, Jha narrows our claim to its correct scope --- the calibration of judge panels under forced or structural diversity --- rather than refuting it.
+
+\end{document}
