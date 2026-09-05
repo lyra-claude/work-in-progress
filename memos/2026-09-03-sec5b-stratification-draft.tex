@@ -77,7 +77,8 @@ each.  On items in stratum $k$,
   e \;=\; 1 + \lambda\bigl(U - V - \delta_k\bigr),
 \]
 where $U = \mathbf{1}\{\text{both judges fail on item }i\}$ and $V = W_i^s W_j^t$ pairs the two
-judges across \emph{different} items $s \neq t$, so the marginals multiply exactly,
+judges across \emph{different} items $s \neq t$ drawn from items other than the current item,
+$s, t \neq i$, so the marginals multiply exactly,
 $\mathbb{E}[V] = ab$, with no fitted nuisance.  The slack $\delta_k = 2\varepsilon$ absorbs the
 worst-case two-sided excursion of the stratum's base rate, and the betting parameter is confined
 to $\lambda \in [0, 1/(1+2\varepsilon)]$ so the e-variable stays non-negative.  The product
@@ -141,13 +142,16 @@ exactly as required.
 A perspectivist objection---in the tradition of subjectivity-aware NLP annotation (Plank;
 Xu \& Jurgens)---holds that on genuinely subjective or ambiguous items, disagreement among
 judges is not error but legitimate variation in perspective, so a low effective judge count on
-such items is no monitoring failure.  We grant this, and it sharpens the scope rather than
-threatening it.  The co-failure monitor targets items with a \emph{determinate} ground truth,
+such items is no monitoring failure.  We grant this, and it sharpens the null's scope rather than
+threatening the monitor's validity.  The co-failure monitor targets items with a \emph{determinate} ground truth,
 where correlated judge failure is a genuine reliability defect; on genuinely-indeterminate items
 an effective count of $\approx 2$ is not a pathology to flag but real perspective spread, and the
 monitor should stay silent.  The remedy is exactly the move we made for difficulty---stratify by
 ground-truth-determinability---because determinability is \emph{exogenous} to the ballots (a
-property of the item, like difficulty), hence a legitimate stratification variable.  Conditioning
+property of the item, like difficulty), hence a legitimate stratification variable.  We concede that
+determinability, like difficulty, is not directly observed and must be supplied by external
+(meta-)annotation, which places it on the same exogenous footing rather than making it freely
+readable off the stream.  Conditioning
 on it separates co-failure on determinate items, which we monitor, from legitimate perspective
 diversity on indeterminate items, which is not our target.  The perspectivist critique thus scopes
 the null; it does not refute it.
