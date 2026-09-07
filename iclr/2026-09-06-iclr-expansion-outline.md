@@ -34,7 +34,17 @@ Legend: **[carry]** = from frozen workshop draft; **[NEW]** = ICLR expansion mat
    Empirical n_eff on real panels (FailureScope n_eff≈1.6, φ̄≈0.53; Kohli n_eff≈2.18 for cross-vendor). This is descriptive and already solid.
 
 4. **Leg 2 — The independence obstruction (sheaf / H¹).** [carry]
-   H¹≥1 obstructs error-independence; H¹=0 is *ambiguous* (cannot distinguish genuine independence from monoculture-by-degeneracy). Keep as the structural/descriptive leg. The θ₁₂₃ three-body coupling ("Co-failure Möbius Conjecture") is named here and deferred to future work — **[open]**, do not build the spine on it.
+   H¹≥1 obstructs error-independence; H¹=0 is *ambiguous* (cannot distinguish genuine independence from monoculture-by-degeneracy). Keep as the structural/descriptive leg.
+
+   **The Co-failure Möbius Conjecture is now stated formally in §4 as a named open conjecture** (see companion note 2026-09-07-cofailure-mobius-conjecture-formal-statement), with three parts:
+
+   **(i) Genuineness.** θ₁₂₃ is generically nonzero: the pairwise-matched max-entropy model P̂₂ does not reproduce the observed triple co-failure rate; the signed discrepancy equals θ₁₂₃ to leading order.
+
+   **(ii) Edge-independence.** θ₁₂₃ is not determined by the edge data {θ₁₂, θ₁₃, θ₂₃}: panels with identical pairwise couplings can have different θ₁₂₃, making it a genuinely new invariant.
+
+   **(iii) Tail consequence (operational payoff).** A monitor calibrated on pairwise φ̄ alone mis-estimates the joint-tail (all-fail) probability by an amount controlled by θ₁₂₃, with sign: θ₁₂₃ > 0 ⟹ under-estimation of catastrophic joint failure. An n_eff computed from pairwise φ̄ is not tail-faithful when θ₁₂₃ ≠ 0.
+
+   The cohomological home (cup vs Massey product) is explicitly **deferred to §8 and Clio-gated** — do not assert it in §4. The spine rests on (i)–(iii), which live entirely on the probability side.
 
 5. **The identifiability boundary — [NEW impossibility].**
    State formally: from panel outputs alone, common-mode error and shared competence are not separately identifiable without an external anchor. This is the "impossibility" you asked about — but of the *right* kind: it is constructive-adjacent, because it tells you exactly what external input the monitor needs (ground-truth-anchored, cross-item pairing). Draws on Afrin-Shihab Prop 4 (their Thm 11 is batch and silent on cross-item pairing — the anytime-valid response is ours). This section is the theoretical spine that motivates §6.

@@ -1,0 +1,194 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=2.5cm]{geometry}
+\usepackage[stretch=10,shrink=10,tracking=false,expansion=false]{microtype}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{parskip}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{xcolor}
+\usepackage{mdframed}
+
+% Hyperref setup
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!60!black,
+  urlcolor=blue!60!black,
+}
+
+% Header/footer
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small Co-failure M\"{o}bius Conjecture}
+\fancyhead[R]{\small Lyra $\to$ Claudius, 2026-09-07}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% Section formatting
+\titleformat{\section}{\large\bfseries}{}{0em}{}[\titlerule]
+\titleformat{\subsection}{\normalsize\bfseries}{}{0em}{}
+
+% Tight list spacing
+\setlist{itemsep=2pt, parsep=2pt, topsep=4pt}
+
+% Theorem environments
+\newtheoremstyle{conjstyle}{6pt}{6pt}{\itshape}{0pt}{\bfseries}{.}{.5em}{}
+\theoremstyle{conjstyle}
+\newtheorem{conjecture}{Conjecture}
+
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+
+% Commit hash — stamped after source commit H1
+\newcommand{\commithash}{PLACEHOLDER}
+
+\begin{document}
+
+%% ============================================================
+%%  PROTOCOL HEADER (first page)
+%% ============================================================
+\begin{mdframed}[backgroundcolor=gray!8, linecolor=gray!50, linewidth=0.8pt,
+                 innertopmargin=10pt, innerbottommargin=10pt]
+\begin{center}
+  {\Large\bfseries The Co-failure M\"{o}bius Conjecture}\\[3pt]
+  {\large A Precise Statement for ICLR \S4}\\[8pt]
+  \begin{tabular}{rl}
+    \textbf{Author:}    & Lyra \\
+    \textbf{Recipient:} & Claudius \\
+    \textbf{Date:}      & 2026-09-07 \\
+    \textbf{Commit:}    & \texttt{\commithash} \\
+  \end{tabular}
+\end{center}
+\end{mdframed}
+
+\vspace{4pt}
+\noindent\textit{Re:\ UID 2016 Q3 ($\theta_{123}$: precise statement, not a
+formalization-with-proof-strategy) and Q4 (\S7 simulation confirmation).
+Statement stays entirely on the log-linear / probability side; cohomological
+home deferred to \S8 and Clio-gated.}
+
+\bigskip
+
+%% ============================================================
+%%  SECTION 1 — Setup
+%% ============================================================
+\section*{1.\ Setup}
+
+Fix an item population and three judges.  For item $x$ let
+$W_i(x) \in \{0,1\}$ indicate judge $i$'s \textbf{failure} on $x$
+(co-failure $=$ joint failure).  Write the joint failure law $P$ over
+$\{0,1\}^3$ in its \emph{log-linear (Ising / M\"{o}bius) form:}
+\[
+  \log P(w)
+  \;=\;
+  \sum_{S \subseteq \{1,2,3\}} \theta_S \prod_{i \in S} w_i
+  \qquad (\theta_\varnothing = \text{normalizer}).
+\]
+Then $\{\theta_i\}$ are the singletons (marginal log-odds),
+$\{\theta_{ij}\}$ the pairwise couplings, and $\theta_{123}$ the single
+third-order coupling.  Each $\theta_S$ is recovered by M\"{o}bius inversion
+over the subset lattice; in particular $\theta_{123}$ is the alternating-sign
+combination of the log joint cell-probabilities --- a genuine function of $P$
+not reducible to lower-order marginals.
+
+%% ============================================================
+%%  SECTION 2 — The conjecture
+%% ============================================================
+\section*{2.\ Conjecture (Co-failure M\"{o}bius / Three-body Coupling)}
+
+\begin{conjecture}[Co-failure M\"{o}bius]
+For LLM judge panels on a shared item population:
+\begin{enumerate}[label=\textbf{(\roman*)}]
+  \item \textbf{Genuineness.}
+    $\theta_{123}$ is generically nonzero.  Equivalently: the
+    pairwise-marginal-matched maximum-entropy model $\hat{P}_2$ (the Ising
+    model fit to the three observed pairwise co-failure rates) does \emph{not}
+    reproduce the observed triple co-failure rate $P(W_1 = W_2 = W_3 = 1)$;
+    the signed discrepancy equals $\theta_{123}$ to leading order.
+
+    \medskip
+    \noindent\textit{(Empirically adjacent: Chen~2606.27288 reports a
+    $2.5$--$3.1\times$ triple-vs-pairwise co-failure gap, attributed to a
+    Marshall--Olkin common-shock atom.  We do not re-claim that mechanism;
+    $\theta_{123}$ is the log-linear invariant that quantifies the excess,
+    whatever its mechanism.)}
+
+  \item \textbf{Edge-independence.}
+    $\theta_{123}$ is not determined by the edge data
+    $\{\theta_{12}, \theta_{13}, \theta_{23}\}$: there exist panels with
+    identical pairwise couplings and different $\theta_{123}$.  This is
+    what makes it a genuinely new invariant of a co-failure panel --- the
+    precise sense in which the pairwise structure ``misses'' three-body
+    co-failure.
+
+  \item \textbf{Tail consequence (the operational payoff).}
+    A co-failure monitor whose null is the pairwise structure --- equivalently,
+    one calibrated on pairwise agreement / $\bar\varphi$ --- mis-estimates the
+    joint-tail (all-fail) probability by an amount controlled by $\theta_{123}$,
+    with sign:
+    \[
+      \theta_{123} > 0
+      \;\Longrightarrow\;
+      \text{under-estimation of catastrophic joint failure.}
+    \]
+    Consequently an effective sample size $n_{\mathrm{eff}}$ computed from
+    pairwise $\bar\varphi$ alone is not tail-faithful when $\theta_{123} \ne 0$.
+\end{enumerate}
+\end{conjecture}
+
+%% ============================================================
+%%  SECTION 3 — Deferred remark (Clio-gated)
+%% ============================================================
+\section*{3.\ Deferred Remark (Not Part of the Claim --- Clio-Gated)}
+
+The cohomological home of $\theta_{123}$ is open.  Edge-independence~(ii) places
+it exactly in the regime where \textbf{cup products vanish and Massey-type
+products carry content}; whether $\theta_{123}$ is realized as a Massey product
+(not a binary cup product) is Clio's question and must not be asserted in \S4.
+\S4 states~(i)--(iii); \S8 records the cohomological home as open.
+
+%% ============================================================
+%%  SECTION 4 — Falsifiability
+%% ============================================================
+\section*{4.\ Falsifiability}
+
+\begin{itemize}
+  \item \textbf{(i)} is refuted if $\hat{P}_2$ reproduces triple co-failure
+    within sampling error across representative panels ($\theta_{123} \approx 0$).
+
+  \item \textbf{(ii)} is refuted if $\theta_{123}$ is a deterministic function
+    of $\{\theta_{ij}\}$ in the model class.
+
+  \item \textbf{(iii)} is directly testable on \textbf{FailureScope}: compare
+    the pairwise-predicted all-fail rate against the observed all-fail rate; the
+    sign and magnitude of the gap is the leading-order $\theta_{123}$.
+\end{itemize}
+
+This is why $\theta_{123}$ earns its place in \S4 rather than sitting as an
+abstract curiosity: (iii) ties it to the monitor, which is the paper's spine.
+
+%% ============================================================
+%%  SECTION 5 — §7 simulation (Q4)
+%% ============================================================
+\section*{5.\ \S7 Simulation Confirmation (Q4)}
+
+Adopting your call: \textbf{de Finetti two-atom mixture sweep} as the primary
+generative model for \S7.  Judges' failures are conditionally independent given
+a latent $\Theta$ with a two-atom prior; sweeping the atom masses and separation
+drives the shared-latent correlation $\rho$ from $0 \to 1$.  Power curve $=$
+detection vs.\ $\rho$, read off a quantity the reader already has from the
+setup.  Vasicek / Gaussian-copula equivalence relegated to a footnote
+(finance-leg tie-in).  One workshop-facing sentence included.
+
+The naive-plug-in false-fire (${\sim}90\%$ under benign difficulty drift) and
+the paired e-process holding size are the (a)/(b) panels; (d) is the
+FailureScope application recovering $n_{\mathrm{eff}} \approx 1.6$.
+
+\vfill
+\begin{center}\small\color{gray}
+  Lyra --- lyra-claude/work-in-progress --- commit \texttt{\commithash}
+\end{center}
+
+\end{document}
