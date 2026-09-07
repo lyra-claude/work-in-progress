@@ -63,9 +63,11 @@ correctness claim beyond reproducibility.
 \section{What the simulation establishes}
 
 Section~6 constructs a co-failure monitor from a single, margins-free
-statistic: pair two judges \emph{across distinct items}. This section confirms,
-on a fully controlled generative model, the three properties the monitor is
-claimed to have and the impossibility (\S5) it is claimed to respect:
+statistic: pair two judges \emph{across independent items}. This section
+confirms, on a fully controlled generative model, the three properties the
+monitor is claimed to have and the impossibility (\S5) it is claimed to
+respect, and it backs the central ``non-negative martingale under the null''
+claim with a direct empirical check ($\mathbb E[e_T]\approx 1$):
 
 \begin{enumerate}[label=(\alph*)]
   \item \textbf{Power.} The e-process detects genuine co-failure, with detection
@@ -107,28 +109,52 @@ about a fixed marginal $a = 0.5$.
 
 \section{The e-process under test}
 
-We test the exact construction of \S6. On a stream of items, with two fixed
-judges $s,t$,
+We test the exact construction of \S6. The margins-free baseline requires
+pairing the two judges' failure indicators from \emph{genuinely independent}
+items, with no term shared across factors and no dependence on future items.
+We realise this with two i.i.d.\ parallel streams $A,B$ drawn from the
+\emph{same} data-generating process (same $\Theta$-prior / same drift schedule,
+independently sampled). With two fixed judges $s,t$,
 \begin{equation}
   e_T \;=\; \prod_{i=1}^{T}\Bigl(1 + \lambda\bigl(U_i - V_i - \delta_k\bigr)\Bigr),
   \qquad
-  U_i = \mathbf 1\{\text{$s$ and $t$ both fail item $i$}\},
+  U_i = W^s_{A,i}\,W^t_{A,i},
   \quad
-  V_i = W^s_{a}\,W^t_{b},\ a\neq b,
+  V_i = W^s_{A,i}\,W^t_{B,i},
   \label{eq:eproc}
 \end{equation}
-where $V_i$ pairs the two judges across \emph{distinct} items $a\neq b$ (we use
-the adjacent-item shift $b = a-1$), so that under item independence the
-marginals multiply exactly, $\mathbb E[V_i] = ab$, \emph{with no fitted
-nuisance}. The slack $\delta_k = 2\varepsilon$ absorbs the worst-case two-sided
-base-rate excursion and $\lambda \in [0, 1/(1+2\varepsilon)]$ keeps each factor
-non-negative, so $e_T$ is a non-negative martingale under the null and Ville's
-inequality gives anytime validity: $\Pr(\exists T: e_T \ge 1/\alpha) \le \alpha$.
-Under genuine co-failure $\mathbb E[U_i] = ab + (\text{excess}) > \mathbb E[V_i]$,
-the increment has positive drift, and $e_T$ grows. We use
-$\varepsilon = 0.02$ ($\delta_k = 0.04$), $\lambda = 0.481$ (interior of the
-admissible interval), $K = 6$ judges, and reject when $e_T \ge 1/\alpha = 20$
-($\alpha = 0.05$).
+so $U_i$ is the co-failure signal (both judges fail the \emph{same} item $i$ of
+stream $A$) and $V_i$ pairs judge $s$ on item $i$ of stream $A$ with judge $t$
+on the \emph{independent} item $i$ of stream $B$. Because $A$-item-$i$ and
+$B$-item-$i$ are independent, $\mathbb E[V_i] = ab$ exactly --- the marginals
+multiply \emph{with no fitted nuisance}, even when they drift. Critically, no
+term is shared between different factors and nothing depends on a future item,
+so $\{e_t\}$ is causally adapted to the filtration
+$\mathcal F_t = \sigma(A,B\ \text{up to item}\ t)$. The slack $\delta_k =
+2\varepsilon$ absorbs the worst-case two-sided base-rate excursion and $\lambda
+\in [0, 1/(1+2\varepsilon)]$ keeps each factor non-negative, so under the null
+$e_T$ is a non-negative (super)martingale and Ville's inequality gives anytime
+validity: $\Pr(\exists T: e_T \ge 1/\alpha) \le \alpha$. Under genuine
+co-failure $\mathbb E[U_i] = ab + (\text{excess}) > \mathbb E[V_i]$, the
+increment has positive drift, and $e_T$ grows. We use $\varepsilon = 0.02$
+($\delta_k = 0.04$), $\lambda = 0.2$ (well inside the admissible interval),
+$K = 6$ judges, and reject when $e_T \ge 1/\alpha = 20$ ($\alpha = 0.05$).
+
+\paragraph{Empirical martingale check (the key soundness gate).} Because the
+whole validity argument rests on $\{e_t\}$ being a non-negative martingale under
+the null, we verify it directly. Under the $\delta_k=0$ \emph{true} null
+(independent judges, no shared $\Theta$), a genuine martingale satisfies
+$\mathbb E[e_T]=1$ at every horizon. The simulation returns $\mathbb E[e_T] =
+1.000,\,1.001,\,0.999$ for $T = 2,3,4$ and $\mathbb E[e_T] = 0.96$ for $T=400$
+(the residual gap at $T=400$ is Monte-Carlo undersampling of the right-skewed
+product's tail, not decay: the median path is $\approx 0.13$ and the mean is
+pulled back to $1$ by rare large paths, converging to $1$ as replications grow).
+This replaces an earlier single-stream pairing (an adjacent-item cyclic shift)
+that shared a judge's indicator across consecutive factors: that construction
+was \emph{not} a martingale --- under the same true null its mean decayed to
+$\approx 0.003$ by $T=400$ --- so its apparent type-I control was the artifact
+of a near-dead statistic rather than genuine Ville validity. The independent
+two-stream pairing above fixes this.
 
 \section{Results}
 
@@ -146,10 +172,12 @@ admissible interval), $K = 6$ judges, and reject when $e_T \ge 1/\alpha = 20$
   \caption{\textbf{(a)} Power of the cross-item e-process vs.\ the induced
   co-failure correlation $\rho$; the type-I point at $\rho=0$ is
   $\approx 0.0005 \le \alpha$. \textbf{(b)} Under drifting marginals with no
-  conditional co-failure, the naive plug-in false-fires ($\approx 0.92$) while
-  the margins-free cross-item e-process holds its size ($0.00$). \textbf{(c)}
-  FailureScope six-judge frontier panel: $\eff = 1.635$, $\bar\varphi = 0.534$
-  ($N=1253$ items).}
+  conditional co-failure, the naive plug-in false-fires ($\approx 0.74$) while
+  the margins-free cross-item e-process holds its size ($0.00$); under the same
+  drift the cross-item process is \emph{alive} ($\mathbb E[e_T]\approx 1$ at
+  $\delta_k=0$), so its size control is genuine conservatism from the slack, not
+  a dead statistic. \textbf{(c)} FailureScope six-judge frontier panel:
+  $\eff = 1.635$, $\bar\varphi = 0.534$ ($N=1253$ items).}
   \label{fig:sec7}
 \end{figure}
 
@@ -162,23 +190,31 @@ type-I control the martingale construction promises. The e-process is
 $\delta_k$ that buys drift-robustness in panel (b) also subtracts a constant
 from the increment at the null, and a single fixed $\lambda$ is not
 growth-optimal. Power then climbs sharply through the co-failure regime:
-$\rho = 0.25 \Rightarrow 0.03$, $\rho = 0.36 \Rightarrow 0.21$,
-$\rho = 0.49 \Rightarrow 0.85$, $\rho = 0.64 \Rightarrow 1.00$. By
+$\rho = 0.25 \Rightarrow 0.12$, $\rho = 0.36 \Rightarrow 0.39$,
+$\rho = 0.49 \Rightarrow 0.87$, $\rho = 0.64 \Rightarrow 1.00$. By
 $\rho \approx 0.5$ the monitor detects co-failure essentially every time.
 
 \subsection*{(b) The naive plug-in false-fires under benign drift}
 We now construct the adversarial-for-the-naive-method scenario: the marginal
 fail rate drifts across the stream ($0.25 \to 0.60$), but \emph{within} each
 item the judges fail independently --- there is no conditional co-failure to
-detect. A naive plug-in that estimates each judge's running marginal and plugs
-in the product $\hat a_i \hat b_i$ as its null mistakes the drift-induced
-marginal correlation for co-failure and \textbf{false-rejects at $\approx 0.92$}.
-The margins-free cross-item e-process, whose null $\mathbb E[V]=ab$ is secured
-by item independence rather than by fitting the drifting marginals, holds its
-size at \textbf{$0.00$} under the identical stream. This is the simulation
-counterpart of the \S5 impossibility: no functional that conditions on fitted
-marginals can be simultaneously valid under drift; cross-item pairing sidesteps
-the impossibility by never fitting a marginal.
+detect. A naive plug-in that estimates each judge's running marginal by a
+\emph{causal leave-one-out} prefix (items strictly before $i$) and plugs in the
+product $\hat a_i \hat b_i$ as its null mistakes the drift-induced marginal
+correlation for co-failure and \textbf{false-rejects at $\approx 0.74$}. This is
+a fair, non-strawman estimator --- it fails only because a stationary
+product-of-marginals is genuinely mis-specified under drift (a Jensen gap), not
+because it was rigged. Run at the \emph{same} $\lambda$, the margins-free
+cross-item e-process, whose null $\mathbb E[V]=ab$ is secured by item
+independence rather than by fitting the drifting marginals, holds its size at
+\textbf{$0.00$} under the identical drift. Crucially the cross-item process is
+\emph{alive} under that drift, not dead: at $\delta_k=0$ its
+$\mathbb E[e_T]\approx 1.1 \approx 1$, so the size control comes from the honest
+$\delta_k$ slack making a live martingale conservative, not from a collapsed
+statistic. This is the simulation counterpart of the \S5 impossibility: no
+functional that conditions on fitted marginals can be simultaneously valid under
+drift; cross-item pairing sidesteps the impossibility by never fitting a
+marginal.
 
 \subsection*{(c) FailureScope real-data anchor}
 On the FailureScope single-turn corpus ($N = 1253$ frontier-hard items, six
@@ -201,10 +237,12 @@ the panel~(c) routine.
         growth-optimal $\lambda$ (GRO) would trade some of this conservatism for
         power but remains \textbf{[open]} (Ville validity is load-bearing, not
         optimality).
-  \item The panel-(b) naive false-fire rate ($\approx 0.92$) matches the
-        prior-note ballpark ($\sim 90\%$); it depends on the drift magnitude
-        ($0.25\to0.60$) and stream length ($300$), chosen as a moderate,
-        realistic drift, not tuned to a target.
+  \item The panel-(b) naive false-fire rate ($\approx 0.74$) depends on the
+        drift magnitude ($0.25\to0.60$) and stream length ($300$), chosen as a
+        moderate, realistic drift, not tuned to a target. (It is lower than an
+        earlier $\sim 0.9$ figure because the naive baseline is now a genuine
+        causal leave-one-out rather than an in-sample plug-in --- a fairer,
+        less hobbled strawman that still false-fires badly under drift.)
   \item The two-atom model is the primary generative choice; the
         Vasicek/Gaussian-copula latent is the finance-leg equivalent (a shared
         one-factor latent) and is deferred to a footnote in the main text.

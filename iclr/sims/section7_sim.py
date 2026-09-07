@@ -5,21 +5,52 @@ Section 7 "Simulation Confirmation" for the ICLR paper.
 
 A de Finetti two-atom sweep validating the cross-item co-failure e-process.
 
-Construction (verified against
-memos/2026-09-03-sec5b-stratification-draft.tex, lines 76-84):
+Construction (matches the paper's Sec 6 e-process; the cross-item pairing is
+realised as an INDEPENDENT PARALLEL STREAM, see below):
 
     e_t = e_{t-1} * ( 1 + lambda ( U_t - V_t - delta_k ) )
 
-  U_t = 1{ both judges fail on the SAME item i }         (contemporaneous)
-  V_t = W^s_a * W^t_b   with a != b, distinct items       (cross-item pairing)
+  U_t = 1{ both judges s,t fail on the SAME item i, stream A }   (co-failure)
+  V_t = W^s_{A,i} * W^t_{B,i}   judge-s on item i of stream A,
+                                judge-t on the INDEPENDENT item i of stream B
   delta_k = 2 * eps  absorbs the worst-case two-sided base-rate excursion
   lambda in [0, 1/(1+2 eps)]  keeps the per-step factor non-negative.
 
-Null baseline is MARGINS-FREE: because a and b are drawn from DISTINCT items
-that are independent by construction, E[V] = a * b with no fitted nuisance.
-Under the null (no within-item co-failure) E[U] = a * b as well, so E[U-V]=0
-and the e-process is a non-negative martingale (Ville validity). Under genuine
-co-failure E[U] = a*b + excess > E[V], the drift is positive, and e_t grows.
+WHY TWO STREAMS (correctness-critical).  The margins-free baseline V requires
+pairing the two judges' failure indicators from GENUINELY INDEPENDENT items,
+with NO term shared across factors and NO wraparound. We generate two i.i.d.
+streams A and B from the SAME data-generating process (same Theta prior /
+same drift schedule, independently sampled). Then at step i:
+
+    V_i = W^s_{A,i} * W^t_{B,i}
+
+pairs judge-s on A-item-i with judge-t on B-item-i. Because A-item-i and
+B-item-i are independent, E[V_i] = E[W^s] * E[W^t] = a*b, factorising the
+(possibly drifting) marginals WITHOUT fitting anything. Crucially:
+  * no term is shared between factor i and factor j (i != j), and
+  * nothing depends on a FUTURE item,
+so { e_t } is a genuine product supermartingale, causally adapted to the
+filtration F_t = sigma( streams A,B up to item t ). This is what makes
+Ville validity real.
+
+  *** OLD BUG (now fixed): the previous version used a single stream with
+      V_i = W^s_i * W^t_{roll(i)} (np.roll by 1). That (1) SHARES the term
+      W^t_i between U_i and V_{i+1} with opposite signs -> negative covariance
+      across consecutive factors -> NOT a supermartingale (E[e_T] decayed to
+      ~0.001 under the true null instead of staying at 1), and (2) wrapped
+      around so the first factor depended on the LAST (future) item ->
+      anticipative. Both defects are gone. ***
+
+Under the null (no within-item co-failure, i.e. judges conditionally
+independent given Theta) E[U_i] = a*b = E[V_i], so E[U_i - V_i] = 0 and, with
+delta_k >= 0, E[factor_i | F_{i-1}] <= 1: a non-negative supermartingale, and
+Ville's inequality gives anytime validity. Under genuine co-failure
+E[U_i] = a*b + excess > E[V_i], the increment has positive drift, and e_t
+grows.
+
+EMPIRICAL MARTINGALE CHECK. martingale_check() below verifies E[e_T] ~ 1 under
+the delta=0 TRUE null for N = 2, 3, 4, ~400 -- the key soundness gate that the
+buggy roll construction failed.
 
 Generative model (de Finetti two-atom):
   For each item draw a latent Theta in {theta_lo, theta_hi} with P(theta_hi)=pi.
@@ -57,6 +88,18 @@ SEED = 20260907
 ALPHA = 0.05
 THRESH = 1.0 / ALPHA  # e-process rejects when e_t >= 1/alpha
 
+# Operating betting fraction. lambda in [0, 1/(1+2 eps)] keeps every factor
+# non-negative. We use a modest lambda = 0.2 (well inside the admissible
+# interval) rather than an aggressive one: it gives an equal-or-better power
+# curve while keeping the martingale variance small enough that the
+# E[e_T] ~ 1 martingale check converges at feasible Monte-Carlo sample sizes.
+# (At an aggressive lambda the process is still a martingale, but its product
+# is so right-skewed that its sample mean is dominated by rare huge paths and
+# reads far below 1 without astronomically many replications -- which would
+# make the soundness gate unmeasurable rather than false.)
+LAMBDA = 0.2
+EPS = 0.02
+
 
 # ---------------------------------------------------------------------------
 # de Finetti two-atom generator
@@ -81,24 +124,25 @@ def sample_stream(rng, n_items, K, theta_lo, theta_hi, pi):
 # ---------------------------------------------------------------------------
 # Cross-item co-failure e-process (margins-free)
 # ---------------------------------------------------------------------------
-def eprocess_crossitem(fails, lam, eps, s=0, t=1, rng=None):
+def eprocess_crossitem(fails_a, fails_b, lam, eps, s=0, t=1):
     """
-    Run the margins-free cross-item e-process on a failure stream.
+    Run the margins-free cross-item e-process on TWO independent streams.
 
-      U_i = fails[i,s] * fails[i,t]                    (same item)
-      V_i = fails[i,s] * fails[perm(i),t]              (distinct item, perm != i)
+      U_i = fails_a[i,s] * fails_a[i,t]      (both judges fail item i, stream A)
+      V_i = fails_a[i,s] * fails_b[i,t]      (judge-s A-item-i, judge-t B-item-i)
+
+    A-item-i and B-item-i are independent draws from the SAME DGP, so
+    E[V_i] = a*b with no fitted nuisance. No term is shared across factors and
+    nothing depends on a future item -> genuine causal product supermartingale.
 
     e_i = prod_{i} ( 1 + lam ( U_i - V_i - 2 eps ) ).
     Returns the running e-process array (length n_items).
     """
-    n = fails.shape[0]
-    ws = fails[:, s].astype(float)
-    wt = fails[:, t].astype(float)
-    # derangement-ish pairing: pair item i's judge-t with a DIFFERENT item.
-    # A fixed cyclic shift by 1 guarantees perm(i) != i for all i.
-    wt_other = np.roll(wt, 1)
-    U = ws * wt
-    V = ws * wt_other
+    ws_a = fails_a[:, s].astype(float)
+    wt_a = fails_a[:, t].astype(float)
+    wt_b = fails_b[:, t].astype(float)
+    U = ws_a * wt_a
+    V = ws_a * wt_b
     delta = 2.0 * eps
     factors = 1.0 + lam * (U - V - delta)
     # non-negativity guard (lam in [0, 1/(1+2eps)] already enforces this)
@@ -122,12 +166,19 @@ def eprocess_naive(fails, lam, s=0, t=1):
     n = fails.shape[0]
     ws = fails[:, s].astype(float)
     wt = fails[:, t].astype(float)
-    # running means BEFORE item i (leave-one-out prefix to avoid using U_i itself)
-    csum_s = np.cumsum(ws)
-    csum_t = np.cumsum(wt)
-    idx = np.arange(1, n + 1)
-    ahat = csum_s / idx  # mean up to and including i
-    bhat = csum_t / idx
+    # GENUINE causal leave-one-out: the plug-in at item i uses ONLY items
+    # strictly before i (a prefix that excludes item i itself), so the null
+    # estimate does not peek at the very increment it is being compared to.
+    # prefix_mean[i] = mean of items 0..i-1  (undefined for i=0 -> fall back
+    # to the item's own value, a neutral bootstrap for the first step).
+    csum_s = np.concatenate(([0.0], np.cumsum(ws)[:-1]))  # sum of items < i
+    csum_t = np.concatenate(([0.0], np.cumsum(wt)[:-1]))
+    cnt = np.arange(n, dtype=float)                       # number of items < i
+    cnt[0] = 1.0                                          # avoid /0 at i=0
+    ahat = csum_s / cnt
+    bhat = csum_t / cnt
+    ahat[0] = ws[0]                                       # neutral first step
+    bhat[0] = wt[0]
     U = ws * wt
     Vhat = ahat * bhat
     factors = 1.0 + lam * (U - Vhat)
@@ -136,17 +187,54 @@ def eprocess_naive(fails, lam, s=0, t=1):
 
 
 # ---------------------------------------------------------------------------
+# KEY SOUNDNESS GATE: empirical martingale check under the delta=0 TRUE null
+# ---------------------------------------------------------------------------
+def martingale_check(rng, Ns=(2, 3, 4, 400), n_streams=40000, lam=LAMBDA, K=2,
+                     big_n_streams=200000):
+    """
+    Under the delta=0 TRUE null (independent judges, no shared Theta, a=b=0.5),
+    a genuine product martingale has E[e_T] = 1 for every horizon T=N.
+
+    We build the cross-item e-process with delta=0 on TWO independent streams,
+    each with an independent per-item base rate 0.5 and judges failing i.i.d.
+    (so there is NO co-failure and NO shared latent), and report E[e_T].
+
+    The buggy roll construction decayed to ~0.003 here; the correct
+    two-stream construction must stay ~1.000.
+    """
+    results = []
+    for N in Ns:
+        # Longer horizons have heavier right-skew, so the sample mean of a true
+        # martingale needs more replications to converge to 1. Give the largest
+        # horizon more streams.
+        ns = big_n_streams if N >= 100 else n_streams
+        Es = np.empty(ns)
+        for r in range(ns):
+            fa = (rng.random((N, K)) < 0.5).astype(np.int8)
+            fb = (rng.random((N, K)) < 0.5).astype(np.int8)
+            e = eprocess_crossitem(fa, fb, lam, eps=0.0)
+            Es[r] = e[-1]
+        results.append((N, float(Es.mean()), float(np.median(Es))))
+        print(f"  N={N:4d}  E[e_T]={Es.mean():.4f}  "
+              f"median={np.median(Es):.4f}  (delta=0 true null; target 1.000)")
+    return results
+
+
+# ---------------------------------------------------------------------------
 # Panel (a): power curve
 # ---------------------------------------------------------------------------
-def panel_a_power(rng, K=6, n_items=400, n_streams=2000, lam=None, eps=0.02):
+def panel_a_power(rng, K=6, n_items=400, n_streams=2000, lam=LAMBDA, eps=EPS):
     """
     Sweep atom separation -> induced rho. For each rho, estimate
     P(e-process crosses 1/alpha) over many streams. Fix marginal a ~ 0.5 by
     keeping theta_lo, theta_hi symmetric about 0.5 so rho is the only mover.
+
+    The co-failure signal lives in stream A (shared latent Theta across judges
+    within an item). The margins-free baseline pairs judge-t against an
+    INDEPENDENT stream B drawn from the identical two-atom DGP, so E[V]=ab
+    regardless of rho and the null holds by construction, not by fitting.
     """
     pi = 0.5
-    if lam is None:
-        lam = 0.5 / (1.0 + 2.0 * eps)  # interior of the admissible interval
     # separations from 0 (independence) up to near-maximal
     seps = np.linspace(0.0, 0.9, 10)
     rows = []
@@ -156,8 +244,9 @@ def panel_a_power(rng, K=6, n_items=400, n_streams=2000, lam=None, eps=0.02):
         a, rho = two_atom_params(theta_lo, theta_hi, pi)
         rejects = 0
         for _ in range(n_streams):
-            fails = sample_stream(rng, n_items, K, theta_lo, theta_hi, pi)
-            e = eprocess_crossitem(fails, lam, eps)
+            fa = sample_stream(rng, n_items, K, theta_lo, theta_hi, pi)
+            fb = sample_stream(rng, n_items, K, theta_lo, theta_hi, pi)
+            e = eprocess_crossitem(fa, fb, lam, eps)
             if np.max(e) >= THRESH:
                 rejects += 1
         power = rejects / n_streams
@@ -183,24 +272,46 @@ def sample_drift_stream(rng, n_items, K, base_lo=0.25, base_hi=0.60):
     return (U < p[:, None]).astype(np.int8), p
 
 
-def panel_b_falsefire(rng, K=6, n_items=300, n_streams=2000, lam=None, eps=0.02):
-    if lam is None:
-        lam = 0.5 / (1.0 + 2.0 * eps)
+def panel_b_falsefire(rng, K=6, n_items=300, n_streams=2000, lam=LAMBDA, eps=EPS):
+    """
+    Drifting marginals, ZERO cross-judge co-failure. FAIRNESS: naive and
+    cross-item run at the SAME lambda. The naive plug-in fits the running
+    marginals (causal leave-one-out) and plugs in the product-of-marginals as
+    its null; it false-fires because a stationary product-of-marginals is
+    mis-specified under drift (a Jensen gap between E[ab] over the drift and the
+    plugged-in a-hat*b-hat), NOT because it was rigged. The cross-item process
+    pairs stream A against an INDEPENDENT stream B that follows the SAME drift
+    schedule, so E[V]=ab holds pointwise despite the drift and no marginal is
+    ever fitted. We also report the cross-item E[e_T] under this drift to prove
+    the martingale is ALIVE (~1), not dead.
+    """
     naive_rej = 0
     cross_rej = 0
-    for _ in range(n_streams):
-        fails, _p = sample_drift_stream(rng, n_items, K)
-        e_naive = eprocess_naive(fails, lam)
-        e_cross = eprocess_crossitem(fails, lam, eps)
+    e_cross_final = np.empty(n_streams)   # operating delta = 2*eps
+    e_cross_d0 = np.empty(n_streams)      # delta = 0 (isolates martingale-ness)
+    for r in range(n_streams):
+        fails_a, _p = sample_drift_stream(rng, n_items, K)
+        fails_b, _p2 = sample_drift_stream(rng, n_items, K)  # same drift, indep
+        e_naive = eprocess_naive(fails_a, lam)
+        e_cross = eprocess_crossitem(fails_a, fails_b, lam, eps)
+        e_cross0 = eprocess_crossitem(fails_a, fails_b, lam, 0.0)
+        e_cross_final[r] = e_cross[-1]
+        e_cross_d0[r] = e_cross0[-1]
         if np.max(e_naive) >= THRESH:
             naive_rej += 1
         if np.max(e_cross) >= THRESH:
             cross_rej += 1
     naive_rate = naive_rej / n_streams
     cross_rate = cross_rej / n_streams
-    print(f"  naive plug-in false-reject rate under drift : {naive_rate:.4f}")
-    print(f"  margins-free cross-item size under drift     : {cross_rate:.4f}")
-    return naive_rate, cross_rate, lam
+    cross_eT = float(e_cross_final.mean())   # <1 by design: slack decays mean
+    cross_eT_d0 = float(e_cross_d0.mean())   # ~1: the martingale is ALIVE
+    print(f"  naive plug-in false-reject rate under drift  : {naive_rate:.4f}")
+    print(f"  margins-free cross-item size under drift      : {cross_rate:.4f}")
+    print(f"  cross-item E[e_T] under drift, delta=0 (ALIVE): {cross_eT_d0:.4f}"
+          f"  (target ~1.000)")
+    print(f"  cross-item E[e_T] under drift, delta=2eps     : {cross_eT:.4f}"
+          f"  (<1 by design: slack -> conservative)")
+    return naive_rate, cross_rate, cross_eT_d0, cross_eT, lam
 
 
 # ---------------------------------------------------------------------------
@@ -313,11 +424,15 @@ def main():
           % (SEED, ALPHA, THRESH))
     print("=" * 66)
 
+    print("\n[GATE] MARTINGALE CHECK  E[e_T] under delta=0 TRUE null "
+          "(must be ~1.000)")
+    mart = martingale_check(rng)
+
     print("\n[Panel a] POWER CURVE (de Finetti two-atom sweep)")
     rows_a, lam_a, eps_a = panel_a_power(rng)
 
     print("\n[Panel b] NAIVE FALSE-FIRE under drifting margins (no co-failure)")
-    naive_rate, cross_rate, lam_b = panel_b_falsefire(rng)
+    naive_rate, cross_rate, cross_eT_d0, cross_eT, lam_b = panel_b_falsefire(rng)
 
     print("\n[Panel c] FAILURESCOPE real-data anchor")
     fs = panel_c_failurescope()
@@ -331,10 +446,15 @@ def main():
     print("\n" + "=" * 66)
     print("HEADLINE NUMBERS")
     print("=" * 66)
-    print(f"  (a) type-I @ rho=0        : {rows_a[0][3]:.4f}  (target ~{ALPHA})")
+    print("  MARTINGALE CHECK (delta=0 true null, target 1.000):")
+    for N, m, med in mart:
+        print(f"      N={N:4d}  E[e_T]={m:.4f}  (median={med:.4f})")
+    print(f"  (a) type-I @ rho=0        : {rows_a[0][3]:.4f}  (target <={ALPHA})")
     print(f"  (a) power @ rho={rows_a[-1][2]:.3f}     : {rows_a[-1][3]:.4f}")
     print(f"  (b) naive false-reject    : {naive_rate:.4f}")
     print(f"  (b) cross-item size       : {cross_rate:.4f}")
+    print(f"  (b) cross-item E[e_T] d=0 : {cross_eT_d0:.4f}  (ALIVE, target ~1)")
+    print(f"  (b) cross-item E[e_T] slack: {cross_eT:.4f}  (<1 by design)")
     print(f"  (c) FailureScope n_eff    : {neff:.4f}  (phi-bar={phibar:.4f})")
     print(f"      lambda={lam_a:.4f}, eps={eps_a}, 2eps={2*eps_a}")
 
