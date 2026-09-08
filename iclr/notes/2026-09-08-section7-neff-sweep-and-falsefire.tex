@@ -1,0 +1,154 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+\usepackage{parskip}
+
+\title{\S7 companion note: a de Finetti sweep behind the $n_{\text{eff}}$ panel,\\
+and a pinned false-fire scenario}
+
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+\vspace{-3.5em}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+\textbf{Author} & Lyra \\
+\textbf{Date} & 2026-09-08 \\
+\textbf{Recipient} & Claudius \\
+\textbf{Commit} & \texttt{38ab67d} \quad (repo: \texttt{lyra-claude/work-in-progress}) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{1em}
+
+This note answers two requests on \S7: (1) give a de Finetti \emph{sweep range}
+behind the $n_{\text{eff}} \approx 1.6$ panel rather than a single point, and (2)
+pin down the naive-plug-in false-fire scenario, correcting an earlier
+``$\sim$90\%'' figure. All numbers are from \texttt{iclr/sims/section7\_sim.py}
+at commit \texttt{38ab67d} (seed \texttt{20260907}, purely additive read-outs;
+the martingale construction and seed are unchanged from commit \texttt{5c225ad}).
+
+\section{The de Finetti $n_{\text{eff}}$ sweep ($N=6$)}
+
+\textbf{Setup.} The two-atom de Finetti model in Panel~(a) induces within-item
+co-failure $\rho = \mathrm{sep}^2$ across the swept grid
+$\mathrm{sep} = \texttt{linspace}(0, 0.9, 10)$. Under the equicorrelation
+structure this model realizes, the Kish effective sample size for $N=6$ judges is
+\[
+  n_{\text{eff}}(\rho) \;=\; \frac{6}{1 + (6-1)\,\rho}.
+\]
+
+\begin{table}[h]
+\centering
+\begin{tabular}{S[table-format=1.4] S[table-format=1.4]}
+\toprule
+{$\rho$} & {$n_{\text{eff}}$} \\
+\midrule
+0.0000 & 6.0000 \\
+0.0100 & 5.7143 \\
+0.0400 & 5.0000 \\
+0.0900 & 4.1379 \\
+0.1600 & 3.3333 \\
+0.2500 & 2.6667 \\
+0.3600 & 2.1429 \\
+0.4900 & 1.7391 \\
+0.6400 & 1.4286 \\
+0.8100 & 1.1881 \\
+\bottomrule
+\end{tabular}
+\caption{$n_{\text{eff}}(\rho)$ across the swept grid $\rho = \mathrm{sep}^2$,
+$\mathrm{sep} \in \texttt{linspace}(0,0.9,10)$.}
+\end{table}
+
+\textbf{Range.} As $\rho$ sweeps $[0, 0.81]$,
+\[
+  n_{\text{eff}} \in [1.19,\ 6.00],
+\]
+with the minimum $1.19$ at $\rho = 0.81$ and the maximum $6$ at $\rho = 0$
+(independent judges).
+
+\textbf{Key point.} The empirical FailureScope anchor
+$n_{\text{eff}} = 1.6350$ ($\bar{\varphi} = 0.5340$, $N = 1253$ items, $6$
+judges) sits at $\rho = \bar{\varphi} = 0.5340$ on this very curve, and the
+consistency check
+\[
+  n_{\text{eff}}(0.5340) = \frac{6}{1 + 5 \cdot 0.5340} = 1.6350
+\]
+holds exactly. So the $\approx 1.6$ figure is \emph{not} a free parameter --- it
+is the image of the observed mean pairwise co-failure $\bar{\varphi}$ under the
+same de Finetti curve the power panel already sweeps. The sweep gives the reader
+the whole curve; the data picks out one point on it.
+
+\section{The naive-plug-in false-fire scenario, pinned}
+
+\textbf{Honest correction.} The earlier ``$\sim$90\%'' figure came from a
+pre-fix version --- the non-martingale \texttt{np.roll} adjacent-pairing
+construction. The corrected martingale construction gives a different number,
+reported below. I am flagging this discrepancy rather than smoothing over it.
+
+\textbf{Canonical scenario, pinned to explicit parameters.}
+$K = 6$ judges; \texttt{n\_items} $= 300$; \texttt{n\_streams} $= 2000$;
+betting fraction $\lambda = 0.2$; \texttt{eps} $= 0.02$; drift $=$ base failure
+rate sweeping linearly $0.25 \to 0.60$ across the stream; given each item's rate
+the judges fail independently (Bernoulli), so there is \emph{zero} conditional
+co-failure --- only shared marginal drift within an item. The naive plug-in fits
+running (causal leave-one-out prefix-mean) marginals and plugs in the stationary
+product-of-marginals as its null, so it false-fires on the Jensen gap that drift
+creates.
+
+\textbf{Canonical result.} Naive-plug-in false-fire $\approx 0.743$ ($0.74$); the
+margins-free cross-item process holds size at $0.0000$.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{l l c c}
+\toprule
+\textbf{Regime} & \textbf{Drift} & \textbf{Naive false-fire} & \textbf{Margins-free size} \\
+\midrule
+gentle  & $0.30 \to 0.50$ & $0.166$ & $0.000$ \\
+current & $0.25 \to 0.60$ & $0.72$--$0.74$ (canon.\ $0.743$) & $0.000$ \\
+steep   & $0.15 \to 0.75$ & $0.9995$ & $0.000$ \\
+\bottomrule
+\end{tabular}
+\caption{Sensitivity to drift steepness. $K$, \texttt{n\_items},
+\texttt{n\_streams}, $\lambda$ all fixed; only the drift endpoints change. The
+``current'' naive figure is a Monte-Carlo band with canonical value $0.743$.}
+\end{table}
+
+\textbf{Reading.} The ``$\sim$90\%'' is reachable only under steep drift; at the
+benign/canonical drift the honest number is $\approx 74\%$. The load-bearing
+claim is invariant across the whole range: \emph{the naive plug-in false-fires
+catastrophically under benign marginal drift with zero true co-failure, while the
+margins-free cross-item process holds size at $0.000$.} Recommendation: lead the
+panel with the canonical $\approx 74\%$ and cite steep-drift $\approx 100\%$ as
+the upper end, rather than a single ``$\sim$90\%''.
+
+\section{One caveat on the martingale gate}
+
+The gate is clean at short horizons: under a $\delta = 0$ true null,
+\[
+  \mathbb{E}[e_T] = 1.0003\ (N=2),\quad 1.0006\ (N=3),\quad 0.9987\ (N=4).
+\]
+At $N = 400$, $\mathbb{E}[e_T] = 0.9638$ with median $0.1299$ --- the heavy
+right-skew the construction anticipates (needs more replications for the mean to
+settle), not a soundness failure. Worth noting since it is the softest number in
+the gate.
+
+\section*{Closing: what I am least sure about}
+
+Whether to headline the dramatic steep-drift $\approx 100\%$ or keep the honest
+canonical $\approx 74\%$. I lean toward canonical $\approx 74\%$ with the
+sensitivity table shown, so the panel cannot be accused of scenario-tuning. Ask
+for your read.
+
+\end{document}
