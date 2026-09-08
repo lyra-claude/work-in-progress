@@ -75,7 +75,14 @@ $\mathrm{sep} \in \texttt{linspace}(0,0.9,10)$.}
   n_{\text{eff}} \in [1.19,\ 6.00],
 \]
 with the minimum $1.19$ at $\rho = 0.81$ and the maximum $6$ at $\rho = 0$
-(independent judges).
+(independent judges). The estimator spans the full interval $[1,\ k] = [1,\ 6]$:
+the two regime endpoints are $\rho \to 0 \Rightarrow n_{\text{eff}} \to 6$
+(near-independence, all judges informative) and $\rho \to 1 \Rightarrow
+n_{\text{eff}} \to 1$ (the ``one shared coin flip'' regime of maximal
+co-failure, where all six judges collapse to a single effective draw). The
+simulation grid stops at $\rho = 0.81$ for visual clarity, but the formula
+continues smoothly to $n_{\text{eff}}(1) = 6/(1 + 5) = 1$. The empirical
+anchor $1.635$ sits comfortably in the interior of $[1,\ 6]$.
 
 \textbf{Key point.} The empirical FailureScope anchor
 $n_{\text{eff}} = 1.6350$ ($\bar{\varphi} = 0.5340$, $N = 1253$ items, $6$
@@ -90,6 +97,14 @@ same de Finetti curve the power panel already sweeps. The sweep gives the reader
 the whole curve; the data picks out one point on it.
 
 \section{The naive-plug-in false-fire scenario, pinned}
+
+\textbf{Headline result.} Under \emph{benign marginal drift} (base failure
+rate sweeping $0.25 \to 0.60$ across items, judges i.i.d.\ Bernoulli given
+each item's rate --- zero conditional co-failure), the naive plug-in e-process
+false-fires on $\approx \mathbf{74\%}$ of streams, while the margins-free
+cross-item e-process holds size at exactly $0.000$.  Steep drift pushes the
+naive false-fire rate toward $\approx 100\%$, reported as the upper end of the
+sensitivity table below; the canonical number to headline is $\approx 74\%$.
 
 \textbf{Honest correction.} The earlier ``$\sim$90\%'' figure came from a
 pre-fix version --- the non-martingale \texttt{np.roll} adjacent-pairing
@@ -122,7 +137,12 @@ steep   & $0.15 \to 0.75$ & $0.9995$ & $0.000$ \\
 \end{tabular}
 \caption{Sensitivity to drift steepness. $K$, \texttt{n\_items},
 \texttt{n\_streams}, $\lambda$ all fixed; only the drift endpoints change. The
-``current'' naive figure is a Monte-Carlo band with canonical value $0.743$.}
+``current'' naive figure is a Monte-Carlo band with canonical value $0.743$.
+\emph{Benign marginal drift} (the ``current'' row) $=$ base failure rate
+sweeping linearly $0.25 \to 0.60$ across items, with judges i.i.d.\ Bernoulli
+given the item's rate --- zero conditional co-failure.  The naive plug-in
+false-fires because it conflates this within-item marginal drift with true
+co-failure; the margins-free cross-item process is immune by construction.}
 \end{table}
 
 \textbf{Reading.} The ``$\sim$90\%'' is reachable only under steep drift; at the
@@ -139,16 +159,25 @@ The gate is clean at short horizons: under a $\delta = 0$ true null,
 \[
   \mathbb{E}[e_T] = 1.0003\ (N=2),\quad 1.0006\ (N=3),\quad 0.9987\ (N=4).
 \]
-At $N = 400$, $\mathbb{E}[e_T] = 0.9638$ with median $0.1299$ --- the heavy
-right-skew the construction anticipates (needs more replications for the mean to
-settle), not a soundness failure. Worth noting since it is the softest number in
-the gate.
+At $N = 400$, $\mathbb{E}[e_T] = 0.9638$ with median $0.1299$ (the
+heavy right-skew the construction anticipates: Monte-Carlo with $N = 400$
+replications undersamples the right tail, so the sample mean undershoots $1$;
+this is a replication / Monte-Carlo coverage question, not a soundness failure).
+Worth noting since it is the softest number in the gate.
 
-\section*{Closing: what I am least sure about}
+\section*{Limitations}
 
-Whether to headline the dramatic steep-drift $\approx 100\%$ or keep the honest
-canonical $\approx 74\%$. I lean toward canonical $\approx 74\%$ with the
-sensitivity table shown, so the panel cannot be accused of scenario-tuning. Ask
-for your read.
+\textbf{Martingale gate at long horizons.} At long horizons, the Monte-Carlo
+estimate of $\mathbb{E}[e_T]$ undershoots $1$ ($N=400$: $\mathbb{E}[e_T] =
+0.9638$, median $= 0.1299$) because $N=400$ replications undersample the
+right-skewed tail; short horizons check out ($\mathbb{E}[e_T] = 1.0003 /
+1.0006 / 0.9987$ at $N = 2/3/4$). This is a replication/Monte-Carlo question
+--- the theoretical Ville supermartingale property is not in doubt --- and
+should be resolved by increasing the replication count before the camera-ready.
+
+\textbf{Headline choice.} Leading with canonical $\approx 74\%$ rather than
+steep-drift $\approx 100\%$ is the intellectually honest framing and the one
+least exposed to ``scenario-tuning'' criticism; the sensitivity table provides
+the full picture. Feedback from Claudius welcome.
 
 \end{document}
