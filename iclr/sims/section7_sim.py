@@ -315,6 +315,103 @@ def panel_b_falsefire(rng, K=6, n_items=300, n_streams=2000, lam=LAMBDA, eps=EPS
 
 
 # ---------------------------------------------------------------------------
+# de Finetti n_eff sweep read-out (reuses Panel (a)'s rho grid)
+# ---------------------------------------------------------------------------
+def definetti_neff_sweep(anchor_neff=1.6350, K=6):
+    """
+    PURELY ADDITIVE read-out. Reuses the SAME atom-separation grid Panel (a)
+    sweeps (seps = linspace(0, 0.9, 10) at pi=0.5, symmetric about 0.5), maps
+    each separation to its induced within-item co-failure rho via the SAME
+    two_atom_params() Panel (a) uses, then reports the Kish effective judge
+    count for an N=K equicorrelation panel:
+
+        n_eff(rho) = K / (1 + (K-1) * rho).
+
+    This exhibits the empirical FailureScope anchor (n_eff = anchor_neff) as a
+    point INSIDE the de Finetti sweep, at rho = phi-bar. Nothing here touches
+    the e-process, the sampling, or the RNG; it is a deterministic table.
+    """
+    pi = 0.5
+    seps = np.linspace(0.0, 0.9, 10)   # identical grid to panel_a_power
+    rhos = []
+    for sep in seps:
+        theta_lo = 0.5 - sep / 2.0
+        theta_hi = 0.5 + sep / 2.0
+        _a, rho = two_atom_params(theta_lo, theta_hi, pi)
+        rhos.append(rho)
+
+    def kish_neff(rho):
+        return K / (1.0 + (K - 1) * rho)
+
+    print(f"DE FINETTI n_eff SWEEP (N={K})")
+    print(f"  Kish equicorrelation:  n_eff(rho) = {K} / (1 + {K-1}*rho)")
+    print(f"  {'rho':>8}   {'n_eff':>8}")
+    for rho in rhos:
+        print(f"  {rho:>8.4f}   {kish_neff(rho):>8.4f}")
+
+    neff_at = [kish_neff(r) for r in rhos]
+    neff_min = min(neff_at)          # at the largest rho in the grid
+    neff_max = max(neff_at)          # at rho = 0
+    rho_at_min = rhos[int(np.argmin(neff_at))]
+    print(f"  n_eff RANGE over sweep : [{neff_min:.4f}, {neff_max:.4f}]  "
+          f"(min at rho={rho_at_min:.4f}, max at rho=0.0000)")
+
+    # position of the empirical anchor: n_eff = anchor => rho = (K/neff - 1)/(K-1)
+    rho_anchor = (K / anchor_neff - 1.0) / (K - 1)
+    neff_check = kish_neff(rho_anchor)
+    print(f"  empirical anchor n_eff={anchor_neff:.4f} sits at "
+          f"rho = phi-bar = {rho_anchor:.4f}")
+    print(f"  consistency check: n_eff({rho_anchor:.4f}) = {neff_check:.4f}  "
+          f"(should match {anchor_neff:.4f})")
+    return list(zip(rhos, neff_at)), (neff_min, neff_max), rho_anchor, neff_check
+
+
+# ---------------------------------------------------------------------------
+# false-fire drift sensitivity sweep (reuses eprocess_naive, unmodified)
+# ---------------------------------------------------------------------------
+def falsefire_sensitivity(rng, K=6, n_items=300, n_streams=2000, lam=LAMBDA,
+                          eps=EPS):
+    """
+    PURELY ADDITIVE. Measures the naive plug-in false-fire rate under three
+    drift steepnesses, holding everything else (K, n_items, n_streams, lambda,
+    eps) fixed, using the EXISTING eprocess_naive / eprocess_crossitem paths
+    unchanged. Confirms the margins-free cross-item size stays ~0 in each case.
+    Scenario labels/base-rate endpoints:
+        gentle : 0.30 -> 0.50
+        current: 0.25 -> 0.60   (the Panel (b) operating point)
+        steep  : 0.15 -> 0.75
+    """
+    scenarios = [
+        ("gentle", 0.30, 0.50),
+        ("current", 0.25, 0.60),
+        ("steep", 0.15, 0.75),
+    ]
+    print("FALSE-FIRE DRIFT SENSITIVITY (naive plug-in vs margins-free)")
+    print(f"  fixed: K={K}, n_items={n_items}, n_streams={n_streams}, "
+          f"lambda={lam:.4f}, eps={eps}")
+    results = []
+    for name, lo, hi in scenarios:
+        naive_rej = 0
+        cross_rej = 0
+        for _ in range(n_streams):
+            fails_a, _p = sample_drift_stream(rng, n_items, K, lo, hi)
+            fails_b, _p2 = sample_drift_stream(rng, n_items, K, lo, hi)
+            e_naive = eprocess_naive(fails_a, lam)
+            e_cross = eprocess_crossitem(fails_a, fails_b, lam, eps)
+            if np.max(e_naive) >= THRESH:
+                naive_rej += 1
+            if np.max(e_cross) >= THRESH:
+                cross_rej += 1
+        naive_rate = naive_rej / n_streams
+        cross_rate = cross_rej / n_streams
+        print(f"  {name:<7} drift {lo:.2f}->{hi:.2f} : "
+              f"naive false-fire={naive_rate:.4f}   "
+              f"margins-free size={cross_rate:.4f}")
+        results.append((name, lo, hi, naive_rate, cross_rate))
+    return results
+
+
+# ---------------------------------------------------------------------------
 # Panel (c): FailureScope real-data anchor (from failurescope_probe.py)
 # ---------------------------------------------------------------------------
 FS_PROBE = (
@@ -436,6 +533,17 @@ def main():
 
     print("\n[Panel c] FAILURESCOPE real-data anchor")
     fs = panel_c_failurescope()
+    phibar_fs, neff_fs, N_fs_, k_fs_ = fs
+
+    # --- ADDITIVE read-outs (placed AFTER all existing rng-consuming calls so
+    #     the seed / martingale / panel numbers above are byte-for-byte
+    #     unchanged; the sweep is deterministic, the sensitivity draws come last)
+    print("\n[read-out] " + "-" * 54)
+    sweep_rows, neff_range, rho_anchor, neff_anchor_check = \
+        definetti_neff_sweep(anchor_neff=neff_fs, K=k_fs_)
+
+    print("\n[read-out] " + "-" * 54)
+    sens_rows = falsefire_sensitivity(rng)
 
     make_figures(rows_a, lam_a, eps_a, naive_rate, cross_rate, fs)
     print("\nWrote panel_a_power.png, panel_b_falsefire.png, "
