@@ -189,8 +189,8 @@ def eprocess_naive(fails, lam, s=0, t=1):
 # ---------------------------------------------------------------------------
 # KEY SOUNDNESS GATE: empirical martingale check under the delta=0 TRUE null
 # ---------------------------------------------------------------------------
-def martingale_check(rng, Ns=(2, 3, 4, 400), n_streams=40000, lam=LAMBDA, K=2,
-                     big_n_streams=200000):
+def martingale_check(rng, Ns=(2, 3, 4, 400), n_streams=200000, lam=LAMBDA, K=2,
+                     big_n_streams=5000000):
     """
     Under the delta=0 TRUE null (independent judges, no shared Theta, a=b=0.5),
     a genuine product martingale has E[e_T] = 1 for every horizon T=N.

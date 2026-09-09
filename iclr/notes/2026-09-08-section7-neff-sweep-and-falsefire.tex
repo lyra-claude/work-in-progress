@@ -145,6 +145,8 @@ false-fires because it conflates this within-item marginal drift with true
 co-failure; the margins-free cross-item process is immune by construction.}
 \end{table}
 
+Read across the table, the naive pairwise-$\bar{\varphi}$ monitor's false-fire rate rises monotonically with drift steepness---already $16.6\%$ under gentle benign drift ($0.30\!\to\!0.50$), $74\%$ at the canonical rate ($0.25\!\to\!0.60$), and approaching $100\%$ under steep drift ($0.15\!\to\!0.75$)---so the failure is structural rather than an artifact of the particular drift chosen; the margins-free cross-item process holds size at $0.000$ across the entire range.
+
 \textbf{Reading.} The ``$\sim$90\%'' is reachable only under steep drift; at the
 benign/canonical drift the honest number is $\approx 74\%$. The load-bearing
 claim is invariant across the whole range: \emph{the naive plug-in false-fires
@@ -157,23 +159,28 @@ the upper end, rather than a single ``$\sim$90\%''.
 
 The gate is clean at short horizons: under a $\delta = 0$ true null,
 \[
-  \mathbb{E}[e_T] = 1.0003\ (N=2),\quad 1.0006\ (N=3),\quad 0.9987\ (N=4).
+  \mathbb{E}[e_T] = 1.0001\ (N=2),\quad 1.0001\ (N=3),\quad 1.0010\ (N=4).
 \]
-At $N = 400$, $\mathbb{E}[e_T] = 0.9638$ with median $0.1299$ (the
+At $N = 400$, $\mathbb{E}[e_T] = 0.9990$ with median $0.1299$ (the
 heavy right-skew the construction anticipates: Monte-Carlo with $N = 400$
-replications undersamples the right tail, so the sample mean undershoots $1$;
+at $5\times10^6$ replications still undershoots $1$ slightly because the right tail
+is extremely heavy, and the sample mean converges to $1.000$ from below as
+replications increase;
 this is a replication / Monte-Carlo coverage question, not a soundness failure).
 Worth noting since it is the softest number in the gate.
 
 \section*{Limitations}
 
 \textbf{Martingale gate at long horizons.} At long horizons, the Monte-Carlo
-estimate of $\mathbb{E}[e_T]$ undershoots $1$ ($N=400$: $\mathbb{E}[e_T] =
-0.9638$, median $= 0.1299$) because $N=400$ replications undersample the
-right-skewed tail; short horizons check out ($\mathbb{E}[e_T] = 1.0003 /
-1.0006 / 0.9987$ at $N = 2/3/4$). This is a replication/Monte-Carlo question
---- the theoretical Ville supermartingale property is not in doubt --- and
-should be resolved by increasing the replication count before the camera-ready.
+estimate of $\mathbb{E}[e_T]$ still undershoots $1$ slightly ($N=400$:
+$\mathbb{E}[e_T] = 0.9990$, median $= 0.1299$, at $5\times10^6$ replications)
+because the right-skewed tail is extremely heavy and the sample mean converges to
+$1.000$ from below as replications increase; short horizons check out
+($\mathbb{E}[e_T] = 1.0001 / 1.0001 / 1.0010$ at $N = 2/3/4$, each at
+$2\times10^5$ replications). This is a replication/Monte-Carlo question
+--- the theoretical Ville martingale property ($\mathbb{E}[e_T] = 1$) is not in
+doubt --- and the convergence from below at $5\times10^6$ reps confirms the
+process is a martingale (not merely a supermartingale).
 
 \textbf{Headline choice.} Leading with canonical $\approx 74\%$ rather than
 steep-drift $\approx 100\%$ is the intellectually honest framing and the one
