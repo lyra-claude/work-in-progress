@@ -23,3 +23,5 @@ python3 -m venv .venv
 ```
 
 Outputs: `results.md` (tables + estimand definitions), `figure.png` (violin plots).
+
+Vendor-stratified analysis (within-vendor vs cross-vendor inter-judge agreement) lives in `compute_vendor.py` / `results-vendor.md` / `figure-vendor.png`.
