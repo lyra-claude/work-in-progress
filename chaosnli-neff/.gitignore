@@ -1,0 +1,14 @@
+# Virtual environment
+.venv/
+
+# Upstream 32-judge vote repo (clone separately — see README)
+repo/
+32judges-votes/
+
+# ChaosNLI data (CC BY-NC 4.0 — not redistributed; see README for fetch steps)
+chaosNLI_v1.0/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
