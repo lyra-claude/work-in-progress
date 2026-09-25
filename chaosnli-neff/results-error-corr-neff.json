@@ -1,0 +1,78 @@
+{
+  "dataset": "alphanli",
+  "matrix_definition": "C_err = 32x32 Pearson correlation of per-judge binary error vectors e_ij = (vote_ij != gold_j), mean-centered per judge, unit diagonal (trace=32). Identical error object to formulas.panel_metrics n_eff.",
+  "failure_policy": "drop-items (complete-case: drop any item with any judge parse_fail)",
+  "gold_source": "chaosNLI_alphanli.jsonl majority_label (via votes_io.load_panel)",
+  "task_A": {
+    "n_complete_case_items": 995,
+    "n_original_items": 1000,
+    "dropped_items": 5,
+    "rho_bar_err": 0.4860198525641679,
+    "std_offdiag": 0.07448246466891152,
+    "min_offdiag": 0.2887045225894366,
+    "max_offdiag": 0.8106971995461647,
+    "trace": 32.0,
+    "sum_lambda": 31.999999999999993,
+    "sum_lambda2": 271.82883115261365,
+    "lambda_max": 16.125242773447383,
+    "lambda_min": 0.15400959494068056,
+    "eigenvalues_ascending": [
+      0.15400959,
+      0.17672127,
+      0.18097265,
+      0.2341913,
+      0.24460139,
+      0.25250517,
+      0.26626797,
+      0.28438404,
+      0.28917556,
+      0.31512752,
+      0.3303425,
+      0.34800321,
+      0.36674687,
+      0.38941533,
+      0.42241327,
+      0.43113222,
+      0.44053512,
+      0.47662447,
+      0.50650548,
+      0.52642589,
+      0.58073849,
+      0.59197633,
+      0.6118405,
+      0.63473574,
+      0.69089317,
+      0.70500572,
+      0.77312021,
+      0.83539489,
+      0.87332743,
+      0.94890907,
+      1.99271487,
+      16.12524277
+    ]
+  },
+  "task_B": {
+    "n_eff_Kish": 1.9917,
+    "n_eff_PR": 3.7671
+  },
+  "task_C": {
+    "n_eff_PR_CS": 3.8449,
+    "n_eff_Kish_CS": 1.9917,
+    "note": "n_eff_Kish is identical under CS by construction (same formula, same rho_bar)."
+  },
+  "task_D": {
+    "total_gap": 1.7754,
+    "formula_part": 1.8532,
+    "cs_departure": -0.0778,
+    "total_gap_pct": 100.0,
+    "formula_part_pct": 104.38,
+    "cs_departure_pct": -4.38
+  },
+  "task_E": {
+    "paper_n_eff": 1.9990487500569172,
+    "paper_nu_H": 6.498981539032674,
+    "paper_PR": 6.427160450996994,
+    "paper_n_items": 1000,
+    "normalization_note": "paper n_eff USES THE SAME error-correlation object as C_err: it is Kish on phi_bar = mean Pearson correlation of binary error vectors (idx != gold), unit diagonal. paper nu_H / PR do NOT: they are the spectral participation ratio of the RESIDUAL GRAM correlation (one-hot votes minus the human probability distribution, not error vs gold), a differently-constructed unit-diagonal matrix. So my n_eff_Kish is directly comparable to paper n_eff; my n_eff_PR is NOT the same object as paper nu_H/PR."
+  }
+}
