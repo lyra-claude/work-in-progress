@@ -1,0 +1,16 @@
+condition,K,metric,avg_rate,avg_med_det,avg_status,prod_rate,prod_med_det,prod_status
+"(a) static H0, true strata",2,Type-I,0.0000,—,OK,0.0000,—,OK
+"(a) static H0, true strata",5,Type-I,0.0000,—,OK,0.0000,—,OK
+"(a) static H0, true strata",10,Type-I,0.0000,—,OK,0.0000,—,OK
+"(b) drift  H0, true strata",2,Type-I,0.0000,—,OK,0.0000,—,OK
+"(b) drift  H0, true strata",5,Type-I,0.0000,—,OK,0.0000,—,OK
+"(b) drift  H0, true strata",10,Type-I,0.0000,—,OK,0.0000,—,OK
+"(c') static H0, hard plug-in",2,Type-I,0.0080,255,OK,0.0080,59,OK
+"(c') static H0, hard plug-in",5,Type-I,0.0040,309,OK,0.0020,44,OK
+"(c') static H0, hard plug-in",10,Type-I,0.0000,—,OK,0.0000,—,OK
+"(d) drift  H0, noisy strata",2,Type-I,0.0000,—,OK,0.0000,—,OK
+"(d) drift  H0, noisy strata",5,Type-I,0.0000,—,OK,0.0000,—,OK
+"(d) drift  H0, noisy strata",10,Type-I,0.0000,—,OK,0.0000,—,OK
+(e) alt H1 gamma=0.10,2,Power,0.0000,—,power=0.000,0.0000,—,power=0.000
+(e) alt H1 gamma=0.10,5,Power,0.0000,—,power=0.000,0.0040,27,power=0.004
+(e) alt H1 gamma=0.10,10,Power,0.0140,1181,power=0.014,0.0260,72,power=0.026
