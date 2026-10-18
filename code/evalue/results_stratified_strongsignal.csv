@@ -1,0 +1,19 @@
+part,gamma,N,condition,strata_type,rate,med_det,n_fired,flag
+power,0.1,2000,alt H1,true,0.0,,0,
+power,0.1,5000,alt H1,true,0.0,,0,
+power,0.1,10000,alt H1,true,0.002,21,1,
+power,0.2,2000,alt H1,true,0.012,51,6,
+power,0.2,5000,alt H1,true,0.006,145,3,
+power,0.2,10000,alt H1,true,0.01,69,5,
+power,0.3,2000,alt H1,true,0.07,130,35,
+power,0.3,5000,alt H1,true,0.106,370,53,
+power,0.3,10000,alt H1,true,0.198,2414,99,
+power,0.5,2000,alt H1,true,0.446,903,223,
+power,0.5,5000,alt H1,true,0.968,2219,484,HIGH_POWER
+power,0.5,10000,alt H1,true,1.0,2068,500,HIGH_POWER
+validity,0.5,5000,(b) drift H0 true strata,true,0.0,,0,
+validity,0.5,5000,(d) drift H0 noisy strata,noisy,0.0,,0,
+validity,0.5,10000,(b) drift H0 true strata,true,0.0,,0,
+validity,0.5,10000,(d) drift H0 noisy strata,noisy,0.0,,0,
+validity,0.5,5000,(a) static H0 true strata,true,0.0,,0,
+validity,0.5,10000,(a) static H0 true strata,true,0.0,,0,
