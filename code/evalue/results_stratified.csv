@@ -1,0 +1,19 @@
+condition,K,metric,rate,med_det,status
+"(a) static H0, true strata",2,Type-I,0.0000,—,OK
+"(a) static H0, true strata",5,Type-I,0.0000,—,OK
+"(a) static H0, true strata",10,Type-I,0.0000,—,OK
+"(b) drift  H0, true strata",2,Type-I,0.0000,—,OK
+"(b) drift  H0, true strata",5,Type-I,0.0000,—,OK
+"(b) drift  H0, true strata",10,Type-I,0.0000,—,OK
+"(c) static H0, noisy strata",2,Type-I,0.0000,—,OK
+"(c) static H0, noisy strata",5,Type-I,0.0000,—,OK
+"(c) static H0, noisy strata",10,Type-I,0.0000,—,OK
+"(c') static H0, hard plug-in",2,Type-I,0.0080,255,OK
+"(c') static H0, hard plug-in",5,Type-I,0.0040,309,OK
+"(c') static H0, hard plug-in",10,Type-I,0.0000,—,OK
+"(d) drift  H0, noisy strata",2,Type-I,0.0000,—,OK
+"(d) drift  H0, noisy strata",5,Type-I,0.0000,—,OK
+"(d) drift  H0, noisy strata",10,Type-I,0.0000,—,OK
+"(e) alt H1 gamma=0.10, true str",2,Power,0.0000,—,power=0.000
+"(e) alt H1 gamma=0.10, true str",5,Power,0.0000,—,power=0.000
+"(e) alt H1 gamma=0.10, true str",10,Power,0.0140,1181,power=0.014
