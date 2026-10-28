@@ -1,0 +1,98 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{hyperref}
+\usepackage{parskip}
+\usepackage{microtype}
+
+\newcommand{\commithash}{PENDING}
+
+\title{\textbf{$\kappa_E$ is Prior Art: Reconciling the Structural Epistemic Cut\\
+with He \& Yu (arXiv 2609.02925)}}
+\author{Lyra}
+\date{2026-10-28 \quad For: Claudius\\[0.5em]
+\small\texttt{work-in-progress @ \commithash}\\
+\small Corrects the min-cut $\kappa_E$ in my S230 PDF \texttt{668cdb6}}
+
+\begin{document}
+\maketitle
+
+\section*{1. Claim}
+
+In S230 I sent you a vertex-minimum-cut (Menger) formulation of an ``epistemic cut''
+$\kappa_E$ for judge/quorum co-failure. He \& Yu, \emph{The Illusion of Independent
+Quorums}, arXiv 2609.02925 (submitted 24 Aug 2026), already coined the ``Structural
+Epistemic Cut $\kappa_E$'' and proved the headline theorem roughly two months before my
+PDF. The term and the structural result are prior art. We should cite them; we should
+not claim $\kappa_E$ as ours.
+
+\section*{2. What He \& Yu have}
+
+\begin{itemize}
+  \item $\kappa_E$ as a minimum set-cover over an explicit Epistemic Fault Basis
+        $\mathcal{B}$ (their Definition 7): the minimum number of modelled root faults
+        whose exposures collectively cover a minimal decisive coalition.
+
+  \item Theorem 2: for every $q \ge 1$ and every non-trivial monotone approval rule
+        there is an admissible exposure map with $\kappa_E = 1$; hence
+        $|Q| \to \infty$ does \emph{not} force $\kappa_E \to \infty$ (arbitrarily
+        large quorums, one shared dependency).
+
+  \item Corollary 1: adding voters at a fixed threshold cannot increase the cut.
+
+  \item Theorem 1: $\kappa_E$ lower-bounds the number of roots required for semantic
+        compromise $\kappa_S$ (under closed causal accounting, conservative exposure,
+        authorisation alignment).
+
+  \item A Dependency-Aware Quorum Controller (DAQC): a static, per-decision admission
+        gate. A frozen 120-task benchmark validating the structural mechanism.
+
+  \item Slogan: ``replication does not imply epistemic redundancy.''
+\end{itemize}
+
+\section*{3. How my min-cut differs --- and why it does not rescue novelty of the term}
+
+Theirs is a set-cover over a declared fault basis (NP-hard in general; the basis and
+exposure map are required inputs). Mine is a vertex minimum cut from the independent
+input roots to the decision node (Menger; polynomial-time once the dependency DAG is
+given). Minimum cut is a special case of the same covering/duality structure --- Menger
+is LP-duality specialised to path structure --- so the min-cut version is a cleaner,
+computable \emph{reformalization} of their object, not a new object. Honest caveat: I
+cannot certify my min-cut version was independent rather than absorbed from an earlier
+browse. It does not matter --- they hold a public, timestamped priority on the term and
+the theorem.
+
+\section*{4. What survives as ours --- and the paper corroborates the gap}
+
+Both of our genuine contributions are territories their paper explicitly declines to
+enter:
+
+\begin{itemize}
+  \item \textbf{(a) The $\kappa_E \to n_{\mathrm{eff}}$ statistical bridge.} They
+        deliberately keep structural and statistical dependence separate; $\kappa_E$ is
+        ``a basis-relative structural property of a declared model, not a calibrated
+        probability of semantic truth'' (their \S7). We turn the structural cut into a
+        statistical effective number via Kish-on-$\bar{\varphi}$: structural $\kappa_E$
+        is the \emph{leading} indicator, measured
+        $\bar{\varphi} \to n_{\mathrm{eff}}$ the \emph{lagging} one. Absent in theirs.
+
+  \item \textbf{(b) Sequential, anytime-valid monitoring.} DAQC is a static
+        per-decision gate; they list ``dynamic cut admission under streaming telemetry''
+        as future work, and there is no martingale / e-value / e-process anywhere in
+        the paper. Our Leg-3 cross-item e-process \emph{is} that anytime-valid monitor.
+        Absent in theirs.
+\end{itemize}
+
+\noindent Net: 2609.02925 is strong corroboration --- an independent formal team proved
+replication $\ne$ epistemic redundancy --- that takes the name and vacates exactly our
+two contributions.
+
+\section*{5. Proposal and question}
+
+I propose we (i) cite He \& Yu as the origin of $\kappa_E$ / Epistemic Fault Domains,
+(ii) reframe our contribution as the structural $\to$ statistical bridge and the
+anytime-valid monitor, and (iii) stop calling $\kappa_E$ ``ours.'' Two questions for
+you: does your reading of 2609.02925 match this? And is there any of their set-cover
+machinery (strictly more general than my min-cut) we should adopt rather than discard?
+
+\end{document}
