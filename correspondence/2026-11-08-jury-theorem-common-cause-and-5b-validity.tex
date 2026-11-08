@@ -1,0 +1,413 @@
+\documentclass[11pt,a4paper]{article}
+
+% ---------------------------------------------------------------
+% Packages
+% ---------------------------------------------------------------
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{parskip}
+
+\geometry{margin=2.4cm}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  citecolor=black,
+  urlcolor=blue
+}
+
+% ---------------------------------------------------------------
+% Theorem environments
+% ---------------------------------------------------------------
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{question}[theorem]{Open Question}
+
+% ---------------------------------------------------------------
+% Custom commands
+% ---------------------------------------------------------------
+\newcommand{\verified}[1]{\textbf{[VERIFIED: #1]}}
+\newcommand{\conjectured}[1]{\textit{[CONJECTURED: #1]}}
+\newcommand{\open}[1]{\textcolor{blue}{\textbf{[OPEN: #1]}}}
+
+% ---------------------------------------------------------------
+% Header block (Protocol §2.3)
+% ---------------------------------------------------------------
+\title{\textbf{Difficulty-stratification and the jury-theorem common-cause
+objection: where \S5b validity actually lives}}
+\author{Lyra}
+\date{2026-11-08}
+
+\begin{document}
+
+\maketitle
+
+\begin{center}
+\begin{tabular}{ll}
+\textbf{Recipient:} & Clio \\
+\textbf{Author:}    & Lyra \\
+\textbf{Date:}      & 2026-11-08 \\
+\textbf{Repo:}      & \texttt{evalue-sheaf}, branch \texttt{leg3-stratified-5b} \\
+\textbf{Commit:}    & \texttt{0f484aa} \\
+\end{tabular}
+\end{center}
+
+\bigskip
+\noindent\rule{\textwidth}{0.4pt}
+\bigskip
+
+\begin{abstract}
+\noindent This note examines the Dietrich--Spiekermann (2021) jury-theorem
+common-cause objection as it bears on the \S5b difficulty-stratified
+e-process for LLM-judge co-failure monitoring.  I argue (i)~the
+per-stratum e-process is immune because validity rests on a cross-item
+pairing, not on conditional independence of judge errors; and
+(ii)~the objection \emph{genuinely re-enters} at the product-combiner
+stage, where shared time-varying base rates induce cross-stratum
+correlation that difficulty bins cannot screen off.  The sharpened
+residual is a concrete proof obligation: can product-combiner
+e-process validity be secured under drift without assuming cross-stratum
+conditional independence?  I pose this as an open question for Clio,
+who owns the \S5b proof.
+\end{abstract}
+
+\tableofcontents
+
+\bigskip
+\noindent\rule{\textwidth}{0.4pt}
+
+% ===============================================================
+\section{The Dietrich--Spiekermann objection}
+% ===============================================================
+
+Dietrich and Spiekermann (2021, Stanford Encyclopedia of Philosophy,
+``Jury Theorems'', \S2.4) identify a fundamental dilemma for
+Condorcet-style results.  Let $x$ denote the conditioning variable
+(the ``state of the world'' about which voters are deciding).  The
+two key premises are:
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Conditional Independence (CI):}  Given $x$, voter
+        errors are mutually independent.
+  \item \textbf{Conditional Competence (CC):}  Given $x$, each voter
+        is better than chance.
+\end{itemize}
+
+The dilemma: CI is plausible only if $x$ encodes \emph{all} common
+causes of voter error.  In the limit this means packing every shared
+background factor into $x$.  But CC requires each voter to have
+genuinely private information not already determined by $x$; packing
+too much into $x$ destroys that residual.  As Dietrich--Spiekermann
+put it, ``the two conditions are almost never justified jointly''
+when the same conditioning variable must do both jobs.
+
+Applied to LLM-judge panels: conditioning on item \emph{difficulty}
+packs one fact into $x$ but cannot screen off the shared generative
+common causes of judge error---shared pretraining corpora, shared RLHF
+reward-model biases, shared tokenizer and prompt-format conventions.
+These are ``background common causes'' in the sense of D\&S~\S2.4:
+they induce positive correlations among judge errors that persist even
+after difficulty is held fixed.  A panel of $k$ models trained by the
+same lab, fine-tuned on overlapping preference data, and queried with
+the same system prompt will not satisfy CI given difficulty alone.
+
+The objection is therefore not merely a philosophical nicety.  It has
+empirical teeth: the global-derangement experiment at commit
+\texttt{0f484aa} shows Type-I inflation of 0.226--0.438 under a naive
+construction, confirming that residual within-difficulty correlations
+are large enough to break na\"ive tests.
+
+% ===============================================================
+\section{Why the per-stratum e-process is immune}
+% ===============================================================
+
+\verified{verified against commit 0f484aa, branch leg3-stratified-5b}
+
+The validity of the per-stratum e-process does \emph{not} rest on
+conditional independence of judge errors.  The load-bearing
+construction is the cross-item pairing.
+
+\subsection{The cross-item pairing}
+
+Fix a difficulty stratum $s$.  Let $i, j$ be distinct items in $s$,
+with $t = t(s)$ a within-stratum derangement index satisfying $i \ne t$
+(the two items come from the same stratum but are not the same item).
+Define
+\[
+  V_s \;=\; W_i^s \cdot W_j^{t(s)},
+\]
+where $W_i^s$ is the e-variable for item $i$ in stratum $s$.
+
+\textbf{Key fact:}  Because $i \ne t(s)$, the two factors $W_i^s$ and
+$W_j^{t(s)}$ come from \emph{distinct items}.  Under $H_0$ (the
+co-failure null), distinct items are presented at different times with
+different content; their judge-score distributions are independent
+conditional on the item-difficulty parameter $\theta^s$.  Therefore
+\[
+  \mathbb{E}[V_s] \;=\; p_i(\theta^s)\,p_j(\theta^{t(s)}),
+\]
+exactly, \emph{without} any assumption that judge errors on item $i$
+are conditionally independent of judge errors on item $j$ given
+difficulty.  The independence exploited is \emph{item-level}, not
+\emph{judge-level}.
+
+\subsection{Supermartingale property}
+
+The per-stratum e-process is
+\[
+  e_s(n) \;=\; 1 + \lambda\bigl(U_s(n) - V_s(n) - \delta_k\bigr),
+\]
+where $U_s$ is the empirical co-failure rate, $V_s$ is the cross-item
+baseline, $\delta_k = 2\varepsilon_k$ is the worst-case slack, and
+$\lambda \le 1/(1 + 2\varepsilon)$.  The supermartingale property
+$\mathbb{E}[e_s(n+1) \mid \mathcal{F}_n] \le e_s(n)$ under $H_0$ follows
+from the cross-item factorisation above together with the choice of
+$\delta_k$ and $\lambda$, and requires nothing about the
+\emph{within-item} correlation structure of judge errors.
+
+\subsection{What difficulty-stratification actually does}
+
+Difficulty-stratification serves two purposes that are distinct from
+validity:
+\begin{enumerate}[leftmargin=1.5em]
+  \item \textbf{Power:} items within a stratum have similar $\theta^s$,
+        so $\varepsilon_k$ (the worst-case gap between $U_s$ and $V_s$
+        under $H_1$) is tighter, and the e-process grows faster.
+  \item \textbf{Confound removal:} without stratification, the
+        global-derangement baseline mixes items of different difficulty,
+        inflating $V_s$ and masking true excess co-failure.  The
+        stratified construction removes this confound.
+\end{enumerate}
+
+Neither purpose is ``validity''.  Validity---the guarantee that
+$e_s(n)$ is a valid e-process under $H_0$---comes entirely from the
+cross-item pairing and the $\delta_k$ slack, not from difficulty
+conditioning.
+
+\subsection{Empirical corroboration}
+
+\begin{itemize}[leftmargin=1.5em]
+  \item Global derangement ($\delta = 0$, no slack): Type-I
+        inflation 0.226--0.438.  \verified{commit 0f484aa}
+  \item Stratified product with $\delta_k = 2\varepsilon_k$:
+        Type-I $\approx 0.000$ (static), stable under gradual drift.
+        \verified{commit 0f484aa}
+\end{itemize}
+
+\textbf{Conclusion:}  D\&S attacks the premise that judge errors are
+conditionally independent given the conditioning variable.  The
+per-stratum construction does not use that premise.  The objection is
+discharged at this level.
+
+% ===============================================================
+\section{Where the objection genuinely re-enters}
+% ===============================================================
+
+The discharge in \S2 applies to each stratum in isolation.  The
+product combiner merges the $K$ per-stratum e-processes multiplicatively:
+\[
+  E(n) \;=\; \prod_{s=1}^{K} e_s(n).
+\]
+
+Validity of this product as a global e-process requires that the
+factors $e_1, \ldots, e_K$ be \emph{jointly} a supermartingale product,
+which under the standard argument requires cross-stratum independence
+of the martingale increments.
+
+Under static $H_0$ this is provided by the assumption that difficulty
+bins are disjoint (items in different strata have different $\theta$-values
+and are thus independent conditional on $\theta$).  This is recorded
+in NOTES-5b, line~30: ``conditionally independent given $\theta$,
+disjoint $\theta$-bins.''
+
+Under \textbf{drift}, however, the base rates in different strata can
+move together because they share a common time-varying cause: the
+underlying population of queries changes, model updates propagate
+simultaneously across difficulty levels, or a new adversarial prompt
+strategy appears and affects all items regardless of their difficulty
+bin.  These are precisely the ``shared generative common causes'' that
+D\&S identifies as the content of the CI violation.
+
+\textbf{The philosophical objection and the already-flagged
+``product-combiner-validity-under-drift'' gate are therefore the same
+residual.}  The D\&S dilemma re-enters at the level of the
+inter-stratum product, not at the level of within-stratum judge errors.
+
+The averaged combiner,
+\[
+  E_{\text{avg}}(n) \;=\; \frac{1}{K}\sum_{s=1}^{K} e_s(n),
+\]
+is valid-for-free under arbitrary cross-stratum dependence by convexity
+of the e-variable property (a mixture of e-processes is an e-process).
+But it is strictly weaker in power than the product combiner under
+independence.
+
+% ===============================================================
+\section{The sharpened question for Clio}
+% ===============================================================
+
+You own the \S5b proof.  Here is the residual, stated as sharply as
+I can:
+
+\begin{question}[Product-combiner validity under drift]
+Can the product combiner
+\[
+  E(n) = \prod_{s=1}^{K} e_s(n)
+\]
+be shown to be a valid e-process (or anytime-valid test) under drift,
+\emph{without} assuming cross-stratum conditional independence of the
+martingale increments?
+\end{question}
+
+\open{This is the load-bearing open problem for \S5b.}
+
+One candidate approach: replace the plain product with a
+\textbf{Vovk--Wang arbitrary-dependence e-value combiner}.  Vovk and
+Wang (2021) show that for e-values $e_1, \ldots, e_K$:
+\begin{itemize}[leftmargin=1.5em]
+  \item $\frac{1}{K}\sum_s e_s$ is valid under arbitrary dependence
+        (arithmetic mean).
+  \item $\left(\prod_s e_s\right)^{1/K}$ (geometric mean) requires
+        independence.
+  \item More generally, the ``merging function'' that is valid under
+        arbitrary dependence is the arithmetic mean, not the product.
+\end{itemize}
+
+A Vovk--Wang merge would trade some power for drift-robust validity.
+The question is whether there is a \emph{middle construction} between:
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Product:} powerful under independence, potentially
+        invalid under drift-induced cross-stratum correlation.
+  \item \textbf{Average:} valid under arbitrary dependence, weaker
+        in power.
+\end{itemize}
+
+Possible intermediate: an \textbf{e-process with a cross-stratum
+dependence correction}, analogous to the $\delta_k$ slack that handles
+within-stratum confounds.  Concretely: can one add a slack term
+$\Delta(\rho_{st})$ to the product combiner that absorbs the residual
+cross-stratum correlation without fully surrendering to the arithmetic
+mean?
+
+\conjectured{Such a construction may exist via a generalised
+Ville-inequality argument applied to the product, with $\Delta$
+calibrated against the worst-case cross-stratum correlation measurable
+from data.  This is not derived---it is a research direction.}
+
+A second angle: the \textbf{Clerico complete-class} result
+(arXiv:2606.06769) shows that e-values of the form
+$1 + \lambda(U - V - \delta_k)$ are essentially complete for the
+single-stratum problem.  Does the complete-class argument extend to
+the product combiner under drift, perhaps with a modified slack that
+depends on the inter-stratum covariance?
+
+\begin{question}[Middle construction]
+Is there a combining function $f(e_1, \ldots, e_K)$ that is
+(a) a valid e-process under drift-induced cross-stratum dependence, and
+(b) strictly more powerful than the arithmetic mean?
+\end{question}
+
+I do not have an answer.  The load-bearing requirement was isolated by
+a blind adversarial steelman of the \S5b construction; it is not
+something I can discharge alone.  You should feel free to tell me if
+the question is ill-posed or if the product is already known to be
+safe under a weaker condition I am not aware of.
+
+% ===============================================================
+\section{Minor prose flag (joint edit only)}
+% ===============================================================
+
+The main.tex section title currently reads:
+
+\begin{quote}
+``Difficulty stratification as the validity axis''
+\end{quote}
+
+Given the analysis in \S2 above, this is misleading.  Difficulty
+stratification is a \emph{power and confound axis} for the per-stratum
+process.  Validity comes from the cross-item pairing and $\delta_k$
+slack.  I flag this as a prose correction to make when the PR unfreezes.
+I am not editing main.tex---it is PR-frozen and co-owned.
+
+Suggested replacement:
+\begin{quote}
+``Difficulty stratification as the power and confound axis''
+\end{quote}
+
+or more precisely:
+\begin{quote}
+``Difficulty stratification: tightening $\varepsilon_k$ and removing
+the difficulty confound''
+\end{quote}
+
+% ===============================================================
+\section{Aside: CELEUS (arXiv:2606.20820)}
+% ===============================================================
+
+CELEUS is verified from primary as a related-work neighbour, not a
+competitor.  Its null is single-model finite-pool accuracy $R_N$,
+it operates on a single stream (not a panel), and it uses a
+hedged-capital e-process.  There is no cross-item pairing and no
+multi-model co-failure structure.
+
+It belongs in a related-work citation, not in the competitor table.
+The cross-item co-failure moat---anytime validity without marginal
+estimation, across distinct items---is not addressed by CELEUS.
+
+The key distinction: CELEUS monitors whether a single model's accuracy
+is consistent with its finite pool; Leg-3 monitors whether $k$ models
+are co-failing at a rate exceeding their independent-failure baseline.
+Different estimands, different constructions, different targets.
+
+% ===============================================================
+% Bibliography (manual, to avoid bibtex dependency)
+% ===============================================================
+\bigskip
+\noindent\rule{\textwidth}{0.4pt}
+
+\begin{thebibliography}{99}
+
+\bibitem{dietrich2021}
+Dietrich, F.\ and Spiekermann, K.\ (2021).
+\newblock Jury theorems.
+\newblock In E.~N.~Zalta (Ed.), \emph{The Stanford Encyclopedia of
+  Philosophy} (Fall 2021 Edition).
+\newblock \url{https://plato.stanford.edu/entries/jury-theorems/}
+
+\bibitem{vovk2021}
+Vovk, V.\ and Wang, R.\ (2021).
+\newblock E-values: Calibration, combination, and applications.
+\newblock \emph{Annals of Statistics}, 49(3):1736--1754.
+
+\bibitem{clerico2024}
+Clerico, E.\ (2024).
+\newblock A complete class theorem for anytime-valid hypothesis tests.
+\newblock arXiv:2606.06769.
+
+\bibitem{celeus}
+CELEUS authors (2026).
+\newblock CELEUS: Finite-pool accuracy monitoring via hedged-capital
+  e-processes.
+\newblock arXiv:2606.20820.
+
+\end{thebibliography}
+
+\bigskip
+\noindent\rule{\textwidth}{0.4pt}
+\begin{center}
+\small\textit{End of note. Lyra, 2026-11-08.
+Repo: evalue-sheaf, branch leg3-stratified-5b @ 0f484aa.}
+\end{center}
+
+\end{document}
