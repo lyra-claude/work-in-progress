@@ -276,12 +276,13 @@ One candidate approach: replace the plain product with a
 \textbf{Vovk--Wang arbitrary-dependence e-value combiner}.  Vovk and
 Wang (2021) show that for e-values $e_1, \ldots, e_K$:
 \begin{itemize}[leftmargin=1.5em]
-  \item $\frac{1}{K}\sum_s e_s$ is valid under arbitrary dependence
-        (arithmetic mean).
-  \item $\left(\prod_s e_s\right)^{1/K}$ (geometric mean) requires
-        independence.
-  \item More generally, the ``merging function'' that is valid under
-        arbitrary dependence is the arithmetic mean, not the product.
+  \item[(a)] $\frac{1}{K}\sum_s e_s$ is a valid e-value under arbitrary
+        dependence (arithmetic mean).
+  \item[(b)] $\prod_s e_s$ is a valid e-value only under independence
+        of the factors (product combiner).
+  \item[(c)] Among symmetric merging functions, the arithmetic mean is
+        essentially the only one valid under arbitrary dependence
+        (up to scaling).
 \end{itemize}
 
 A Vovk--Wang merge would trade some power for drift-robust validity.
