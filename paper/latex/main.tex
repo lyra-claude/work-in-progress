@@ -518,6 +518,18 @@ related-work table sits in all three.
   vote-threshold (exceedance) decisions may differ \citep{noonan2608}.
   Our monitoring target is the mean co-failure rate, so the mean figure is
   the appropriate object here.
+  \item \textbf{Single-pass filtration (no verdict leakage).} The cross-item
+  pairing $V_s = W_i^s \cdot W_j^{t(s)}$ with distinct items $i \ne j$ delivers
+  the margins-free independence baseline $\mathbb{E}[V_s]=p_i p_j$ that the
+  co-failure e-process relies on \emph{only} under single-pass evaluation. In a
+  multi-round orchestration that passes prior verdicts between rounds or between
+  judges, this independence can break: a leaked prior verdict contaminates the
+  filtration to which the e-process is adapted---the data-pipeline analogue of
+  briefing a verifier with the very conclusion it is meant to check
+  independently. The anytime validity is therefore \emph{conditional} on a
+  deployment requirement: the orchestration must not leak prior verdicts into
+  the filtration that the cross-item e-process is adapted to. We state this as
+  an explicit scope condition, not a property that holds automatically.
 \end{enumerate}
 
 \end{document}
