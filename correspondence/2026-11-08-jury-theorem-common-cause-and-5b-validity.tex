@@ -164,16 +164,64 @@ difficulty.  The independence exploited is \emph{item-level}, not
 
 \subsection{Supermartingale property}
 
-The per-stratum e-process is
+\textbf{Per-step factor vs.\ wealth process.}
+Two objects must be distinguished carefully.  The \emph{per-step betting
+factor} at time $n$ is
 \[
-  e_s(n) \;=\; 1 + \lambda\bigl(U_s(n) - V_s(n) - \delta_k\bigr),
+  e_n \;=\; 1 + \lambda\bigl(U_n - V_n - \delta_k\bigr),
 \]
-where $U_s$ is the empirical co-failure rate, $V_s$ is the cross-item
-baseline, $\delta_k = 2\varepsilon_k$ is the worst-case slack, and
-$\lambda \le 1/(1 + 2\varepsilon)$.  The supermartingale property
-$\mathbb{E}[e_s(n+1) \mid \mathcal{F}_n] \le e_s(n)$ under $H_0$ follows
-from the cross-item factorisation above together with the choice of
-$\delta_k$ and $\lambda$, and requires nothing about the
+where $U_n = W_i^n \cdot W_j^n$ is the same-item co-failure indicator,
+$V_n = W_i^n \cdot W_j^{t(n)}$ is the cross-item baseline using the
+paired item $t(n)$, $\delta_k = 2\varepsilon_k$ is the worst-case slack
+for stratum $k$, and $\lambda \le 1/(1 + 2\varepsilon_k)$.
+
+The \emph{wealth process} is the cumulative product of these factors:
+\[
+  M_n \;=\; \prod_{s=1}^{n} e_s, \qquad M_0 = 1.
+\]
+The process $M_n$ is what crosses the Ville threshold $1/\alpha$ to
+trigger a rejection; it is a running product, \emph{not} a single
+affine expression.
+
+\textbf{Supermartingale property.}
+Provided $t(n)$ is $\mathcal{F}_{n-1}$-measurable (i.e., $t(n)$ is a
+\emph{past} item, with index $t(n) < n$), the filtration-adapted
+supermartingale property reads:
+\[
+  \mathbb{E}\bigl[M_n \mid \mathcal{F}_{n-1}\bigr]
+  \;=\; M_{n-1}\,\mathbb{E}\bigl[e_n \mid \mathcal{F}_{n-1}\bigr]
+  \;\le\; M_{n-1},
+\]
+which is equivalent to $\mathbb{E}[e_n \mid \mathcal{F}_{n-1}] \le 1$,
+i.e.\ the per-step factor is a super-probability increment.  Under $H_0$,
+\begin{align*}
+  \mathbb{E}[e_n \mid \mathcal{F}_{n-1}]
+  &\;=\; 1 + \lambda\bigl(
+      \mathbb{E}[U_n \mid \mathcal{F}_{n-1}]
+      - \mathbb{E}[V_n \mid \mathcal{F}_{n-1}]
+      - \delta_k\bigr).
+\end{align*}
+Because $t(n) < n$ is fixed and $\mathcal{F}_{n-1}$-measurable, item
+$t(n)$'s outcome is already observed; the cross-item factorisation gives
+$\mathbb{E}[V_n \mid \mathcal{F}_{n-1}] = W_j^{t(n)}\,p_i(\theta^n)$,
+while $\mathbb{E}[U_n \mid \mathcal{F}_{n-1}] = p_i(\theta^n)\,p_j(\theta^n)$
+under $H_0$.  The $\delta_k = 2\varepsilon_k$ slack absorbs the worst-case
+within-stratum oscillation of $p_i$ and $p_j$, so
+$\mathbb{E}[U_n \mid \mathcal{F}_{n-1}] - \mathbb{E}[V_n \mid \mathcal{F}_{n-1}]
+\le \delta_k$ throughout, and
+$\mathbb{E}[e_n \mid \mathcal{F}_{n-1}] \le 1$.
+The clipping of $\lambda$ to $[0, 1/(1 + 2\varepsilon_k)]$ ensures $e_n \ge 0$
+almost surely.
+
+\textbf{Measurability requirement.}
+The argument above is valid \emph{if and only if} $t(n)$ is strictly a
+past item ($t(n) < n$).  Using a full-stream derangement (computing $t$
+over all items before any are observed) violates this requirement: $t(n)$
+may reference a future item, making $e_n$ not $\mathcal{F}_{n-1}$-measurable
+and invalidating the anytime/sequential guarantee.  The correct construction
+(implemented in \texttt{make\_online\_past\_pairing}) draws $t(n)$ uniformly
+from prior same-stratum items at time $n$, with $e_n = 1$ (no bet) when
+no prior same-stratum item exists.  This requirement and fixes nothing about the
 \emph{within-item} correlation structure of judge errors.
 
 \subsection{What difficulty-stratification actually does}

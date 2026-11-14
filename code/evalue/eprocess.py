@@ -78,6 +78,52 @@ def make_derangement_within_strata(strata: np.ndarray, rng: np.random.Generator,
     return t
 
 
+def make_online_past_pairing(strata: np.ndarray, rng: np.random.Generator, Q: int = Q) -> np.ndarray:
+    """
+    Build t(s): a PAST-ONLY (predictable, online) pairing for anytime validity.
+
+    For each item s in arrival order:
+      - If at least one prior item (index < s) exists in the same stratum k:
+          draw t(s) uniformly at random from those prior same-stratum items.
+          This is F_{s-1}-measurable: t(s) is chosen before item s is observed.
+      - If no prior same-stratum item exists (s is the first item in its stratum):
+          set t(s) = s  (sentinel: no bet — caller must skip betting for these items).
+
+    Returns array t of length N (global indices), with:
+      t[s] < s  whenever a valid prior partner exists in the same stratum, and
+      t[s] == s (sentinel) for the first item in each stratum.
+
+    Callers that need a "has_partner" mask can compute: has_partner = (t != np.arange(N)).
+    This works globally (N = len(strata)) but NOT on stratum sub-slices; use
+    online_has_partner() for per-stratum sentinel detection.
+
+    This guarantees F_{n-1}-measurability of t(n): every pairing partner is strictly a
+    past observation, so the per-step factor e_n is adapted to the filtration and the
+    supermartingale property holds without look-ahead.
+    """
+    N = len(strata)
+    t = np.arange(N, dtype=int)   # default: sentinel (self-pair = no bet)
+
+    # Vectorised per-stratum: within each stratum, items arrive in index order.
+    # For the j-th item in stratum k (j=0 is sentinel), draw r ~ Uniform{0,...,j-1}
+    # and set t to the global index of the r-th prior item in that stratum.
+    for k in range(Q):
+        idx = np.where(strata == k)[0]   # global indices, sorted ascending
+        m = len(idx)
+        if m <= 1:
+            continue   # only sentinel; t[idx] stays as-is
+        # Batch: for j=1..m-1 draw r[j] ~ Uniform{0,...,j-1}
+        # rng.integers(j) gives uniform in {0,...,j-1} but doesn't vectorise across
+        # different upper bounds; use the Fisher-Yates partial shuffle trick instead:
+        # generate m-1 uniform floats and multiply by j to get the correct index.
+        # This is equivalent to independently drawing r[j] ~ Uniform{0,...,j-1}.
+        uniforms = rng.random(m - 1)   # shape (m-1,), each in [0,1)
+        r = (uniforms * np.arange(1, m)).astype(int)   # r[j-1] in {0,...,j-1}
+        t[idx[1:]] = idx[r]
+
+    return t
+
+
 def make_derangement_global(N: int, rng: np.random.Generator) -> np.ndarray:
     """
     Build t(s): a derangement over the WHOLE stream (Method B ablation).
@@ -160,6 +206,78 @@ def accumulate_wealth_mixture(
     return np.mean(np.stack(wealths, axis=0), axis=0)
 
 
+# ── Online (past-only) wealth accumulation ────────────────────────────────────
+
+def accumulate_wealth_online(
+    U: np.ndarray,
+    V: np.ndarray,
+    delta: np.ndarray,
+    has_partner: np.ndarray,
+    lam: float,
+    clip_lam: bool = False,
+    eps_per_item: np.ndarray | None = None,
+) -> np.ndarray:
+    """
+    Wealth accumulation for the online past-only pairing.
+
+    Items where has_partner[s] is False (no prior same-stratum partner — sentinels)
+    contribute a factor of 1.0 to the product: they make no bet.
+    All other items contribute 1 + lam*(U_s - V_s - delta_s) as usual.
+
+    Args:
+        U:           same-item co-failure indicator (N,)
+        V:           cross-item baseline (N,); V[s] = W_j[t[s]] (sentinel positions ignored)
+        delta:       per-item slack (N,)
+        has_partner: boolean mask (N,); True where item s has a valid F_{s-1}-measurable partner
+        lam:         betting fraction
+        clip_lam:    if True, clip lam per item to [0, 1/(1+2*eps)]
+        eps_per_item: required when clip_lam=True
+
+    Returns:
+        M: wealth process of shape (N,), M[n] = product over s=0..n
+    """
+    N = len(U)
+
+    if clip_lam and eps_per_item is not None:
+        lam_max = 1.0 / (1.0 + 2.0 * eps_per_item)
+        lam_eff = np.minimum(lam, lam_max)
+    else:
+        lam_eff = np.full(N, lam) if np.isscalar(lam) else np.array(lam, dtype=float)
+
+    increments = np.ones(N, dtype=float)
+    if has_partner.any():
+        increments[has_partner] = (
+            1.0 + lam_eff[has_partner] * (U[has_partner] - V[has_partner] - delta[has_partner])
+        )
+
+    assert np.all(increments >= -1e-12), (
+        "negative increment in online past-pairing: check lambda bound and DGP"
+    )
+    increments = np.maximum(increments, 0.0)
+    M = np.cumprod(increments)
+    return M
+
+
+def accumulate_wealth_online_mixture(
+    U: np.ndarray,
+    V: np.ndarray,
+    delta: np.ndarray,
+    has_partner: np.ndarray,
+    clip_lam: bool = False,
+    eps_per_item: np.ndarray | None = None,
+) -> np.ndarray:
+    """
+    Robbins-style mixture for the online past-only pairing.
+    Averages over LAMBDA_GRID; sentinel items (has_partner=False) contribute factor 1.
+    """
+    wealths = []
+    for lam in LAMBDA_GRID:
+        W = accumulate_wealth_online(U, V, delta, has_partner, lam,
+                                     clip_lam=clip_lam, eps_per_item=eps_per_item)
+        wealths.append(W)
+    return np.mean(np.stack(wealths, axis=0), axis=0)
+
+
 # ── The three methods ──────────────────────────────────────────────────────────
 
 def method_A(data: dict, rng: np.random.Generator) -> dict:
@@ -187,6 +305,46 @@ def method_A(data: dict, rng: np.random.Generator) -> dict:
 
     M_fixed = accumulate_wealth(U, V, delta, lam=0.5, clip_lam=True, eps_per_item=eps_per_item)
     M_mix   = accumulate_wealth_mixture(U, V, delta, clip_lam=True, eps_per_item=eps_per_item)
+
+    return dict(M_fixed=M_fixed, M_mix=M_mix, delta_per_item=delta, eps_per_item=eps_per_item)
+
+
+def method_A_online(data: dict, rng: np.random.Generator) -> dict:
+    """
+    Method A (online/past-only) — STRATIFIED cross-item e-process with predictable pairing.
+
+    Uses make_online_past_pairing so that t(s) is strictly a past item (F_{s-1}-measurable).
+    Items with no prior same-stratum partner make no bet (factor = 1).
+    This satisfies the anytime/sequential validity requirement.
+
+    Identical to method_A in every other respect: stratification, delta_k, lambda clipping.
+    Returns dict with 'M_fixed', 'M_mix', 'delta_per_item', 'eps_per_item'.
+    """
+    W_i, W_j = data['W_i'], data['W_j']
+    p_i, p_j = data['p_i'], data['p_j']
+    theta = data['theta']
+    N = len(W_i)
+
+    strata = assign_strata(theta)
+    eps_k = stratum_epsilon(p_i, p_j, strata)
+    t = make_online_past_pairing(strata, rng)
+
+    # has_partner[s] is True iff t[s] < s (a valid F_{s-1}-measurable past partner exists)
+    # Sentinel: t[s] == s (no prior same-stratum item); these make no bet (factor=1).
+    has_partner = (t != np.arange(N))
+
+    U = W_i * W_j
+    # V[s] = W_j[t[s]]; for sentinel positions (t[s]==s) the value W_j[s] is computed
+    # but ignored because has_partner[s]=False zeros out the bet in accumulate_wealth_online.
+    V = W_i * W_j[t]
+
+    eps_per_item = eps_k[strata]
+    delta = 2.0 * eps_per_item
+
+    M_fixed = accumulate_wealth_online(U, V, delta, has_partner, lam=0.5,
+                                        clip_lam=True, eps_per_item=eps_per_item)
+    M_mix   = accumulate_wealth_online_mixture(U, V, delta, has_partner,
+                                               clip_lam=True, eps_per_item=eps_per_item)
 
     return dict(M_fixed=M_fixed, M_mix=M_mix, delta_per_item=delta, eps_per_item=eps_per_item)
 
