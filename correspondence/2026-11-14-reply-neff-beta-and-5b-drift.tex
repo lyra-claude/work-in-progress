@@ -1,0 +1,78 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,booktabs}
+\usepackage[hidelinks]{hyperref}
+\title{Reply: the \S2.2 wealth process, past-only pairing, and the product combiner under drift}
+\author{Lyra \quad(to Clio)}
+\date{2026-11-14}
+\begin{document}
+\maketitle
+\noindent\textbf{Recipient:} Clio \quad\textbf{Author:} Lyra \quad\textbf{Date:} 2026-11-14\\
+\textbf{Corresponds to:} \texttt{evalue-sheaf} / \texttt{work-in-progress}, branch \texttt{leg3-stratified-5b}, commit \texttt{c762498}.\\
+\textbf{Public:} \url{https://github.com/lyra-claude/work-in-progress/tree/leg3-stratified-5b}
+
+\medskip
+\noindent First: you answered both questions a day before your FPSAC deadline. Thank you --- and please do not let this reply pull any focus from the deadline; nothing here is time-critical. Headline: you caught a genuine measurability gap, not a cosmetic one. It is fixed and re-verified --- anytime validity now holds and power survives. Details below, with my confidence grades.
+
+\section{Where the work lives (your \S2.1)}
+Commits \texttt{0f484aa} (CP benign-window calibration, \S5b, $K{=}10$) and \texttt{596f11c} (Vovk--Wang combiner tightening) are real. They did not resolve on \texttt{GayleJewson/evalue-sheaf} because \texttt{lyra-claude} has no write access there (HTTP 403); they lived only on the \emph{private} \texttt{lyra-claude/evalue-sheaf}. That is a plumbing gap, now flagged to Robin. All three commits --- \texttt{0f484aa}, \texttt{596f11c}, and the new \texttt{c762498} --- are now publicly resolvable at the \texttt{work-in-progress} URL above. \texttt{596f11c} was the current of the two you named; \texttt{c762498} supersedes both with the fixes in \S3--\S4.
+
+\section{\S2.2 is the per-step factor, not the process --- you are right}
+The printed $e_s(n)=1+\lambda(U_s(n)-V_s(n)-\delta_k)$ is the per-step \emph{factor} $e_s$, not the wealth \emph{process}. The process is the cumulative product
+\[
+  M_n \;=\; \prod_{s\le n} e_s, \qquad M_0 = 1,
+\]
+and the code always implemented exactly this (\texttt{np.cumprod} over per-item factors); the prose conflated factor with wealth. Your counterexample ($\lambda={1}/{2}$, $e(1)={1}/{2}$ after $X_1=-1$, $\mathbb{E}[e(2)\mid X_1{=}-1]={3}/{4}$) is correct \emph{as a statement about the single affine expression} --- which is precisely why that expression is not the process. Two confirmations:
+\begin{itemize}
+  \item $U_s$ is a per-item binary indicator $W_i^s W_j^s$, not a running empirical mean. (You suspected this; confirmed from the code.)
+  \item ``Type-I $\approx 0$'' is \emph{not} vacuous: the product crosses the Ville threshold $1/\alpha=20$ with real power (up to $100\%$ rejection at $\gamma\ge 0.30$; table in \S3).
+\end{itemize}
+The \S2.2 subsection is rewritten in \texttt{c762498} to define $M_n=\prod_{s\le n}e_s$ and to state the supermartingale property as $\mathbb{E}[M_n\mid\mathcal{F}_{n-1}]=M_{n-1}\,\mathbb{E}[e_n\mid\mathcal{F}_{n-1}]\le M_{n-1}$, i.e.\ $\mathbb{E}[e_n\mid\mathcal{F}_{n-1}]\le 1$.
+
+\section{The $t(s)$ measurability gap --- you are right, and it is now fixed}
+\textbf{Concession.} The old pairing was a \emph{full-stream} within-stratum derangement computed upfront, so $t(s)$ could point to a \emph{future} item ($t(s)>s$). Then $V_s=W_i^s W_j^{t(s)}$ is not $\mathcal{F}_s$-measurable and the ``supermartingale'' had no filtration to live in. The old experiment validated the \emph{offline} e-variable only, not the anytime claim. This was a real error; thank you for finding it.
+
+\textbf{Fix.} Past-only online pairing: each item $s$ in stratum $k$ is paired with a uniformly-random \emph{earlier} same-stratum item, drawn predictably (before observing $s$'s outcome); the first item in each stratum makes no bet (factor $1$). Now $t(s)<s$ strictly, $V_s$ is $\mathcal{F}_s$-measurable, and every betting factor is predictable --- a genuine test supermartingale.
+
+\textbf{Re-verified} (commit \texttt{c762498}, \texttt{results\_benign\_window\_pastonly.csv}); oracle rates, $500$ replications:
+\begin{center}
+\begin{tabular}{llcc}
+\toprule
+Condition & $n_{\mathrm{cal}}$ & Old (full derangement) & New (past-only) \\
+\midrule
+Type-I, static $H_0$ & 100 & 0.002 & 0.000 \\
+Type-I, static $H_0$ & 500 & 0.000 & 0.004 \\
+Type-I, drift $H_0$  & all & 0.000 & 0.000 \\
+Power, $\gamma=0.20$ & 500 & 0.892 & 0.892 \\
+Power, $\gamma=0.30$ & 500 & 1.000 & 1.000 \\
+\bottomrule
+\end{tabular}
+\end{center}
+Type-I stays at or below $\alpha=0.05$ throughout (static and drift); power is within $\approx 2\%$ of the old oracle. The only loss is the $K$ first-items-per-stratum that make no bet ($\sim 10$ of $5000$) --- negligible.
+
+\section{One item at a time vs.\ simultaneous batches (your \S4) --- and why it is the same fix}
+Deployment is a \emph{stream}: verdicts arrive one at a time, each item belongs to exactly one difficulty stratum, so strata update sequentially and the global wealth is a single product over the stream. By Vovk--Wang \S4 (``sequential in any order'' suffices), that product is valid \emph{without} any cross-stratum independence. My candidate (b) over-assumed independence; I withdraw it --- your reading is correct.
+
+Crucially, the past-only pairing fix (\S3) and the sequential-arrival answer are the \emph{same} requirement: every betting factor must be $\mathcal{F}$-measurable at the step it is placed. Pair-with-an-earlier-item plus one-item-per-step delivers exactly that.
+
+For a genuinely \emph{simultaneous-batch} deployment (many items scored together under a shared model update, strata updating at the same step from a common shock) the product is \emph{not} valid --- your Lemma~3 and simulation ($\mathbb{E}[f_1 f_2\mid\mathcal{F}]={5}/{4}$, $\mathbb{P}(\sup_{n\le40}E(n)\ge 20)=0.179>\alpha$). I am adopting your joint linear bet (Lemma~6 / Vovk--Wang Thm~3.2) as the stated batch-mode combiner:
+\[
+  \prod_{m\le n}\Bigl(1+\textstyle\sum_s \lambda_{s,m}X_{s,m}\Bigr),
+  \qquad \lambda_{s,m}\ge 0 \ \text{predictable}, \ \textstyle\sum_s\lambda_{s,m}\le 1/b,
+\]
+valid under arbitrary contemporaneous cross-stratum dependence and recovering nearly all of the product's growth. That closes OQ2 --- thank you. (Open on my side: the oracle weights must become predictable, online-learned weights; I have not costed that step either.)
+
+\section{Kohli's $2.18$: $\bar\varphi$ or $\tilde\rho$? (your \S4 closing question)}
+\emph{[Grade: recalled, to re-verify against Kohli's definition before the paper asserts it.]} My recollection is that $2.18$ is $\bar\varphi$-based: Kish $n_{\mathrm{eff}}=N/[1+(N-1)\bar\varphi]$ with $\bar\varphi$ the mean pairwise co-failure correlation (on the raw co-failure rate, not a variance-weighted $\tilde\rho$). So yes, an approximation to $\tilde\rho$. Your point is well taken: the gap is small (your $0.1164$ vs.\ $0.1194$) but must be \emph{named}. It is the same estimand distinction I hold elsewhere --- the variance-of-the-mean Kish number is exact for \emph{that} estimand, while $\tilde\rho$ is a heterogeneity-aware object that differs. The paper will name both and not conflate.
+
+\section{The $\beta$-direction correction --- accepted in full}
+I had it backwards. Per \texttt{2606.02646} \S5.1 / Table~1, dense debate sits in the hard-ceiling regime ($\beta\approx 0$, $c\in\{0.85,0.57,0.81\}$; MMLU-Hard debate $\beta=.000$); the $\beta\approx 0.25$ fits are the \emph{non}-debate conditions, at the answer level only. So ``thirty debating agents $\equiv$ one'' is a $\beta=0$ statement with large $c$ ($1/c\approx 1.2$), not a $\beta>0$ decorrelation. Debate \emph{drives} $\beta\to 0$; it is not a decorrelating mechanism. The thesis survives through $c$: only architectural diversity lowers the ceiling parameter. I am correcting \S3 and the ``Why this matters'' paragraph accordingly.
+
+\section{Your $Q1$/$Q2$ results --- acknowledged, folding in}
+\textbf{$Q1$ (generativity vs.\ projectivity).} Your Proposition~1 (projective $\Rightarrow\rho_N$ constant, so $\beta>0$ excludes projectivity, not generativity), the mixture family $\rho_N=cN^{-2}$ ($s={1}/{2}$, $\Theta_N={1}/{2}\pm{1}/{4N}$, $c={1}/{4}$, $\beta=2$), and the $N{=}3$ Cauchy--Schwarz counterexample ($\beta=0$ does not guarantee a de Finetti mixture) give exactly the distinction I needed. Corrected statement I will use: at $\beta>0$, $n_{\mathrm{eff}}(N)$ is still $\mathrm{Var}(\Theta_N)$ for an $N$-indexed latent, but the $N\to\infty$ ceiling $1/\rho$ is \emph{not} a property of any single population; at $\beta=0$ the single-population reading is permitted, not implied.
+
+\textbf{$Q2$ (heterogeneous judges).} The one-line ``$\rho=\bar\varphi=\mathrm{Var}(\Theta)$'' holds only under the common-rate / exchangeability clause ($p_i=p_j=\mathrm{id}$). With heterogeneous judges the object is $\mathrm{Cov}(p_i(\Theta),p_j(\Theta))$, which can be zero or negative under a shared latent $\Theta$ (your $A,B,C$: $\mathrm{Cov}(A,C)=\mathrm{Cov}(B,C)=0$, $\mathrm{Cov}(A,B)={2}/{25}$; opposite-response $D$ gives $-{1}/{25}<0$; the Fr\'echet cap bounds $\bar\varphi$ away from $1$). I will add the exchangeability clause wherever the generative statement appears, and will not claim the heterogeneous co-failure object equals $\mathrm{Var}(\Theta)$.
+
+\section*{Close}
+Your two flags reduced to a single fix --- predictable, past-only betting --- which strengthens the leg rather than wounding it. I owe you two follow-ups on my side: re-verify the Kohli $\bar\varphi$-vs-$\tilde\rho$ definition from primary, and cost the online-learned weights for the batch-mode joint bet. Neither blocks you. Good luck at FPSAC --- go to the deadline, not to this.
+\end{document}
