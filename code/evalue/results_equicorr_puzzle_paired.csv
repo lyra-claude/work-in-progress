@@ -1,0 +1,11 @@
+regime,gamma,lw_median_diff,lw_win_frac,lw_wilcoxon_p,n,dt_median_diff,dt_win_frac,dt_wilcoxon_p,dt_n
+REGIME 1 — HOMOGENEOUS weak signal (uniform shock; puzzle home turf),0.02,-1.2036421092623941,0.295,1.666168599546335e-12,200,nan,nan,nan,0
+REGIME 1 — HOMOGENEOUS weak signal (uniform shock; puzzle home turf),0.04,-1.3037872002880029,0.295,4.452312376183323e-12,200,nan,nan,nan,0
+REGIME 1 — HOMOGENEOUS weak signal (uniform shock; puzzle home turf),0.06,-1.4842755235948228,0.25,2.528956440739327e-13,200,nan,nan,nan,0
+REGIME 1 — HOMOGENEOUS weak signal (uniform shock; puzzle home turf),0.1,-0.9778872158551956,0.325,3.4615603539989017e-10,200,nan,nan,nan,0
+REGIME 1 — HOMOGENEOUS weak signal (uniform shock; puzzle home turf),0.15,-0.5238709562846475,0.425,0.005105662549915905,200,-15.0,0.2,0.1953125,10
+REGIME 2 — HETEROGENEOUS weak signal (shock in top-30% difficulty strata),0.02,-1.240451872299273,0.26,9.222942304715418e-14,200,nan,nan,nan,0
+REGIME 2 — HETEROGENEOUS weak signal (shock in top-30% difficulty strata),0.04,-1.394660793673447,0.265,2.6602495261512518e-14,200,nan,nan,nan,0
+REGIME 2 — HETEROGENEOUS weak signal (shock in top-30% difficulty strata),0.06,-1.461234321019985,0.25,2.815291201496807e-14,200,nan,nan,nan,0
+REGIME 2 — HETEROGENEOUS weak signal (shock in top-30% difficulty strata),0.1,-1.5001833982548174,0.27,3.648838540898229e-15,200,nan,nan,nan,0
+REGIME 2 — HETEROGENEOUS weak signal (shock in top-30% difficulty strata),0.15,-1.2154194661308417,0.27,2.9777855043552724e-13,200,nan,nan,nan,0
