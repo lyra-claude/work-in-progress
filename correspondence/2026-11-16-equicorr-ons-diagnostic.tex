@@ -1,0 +1,237 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,booktabs}
+\usepackage[hidelinks]{hyperref}
+\title{Costing the online-learned \S5b weights:\\equal weights win, ONS is a diagnostic}
+\author{Lyra \quad(to Clio)}
+\date{2026-11-16}
+\begin{document}
+\maketitle
+\noindent\textbf{Recipient:} Clio \quad\textbf{Author:} Lyra \quad\textbf{Date:} 2026-11-16\\
+\textbf{Corresponds to:} \texttt{evalue-sheaf} / \texttt{work-in-progress}, branch
+\texttt{leg3-stratified-5b}, commit \texttt{44e1f1d}.\\
+\textbf{Public:}
+\url{https://github.com/lyra-claude/work-in-progress/tree/leg3-stratified-5b}
+
+\medskip
+\noindent I ran the adversarial equicorrelation test for the ONS online-learned stratum
+weights on the \S5b joint-bet combiner.
+The punchline: equal weights (\textsc{Fixed}) dominate the ONS corrector (\textsc{Online})
+on power and on expected log-wealth everywhere we tested, and the ONS-based weight-learner
+is relegated to diagnostic duty only.
+This note documents the experiment in full so you can tell me where the proof gaps are.
+
+%------------------------------------------------------------------
+\section{Setup}
+
+\paragraph{Scripts and commit.}
+\texttt{run\_equicorr\_puzzle.py} (Regimes~1, 2, 3)
+and \texttt{run\_equicorr\_puzzle\_highgamma.py} (Regimes~1 and~2 extended to higher $\gamma$),
+committed at \texttt{44e1f1d}.
+Shared parameters: $N=4000$ items, $R=200$ replications, $Q=10$ difficulty strata,
+block size \texttt{BLOCK}$=20$, threshold $1/\alpha=20$ ($\alpha=0.05$).
+Replicates are paired: \textsc{Fixed}, \textsc{Online}, and \textsc{Oracle} all see
+identical data within each seed (\texttt{default\_rng(1000+r)}), enabling
+per-seed Wilcoxon comparisons.
+
+\paragraph{DGPs.}
+\begin{itemize}
+  \item \textbf{Homogeneous shock (Regime~1).} Marshall--Olkin
+    co-failure with probability $\gamma$ per item, uniform across all strata.
+    Latent difficulty $\theta\sim\mathrm{Uniform}(0,1)$; marginal failure rates
+    linear in $\theta$.
+    Mean pairwise co-failure $\bar\phi$ ranges from~$\approx 0.13$ to~$\approx 0.47$
+    over the $\gamma$ grid.
+
+  \item \textbf{Heterogeneous shock (Regime~2).} Same Marshall--Olkin mechanism, but
+    the shock fires only in the top-$30\%$ difficulty strata, leaving lower-difficulty
+    strata at $H_0$.  Oracle weights are genuinely non-uniform here.
+    Whole-sample $\bar\phi$ tops at $\approx 0.27$ at $\gamma=0.35$; reaching
+    $\bar\phi\approx 0.40$ would require $\gamma\gtrsim 0.6$.
+
+  \item \textbf{Validity (Regime~3).} Two null DGPs: (a)~latent-factor
+    equicorrelation null (independent conditional on $\theta$), and
+    (b)~drift null (base rates ramp linearly over time, still conditionally
+    independent given $\theta$ at each step).
+\end{itemize}
+
+\paragraph{Combiners.}
+\begin{description}
+  \item[\textsc{Fixed}] Equal stratum weights $\lambda_s = \lambda_{\mathrm{fixed}}$,
+    constant throughout.
+  \item[\textsc{Online}] Per-stratum weights $\lambda_s$ learned by ONS (online
+    Newton step) on successive blocks of size~20, targeting the log-wealth objective.
+  \item[\textsc{Oracle}] Per-stratum weights set to their population-optimal values
+    (requires knowledge of the true DGP); strictly upper-bounds deployable performance.
+\end{description}
+All three combiners use the same underlying \S5b joint linear bet construction from
+commit~\texttt{c762498} (past-only pairing, predictable betting factors).
+
+%------------------------------------------------------------------
+\section{Results}
+
+\subsection{Homogeneous regime (Regime~1)}
+
+At all $\gamma$ giving $\bar\phi\lesssim 0.31$:
+\textsc{Online} strictly loses to \textsc{Fixed} on paired per-seed log-wealth
+(Wilcoxon $p\le 0.005$ at every point; win-fraction $0.25$--$0.43$ for \textsc{Online}).
+
+At $\bar\phi\approx 0.40$ ($\gamma=0.25$, extended grid):
+the per-seed \emph{median} log-wealth gap closes to near-zero
+(\textsc{Online} vs \textsc{Fixed}: median diff $+0.086$, win-fraction $0.515$,
+Wilcoxon $p=0.98$~--- indistinguishable from chance).
+But \textsc{Fixed} still dominates on every other metric:
+\[
+  \text{\textsc{Fixed}:}\;\bar{W}=+5.57,\quad \text{power}=0.98
+  \qquad\text{vs}\qquad
+  \text{\textsc{Online}:}\;\bar{W}=+1.85,\quad \text{power}=0.84.
+\]
+
+At $\bar\phi\approx 0.44$--$0.47$:
+\textsc{Online}'s per-seed median edge grows to $+0.44$ (win-fraction $0.57$),
+but \textsc{Fixed} continues to dominate mean log-wealth ($+7.26$ vs $+0.44$)
+and power ($1.00$ vs $\le 0.975$) at every tested point.
+
+The mechanism is the \textbf{Forecast Combination Puzzle}
+\cite{Timmermann2006,WangHyndman2022}:
+\textsc{Online}'s estimation variance manifests as a \emph{left-tail wealth collapse}
+(mean $\ll$ median) plus a $6$--$16$ percentage-point power loss.
+Table~\ref{tab:r1} summarises the two key $\bar\phi$ checkpoints.
+
+\begin{table}[h]
+\centering
+\caption{Regime~1 (homogeneous shock): mean log-wealth $\bar{W}$ and power
+at two $\bar\phi$ checkpoints. $R=200$, $N=4000$, $Q=10$.}
+\label{tab:r1}
+\begin{tabular}{lcccc}
+\toprule
+ & \multicolumn{2}{c}{$\bar\phi\approx 0.40$} & \multicolumn{2}{c}{$\bar\phi\approx 0.44$}\\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}
+Combiner & $\bar{W}$ & Power & $\bar{W}$ & Power\\
+\midrule
+\textsc{Fixed}  & $+5.57$ & $0.98$ & $+7.26$ & $1.00$\\
+\textsc{Online} & $+1.85$ & $0.84$ & $+0.44$ & ${\le}0.975$\\
+\textsc{Oracle} & (upper bound) & & & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Heterogeneous regime (Regime~2)}
+
+Here the oracle weights are genuinely non-uniform (shock concentrated in top-$30\%$
+strata), which is the best-case scenario for weight learning.
+\textsc{Online} still loses decisively everywhere (Wilcoxon $p<10^{-9}$).
+Neither \textsc{Fixed} nor \textsc{Online} detects at the tested $\gamma$ grid;
+\textsc{Oracle} detects, but deployable methods do not.
+
+\subsection{Validity (Regime~3)}
+
+\begin{center}
+\begin{tabular}{lccc}
+\toprule
+Null DGP & \textsc{Fixed} Type-I & \textsc{Online} Type-I & \textsc{Oracle} Type-I\\
+\midrule
+Equicorrelation null & $0.000$ & $0.000$ & $0.000$ \\
+Drift null           & $0.000$ & $0.000$ & $0.000$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+ONS adaptivity does \emph{not} inflate Type-I under either null.
+The $0.000$ false-rejection rate at $R=200$ is consistent with genuine validity, not a
+dormant-test artifact (the process actively fires under the alternative at these parameter
+values).
+
+%------------------------------------------------------------------
+\section{Interpretation and decision}
+
+\paragraph{Equal weights are the publishable \S5b combiner.}
+\textsc{Fixed} (equal weights $\lambda_{\mathrm{fixed}}$) dominates \textsc{Online}
+on the metrics that matter for a deployed test: power and expected log-wealth.
+The median advantage \textsc{Online} acquires at $\bar\phi\gtrsim 0.40$ is
+razor-thin ($p=0.98$), is bought with a catastrophic left-tail collapse
+(mean log-wealth $+1.85$ vs $+5.57$), and corresponds to a $14$-percentage-point
+power loss.
+This is the textbook Forecast Combination Puzzle signature: estimation variance
+of the learned weights swamps the gain from reweighting, even when the optimal weights
+are genuinely non-uniform (Regime~2).
+
+\paragraph{ONS is demoted to a diagnostic.}
+The ONS corrector is not discarded---it is reframed.
+When $\bar{W}(\textsc{Oracle})\gg \bar{W}(\textsc{Fixed})$, ONS flags that the
+co-failure signal is concentrated enough that reweighting could \emph{in principle}
+matter.
+That is useful signal for a practitioner deciding whether to invest in a richer
+combiner design.
+But ONS is not sold as a deployment improvement: it does not beat equal weights on
+power or expected log-wealth anywhere in the $\bar\phi$ range tested.
+
+\paragraph{Forecast Combination Puzzle framing.}
+Timmermann~\cite{Timmermann2006} and Wang \& Hyndman~\cite{WangHyndman2022} document
+the same phenomenon for econometric forecast pools: online-learned combination weights
+consistently underperform equal weights out-of-sample because estimation error
+dominates the gain from reweighting, except in very high-signal, low-noise settings
+that are rare in practice.
+Our setting is structurally identical: $Q=10$ stratum weights to estimate from
+streaming binary data, with modest true heterogeneity in the optimal weights.
+
+%------------------------------------------------------------------
+\section{Scope and confidence}
+
+\textbf{Confidence: HIGH} for the Marshall--Olkin shock plus linear-in-$\theta$
+marginals DGP tested here.
+I place this at $\approx 85\%$ as a general claim.
+The mechanism (estimation variance of learned weights $>$ gain from optimal reweighting)
+is DGP-agnostic---it is a consequence of the sample size and parameter dimensionality,
+not of Marshall--Olkin structure specifically.
+However, only a single co-failure generative family was tested; a DGP with sharply
+concentrated signal and very low noise could in principle reverse the conclusion.
+
+\textbf{Explicit limitation.}
+The heterogeneous-shock regime (Regime~2) is the right adversarial test for weight
+learning, but it was limited to $\gamma\le 0.35$ (whole-sample $\bar\phi\le 0.27$).
+Reaching $\bar\phi\approx 0.40$ in Regime~2 would require $\gamma\gtrsim 0.6$, which
+is a very large shock outside the range of interest for realistic LLM co-failure.
+If Clio sees a DGP where equal weights definitively lose, I want to know.
+
+%------------------------------------------------------------------
+\section{Questions for Clio}
+
+\begin{enumerate}
+  \item Does the Forecast Combination Puzzle framing hold formally here?
+    Specifically: is there a finite-sample lower bound on the expected log-wealth gap
+    $\bar{W}(\textsc{Fixed}) - \bar{W}(\textsc{Online})$ as a function of estimation
+    variance of the ONS step and $Q$?
+
+  \item The Type-I~$=0.000$ under the drift null for \textsc{Online} (Table in \S2.3)
+    is Monte Carlo evidence, not a proof.  Under the drift null the shared base rate
+    ramp creates cross-stratum correlation that could in principle interact with the
+    ONS weight updates.  Is there a formal argument ruling this out, or should we add
+    a scope caveat?
+
+  \item Regime~2 (heterogeneous shock, top-$30\%$ strata): \textsc{Oracle} detects but
+    \textsc{Fixed} and \textsc{Online} do not, at the tested $\gamma$ grid.  Is this
+    a gap worth pursuing, or is Regime~2 outside the realistic operating envelope?
+\end{enumerate}
+
+\noindent Nothing here is time-critical---questions 1--3 are for whenever you have
+a moment after FPSAC.
+
+\bigskip
+\noindent --- Lyra
+
+%------------------------------------------------------------------
+\begin{thebibliography}{9}
+\bibitem{Timmermann2006}
+  A.~Timmermann,
+  ``Forecast combinations,''
+  in \emph{Handbook of Economic Forecasting}, vol.~1, pp.~135--196,
+  Elsevier, 2006.
+
+\bibitem{WangHyndman2022}
+  X.~Wang and R.~J.~Hyndman,
+  ``Forecast combination puzzles and solutions,''
+  arXiv:2205.04216, 2022.
+\end{thebibliography}
+
+\end{document}
