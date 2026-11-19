@@ -62,6 +62,7 @@ from eprocess import (
     assign_strata,
     stratum_epsilon,
     make_online_past_pairing,
+    make_within_block_pairing,
     THRESHOLD,
 )
 
@@ -85,13 +86,30 @@ ONS_EPS     = 1.0      # regularizer A_0 = eps * I
 
 # ── Build the per-block, per-stratum increment stream X[m, s] ───────────────────
 
-def build_increment_stream(data: dict, rng: np.random.Generator):
+def build_increment_stream(data: dict, rng: np.random.Generator,
+                           pairing: str = 'within_block', return_t: bool = False):
     """
+    Build the per-block, per-stratum centered co-failure increment stream X[m, s].
+
     Returns:
         X   : (M, Q) array of per-block, per-stratum centered co-failure increments.
-        b   : scalar bound, b = 1 + max_s delta_s, so |X[m,s]| <= b and sum_s lambda_s <= 1/b
+        b   : scalar bound, b = 1 + max delta, so |X[m,s]| <= b and sum_s lambda_s <= 1/b
               keeps every linear-bet increment  1 + sum_s lambda_s X[m,s]  >= 0.
-    Uses PAST-ONLY pairing (predictable) and oracle slack delta_s = 2 eps_s.
+        t, has_partner : returned additionally when return_t=True, so an adversarial
+              bettor can use EXACTLY the partner map that generated X (honest test).
+
+    pairing:
+      'within_block' (DEFAULT, Clio's Prop. 3 — the FRESH-PAIR repair):
+          Pair each item with another SAME-stratum item in the SAME block, cyclically.
+          Neither partner's outcome is in F_{m-1} when the block-m bet is set, so
+          E[X | F_{m-1}] <= 0 for every predictable lambda under arbitrary cross-stratum
+          dependence.  delta is computed PER (block, stratum): delta = 2 * (within-block,
+          within-stratum p-range), NOT the whole-stream stratum range (that pre-loads the
+          full drift ramp — an oracle slack).  Within-block range is tiny.
+      'past_only' (DEPRECATED / BUGGY — Prop. 2; kept only as the documented-wrong baseline):
+          t(s) is an earlier same-stratum item whose outcome is already F_{s-1}-measurable.
+          A predictable bettor can exploit the observable {W_j[t(s)]=0} event to drive
+          Type-I to 1.000.  Uses whole-stream delta_s = 2 eps_s.
     """
     W_i, W_j = data['W_i'], data['W_j']
     p_i, p_j = data['p_i'], data['p_j']
@@ -99,18 +117,44 @@ def build_increment_stream(data: dict, rng: np.random.Generator):
     Nloc     = len(W_i)
 
     strata = assign_strata(theta, Q=Q)
-    eps_k  = stratum_epsilon(p_i, p_j, strata, Q=Q)        # (Q,)
-    delta  = 2.0 * eps_k                                    # (Q,)
-    t      = make_online_past_pairing(strata, rng, Q=Q)    # past-only partners
-    has_partner = (t != np.arange(Nloc))
-
     U = (W_i * W_j).astype(float)
-    V = (W_i * W_j[t]).astype(float)
-    # per-item signed increment; sentinel (no partner) -> 0 contribution
-    inc_item = np.where(has_partner, U - V - delta[strata], 0.0)
-    valid    = has_partner.astype(float)
-
     M = Nloc // BLOCK
+    block_ids = np.arange(Nloc) // BLOCK            # block index per item (0..M-1)
+
+    if pairing == 'past_only':
+        # ---- DEPRECATED buggy baseline: whole-stream delta, past-only partner ----
+        eps_k  = stratum_epsilon(p_i, p_j, strata, Q=Q)        # (Q,)
+        delta  = 2.0 * eps_k                                    # (Q,)
+        t      = make_online_past_pairing(strata, rng, Q=Q)    # past-only partners
+        has_partner = (t != np.arange(Nloc))
+        V = (W_i * W_j[t]).astype(float)
+        inc_item = np.where(has_partner, U - V - delta[strata], 0.0)
+        valid    = has_partner.astype(float)
+        b = 1.0 + float(delta.max())
+
+    elif pairing == 'within_block':
+        # ---- FRESH-PAIR repair (Prop. 3): within-block partner, per-block delta ----
+        t = make_within_block_pairing(strata, block_ids, Q=Q)
+        has_partner = (t != np.arange(Nloc))
+        V = (W_i * W_j[t]).astype(float)
+        # per-item delta keyed to its (block, stratum) cell = 2 * within-cell p-range
+        delta_item = np.zeros(Nloc)
+        for m in range(M):
+            sel_m = block_ids == m
+            for k in range(Q):
+                cell = sel_m & (strata == k) & has_partner
+                if cell.sum() < 1:
+                    continue
+                range_i = (p_i[cell].max() - p_i[cell].min()) / 2.0
+                range_j = (p_j[cell].max() - p_j[cell].min()) / 2.0
+                delta_item[cell] = 2.0 * max(range_i, range_j)
+        inc_item = np.where(has_partner, U - V - delta_item, 0.0)
+        valid    = has_partner.astype(float)
+        b = 1.0 + float(delta_item.max())
+
+    else:
+        raise ValueError(f"unknown pairing {pairing!r}; use 'within_block' or 'past_only'")
+
     X = np.zeros((M, Q))
     for m in range(M):
         sl = slice(m * BLOCK, (m + 1) * BLOCK)
@@ -124,7 +168,8 @@ def build_increment_stream(data: dict, rng: np.random.Generator):
             # else leave 0 (no valid item for stratum s in this block)
 
     # bound: each term in inc_item lies in [-(1+max delta), 1]; a mean stays in that range
-    b = 1.0 + float(delta.max())
+    if return_t:
+        return X, b, t, has_partner
     return X, b
 
 

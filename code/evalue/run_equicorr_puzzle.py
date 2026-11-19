@@ -45,7 +45,7 @@ import numpy as np
 
 sys.path.insert(0, '/home/lyra/projects/evalue-sheaf/code/evalue')
 
-from dgp import judge_probs, alt_dgp, drift_null_dgp
+from dgp import judge_probs, alt_dgp, drift_null_dgp, null_dgp
 from eprocess import ville_reject, THRESHOLD
 import run_online_weights as rw
 from run_online_weights import (
@@ -285,6 +285,7 @@ def run_validity_regime():
     print(f"\n{'='*96}\nREGIME 3 — VALIDITY under equicorrelation & drift NULLS "
           f"(Type-I must be <= {ALPHA})\n{'='*96}")
     nulls = [
+        ("static null",                 null_dgp),
         ("latent-factor equicorr null", latent_factor_null_dgp),
         ("drift_null",                  drift_null_dgp),
     ]

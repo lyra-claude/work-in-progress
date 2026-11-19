@@ -78,8 +78,60 @@ def make_derangement_within_strata(strata: np.ndarray, rng: np.random.Generator,
     return t
 
 
+def make_within_block_pairing(strata: np.ndarray, block_ids: np.ndarray,
+                              Q: int = Q) -> np.ndarray:
+    """
+    Build t(s): a FRESH-PAIR, WITHIN-BLOCK pairing (Clio's Prop. 3 repair).
+
+    For each block m and each stratum k, cyclically pair the same-stratum items
+    that fall inside that block:  the j-th such item is paired with the (j+1)-th
+    (mod count) same-stratum item of the SAME block.  A (block, stratum) cell with
+    fewer than 2 items places NO bet (sentinel t = self), exactly as the past-only
+    code does.
+
+    WHY THIS IS THE FIX (vs make_online_past_pairing, which is WRONG — see Prop. 2):
+      The past-only map sets t(s) to an EARLIER same-stratum item, so W_j[t(s)] is
+      already F_{s-1}-measurable.  Then on the OBSERVABLE event {W_j[t(s)]=0} the
+      increment U - V - delta has conditional mean  p_i*p_j - delta > 0, and a
+      predictable bettor that bets only on that event achieves Type-I -> 1.
+      Here t(s) is another item in the SAME block, so when the bet lambda for block m
+      is set (it is F_{m-1}-measurable, depending only on strata/block structure),
+      NEITHER W_j[s] NOR W_j[t(s)] has been revealed.  Hence
+        E[W_i^s (W_j^s - W_j^{t(s)}) | F_{m-1}, theta] = p_i(s)(p_j(s) - p_j(t(s)))
+        <= p_i * 2 eps_k <= delta_k,
+      so E[X | F_{m-1}] <= 0 for EVERY predictable lambda (ONS included), under
+      arbitrary cross-stratum dependence.
+
+    The map depends ONLY on strata and block structure, never on outcomes, so it is
+    predictable.  Returns array t of length N (global indices); t[s] == s is the
+    no-bet sentinel for cells of size < 2.
+    """
+    N = len(strata)
+    t = np.arange(N, dtype=int)   # default: sentinel (self-pair = no bet)
+    blocks = np.unique(block_ids)
+    for m in blocks:
+        blk = np.where(block_ids == m)[0]          # global indices in this block
+        s_blk = strata[blk]
+        for k in range(Q):
+            cell = blk[s_blk == k]                 # same-stratum items in this block
+            if len(cell) < 2:
+                continue                           # singleton cell: no bet
+            # cyclic shift by one within the cell: item j -> item (j+1) mod len
+            t[cell] = np.roll(cell, -1)
+    return t
+
+
 def make_online_past_pairing(strata: np.ndarray, rng: np.random.Generator, Q: int = Q) -> np.ndarray:
     """
+    DEPRECATED / BUGGY (Clio's Prop. 2): this PAST-ONLY pairing BREAKS anytime validity.
+
+    The partner t(s) is an earlier same-stratum item, so its outcome W_j[t(s)] is
+    already F_{s-1}-measurable.  On the OBSERVABLE event {W_j[t(s)] = 0} the increment
+    U - V - delta has positive conditional mean (p_i*p_j - delta > 0), so a predictable
+    bettor can put the whole cap on strata whose partners all failed-to-co-fail and
+    drive Type-I to 1.000 under the STATIC null.  Kept only as the documented-wrong
+    baseline; do NOT use for a validity claim.  Use make_within_block_pairing (Prop. 3).
+
     Build t(s): a PAST-ONLY (predictable, online) pairing for anytime validity.
 
     For each item s in arrival order:
