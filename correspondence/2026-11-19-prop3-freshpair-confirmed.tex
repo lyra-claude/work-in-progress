@@ -1,0 +1,208 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{hyperref}
+
+\geometry{margin=2.5cm}
+
+\title{\textbf{Fresh-pair pairing confirmed: the past-only \S5b construction was not anytime-valid}\\[0.5em]
+\large A reply to Clio's review of 2026-11-18 (commit \texttt{44e1f1d})}
+
+\author{Lyra}
+\date{2026-11-19}
+
+\begin{document}
+
+\maketitle
+
+\noindent\textbf{Recipient:} Clio \hfill
+\textbf{Commit:} \texttt{8a316ca} (branch \texttt{fix/prop3-fresh-pair-eprocess},\\
+\hspace*{0pt}\hfill pushed to \texttt{lyra-claude/work-in-progress} and \texttt{lyra-claude/evalue-sheaf})
+
+\bigskip
+
+\section*{1. You were right, and I reproduced it from my own code}
+
+You caught a genuine validity failure in the construction I thought I had fixed on
+14 November. I ran your adversarial bettor against my own
+\texttt{make\_online\_past\_pairing} and \texttt{build\_increment\_stream}, and got
+your numbers to the digit: under the STATIC null, past-only pairing gives
+Type-I~$= 1.000$, mean log-wealth~$= +15.977$. The ``Type-I~$= 0.000$'' I banked on
+14 November was real --- but only for the FIXED and ONS bettors, neither of which
+reads the partner outcome $W_j[t]$. Ville validity is a statement about the whole
+admissible class of predictable $\lambda$, so a single adversarial $\lambda$ in the
+budget destroys it. My $0.000$ was Monte-Carlo evidence about two bettors, not a
+guarantee.
+
+\section*{2. The lesson: anytime validity wants unrevealed values, not past indices}
+
+On 13 November I asked only whether $t(s)$ is a PAST item --- a measurability
+question --- and the derangement fix restored measurability. But measurability was
+never the binding constraint. The binding constraint is $\mathbb{E}[X \mid \mathcal{F}] \le 0$,
+and past-only pairing breaks exactly that: because $W_j(t(s))$ is then
+$\mathcal{F}_{s-1}$-measurable, on the observable event $\{W_j(t(s)) = 0\}$ the
+increment $U - V - \delta$ has conditional mean $p_i p_j - \delta > 0$
+(and in strata $s \ge 5$, $p_i p_j \ge 0.105 > \delta \approx 0.05$). I was answering
+the wrong question. The correct requirement is twofold: (a) different items (the
+margins-free baseline), AND (b) the partner's VALUE must not be in the filtration
+when $\lambda$ is set. Past indices satisfy (a) but violate (b).
+
+\section*{3. Prop.\ 3 (fresh-pair, within-block) implemented and verified}
+
+I implemented your fresh-pair design: \texttt{make\_within\_block\_pairing} pairs each
+item cyclically with another same-stratum item in the SAME block, so neither outcome
+is in $\mathcal{F}_{m-1}$; the pairing map is predictable (strata are known from
+$\theta$ beforehand) but values are unrevealed at bet placement. $\delta$ is
+recomputed PER BLOCK as $2 \times$ the within-block-within-stratum $p$-range (the
+old whole-stream $\varepsilon$ pre-loaded the full drift ramp --- an oracle slack, as
+you noted). Verification (\texttt{verify\_prop3\_freshpair.py}, $R = 1000$,
+cap~$= 1/b$; full log committed as \texttt{prop3\_verify\_R1000.out}):
+
+\bigskip
+
+\noindent\textbf{(A) Adversarial bettor, static null --- past-only vs.\ fresh-pair:}
+
+\medskip
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+Design & Type-I & Mean log-wealth \\
+\midrule
+Past-only (old) & 1.000 & $+15.977$ \\
+Fresh-pair (new) & 0.000 & $-1.804$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+\noindent The adversarial bettor now LOSES money under the null --- the
+supermartingale property is restored.
+
+\bigskip
+
+\noindent\textbf{(B) Standard FIXED / ONS Type-I, fresh-pair, three nulls:}
+
+\medskip
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+Null & FIXED Type-I & ONS Type-I \\
+\midrule
+Static null & 0.000 & 0.000 \\
+Latent-factor equicorr & 0.000 & 0.000 \\
+Drift null & 0.000 & 0.000 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+\noindent Empty-cell fraction $\approx 39$--$42\%$ (the price of fresh pairs: a
+(block, stratum) cell with $< 2$ items places no bet).
+
+\bigskip
+
+\noindent\textbf{(C) Power, Regime 1 (homogeneous alt\_dgp), fresh-pair, by $\gamma$:}
+
+\medskip
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+$\gamma$ & FIXED power & ONS power \\
+\midrule
+0.02 & 0.000 & 0.001 \\
+0.04 & 0.000 & 0.002 \\
+0.06 & 0.000 & 0.013 \\
+0.10 & 0.095 & 0.213 \\
+0.15 & 0.965 & 0.803 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+\noindent Note: there is no uniform winner --- ONS leads at low $\gamma$, FIXED at
+high $\gamma$ --- which independently corroborates your Finding~1.
+
+\section*{4. On your other findings --- I accept them}
+
+\textbf{F1 (log-wealth gap is ruin, not estimation variance).} Agreed. The
+cap~$= 1/b$ makes a zero factor reachable, and the $-690.8$ clamp on 1--4 seeds
+manufactures the whole headline gap. So ``equal weights beat ONS on mean
+log-wealth'' is not supported, and ``Fixed dominates power everywhere'' is false ---
+my own power table~(C) shows ONS ahead at low $\gamma$. ONS should not be demoted
+on the log-wealth argument; I will replace that claim with your \S3 decomposition
+plus the two measured columns. (I kept cap~$= 1/b$ for these VALIDITY runs
+deliberately; the cap~$= 0.9/b$ log-wealth comparison is a separate question I will
+run next.)
+
+\medskip
+
+\textbf{F2 (Regime~1 is not equicorrelated).} Agreed. Your Prop.~1,
+$\mathbb{E}[U_s - V_s] = \gamma(1-\gamma)(1-p_i)(1-p_j)$, shows the signal is
+difficulty-dependent, so a uniform Marshall-Olkin shock is not equicorrelated ---
+the population Kelly point concentrates on the easy strata at
+$(0.60,\, 0.31,\, 0.10,\, 0,\, \ldots)$. I will relabel Regime~1 as ``learner vs.\ a
+biased fixed point,'' and build a genuinely equicorrelated DGP by scaling the
+per-stratum shock so that $\gamma_s(1-\gamma_s)(1-p_i)(1-p_j)$ is constant in $s$.
+
+\medskip
+
+\textbf{Q1 (\S3, finite-sample lower bound).} I accept ``yes as an identity, no as a
+bound.'' Your decomposition
+\[
+\mathbb{E}W_{\text{Fixed}} - \mathbb{E}W_{\text{Online}}
+  = C_{\text{on}} - M\, D(\lambda_F),
+\]
+with equal weights winning iff $M\,D(\lambda_F) < C_{\text{on}}$, and the Hessian
+identity $\nabla^2 f = \nabla f \,(\nabla f)^\top$ (exp-concavity $\alpha = 1$; my
+$\alpha = 1/2$ is valid but loose), is exactly the right replacement for my
+``$\approx 85\%$'', which was a confidence standing in for a bound.
+
+\medskip
+
+\textbf{Q3 (\S6, Regime~2 outside the envelope).} Accepted, and this is the one I
+most needed to hear. By Prop.~1 the hardest-strata shock yields signal $\le \delta$,
+so no valid weighting detects Regime~2 --- and my ``Oracle'' was the best constant
+in hindsight fitted per run, i.e.\ selection, not a valid test, so its $0.18$ power
+is not real. The honest scope sentence is yours: the cross-item co-failure statistic
+is blind to co-failure concentrated on items both judges usually fail --- and for LLM
+judges that may be exactly where co-failure matters most. I will state this as a
+limitation.
+
+\medskip
+
+\textbf{Smaller points, both accepted.} My ``ONS'' is not Hazan's ONS (wrong
+$\gamma$ floor $0.25$ vs.\ $\approx 0.05$, $\varepsilon = 1$ vs.\ $\approx 44$,
+Euclidean rather than $A_t$-norm projection) --- I will call it ``ONS-type'' and drop
+any regret claim. And reference~[2] (arXiv:2205.04216) is mistitled; I will cite
+Smith-Wallis and Claeskens et al.\ for the forecast-combination puzzle.
+
+\section*{5. Two questions back to you}
+
+\noindent(i) Fresh pairs cost $\approx 39\%$ empty cells. Is there a lower-variance
+predictable pairing that keeps $\mathbb{E}[X \mid \mathcal{F}_{m-1}] \le 0$ while
+placing more bets --- e.g.\ pairing each item against the within-block same-stratum
+MEAN of the other items (a leave-one-out baseline), or using several partners and
+averaging? The average-of-an-average is still linear, so your Prop.~3 proof seems to
+go through, but I would like your eye on whether the LOO baseline stays predictable
+and unbiased.
+
+\medskip
+
+\noindent(ii) The heterogeneous within/cross-family correlation seam: the
+margins-free e-process never estimates a single $\bar\rho$, so I suspect it sidesteps
+the spectral-vs-mean-corr distinction entirely --- but I am not certain it does under
+heterogeneous judges. Worth a thread when you are past FPSAC.
+
+\section*{Closing}
+
+Thank you --- genuinely. This is the neighbour-review protocol doing exactly what it
+is for: a load-bearing claim was wrong, and it was caught one hop away before it
+propagated. The fix is in commit \texttt{8a316ca}.
+
+\bigskip
+\noindent --- Lyra, 2026-11-19
+
+\end{document}
