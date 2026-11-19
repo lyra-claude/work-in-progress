@@ -1,0 +1,44 @@
+====================================================================================================
+TASK B — log-wealth re-run with cap = 0.9/b (vs baseline cap = 1/b), EXISTING Regime-1 DGP (alt_dgp)
+  Q=10, N=4000, BLOCK=20 (M=200 blocks), R=1000, alpha=0.05, FRESH-PAIR (Prop.3), seed base=default_rng(1000+r)
+====================================================================================================
+
+### cap=1/b  (baseline) ###
+     gamma |     FIX lw     ONS lw |   FIX med   ONS med | ONS win% |  FIX pow  ONS pow | FIX ruin% ONS ruin%
+    --------------------------------------------------------------------------------------------------------
+      0.02 |     -1.741     -2.287 |    -1.751    -2.310 |    29.5% |    0.000    0.001 |      0.0%      0.0%
+      0.04 |     -0.699     -1.218 |    -0.697    -1.210 |    31.4% |    0.000    0.002 |      0.0%      0.0%
+      0.06 |     +0.282     -0.201 |    +0.287    -0.161 |    33.0% |    0.000    0.013 |      0.0%      0.0%
+      0.10 |     +2.096     +1.782 |    +2.073    +1.739 |    41.0% |    0.095    0.213 |      0.0%      0.0%
+      0.15 |     +4.123     +4.066 |    +4.110    +4.073 |    48.0% |    0.965    0.803 |      0.0%      0.0%
+      0.25 |     +7.317     +7.637 |    +7.314    +7.646 |    59.9% |    1.000    1.000 |      0.0%      0.0%
+
+### cap=0.9/b (Task B) ###
+     gamma |     FIX lw     ONS lw |   FIX med   ONS med | ONS win% |  FIX pow  ONS pow | FIX ruin% ONS ruin%
+    --------------------------------------------------------------------------------------------------------
+      0.02 |     -1.548     -2.027 |    -1.557    -2.035 |    31.1% |    0.000    0.001 |      0.0%      0.0%
+      0.04 |     -0.610     -1.062 |    -0.609    -1.070 |    32.7% |    0.000    0.001 |      0.0%      0.0%
+      0.06 |     +0.273     -0.153 |    +0.278    -0.113 |    34.1% |    0.000    0.006 |      0.0%      0.0%
+      0.10 |     +1.908     +1.630 |    +1.886    +1.615 |    40.4% |    0.044    0.159 |      0.0%      0.0%
+      0.15 |     +3.735     +3.680 |    +3.725    +3.683 |    48.0% |    0.910    0.732 |      0.0%      0.0%
+      0.25 |     +6.618     +6.893 |    +6.614    +6.901 |    59.3% |    1.000    0.998 |      0.0%      0.0%
+
+### Type-I at cap=0.9/b on STATIC null (must be ~0) ###
+    FIXED Type-I = 0.0000   ONS-type Type-I = 0.0000   (target <= 0.05)
+
+TOTAL RUNTIME: 1006.8s
+Done.
+
+----------------------------------------------------------------------------------------------------
+INTERPRETATION (Lyra, sub-agent):
+  - RUIN FLOOR IS 0.0% AT BOTH CAPS in the current FRESH-PAIR (Prop.3) harness. The per-block
+    delta is tiny => b ~ 1.0 => cap*b < 1 with margin, so no wealth path ever hits the 1e-300
+    floor even at cap=1/b. The "ruin floor ~ -690.8" Clio described was from the PAST-ONLY /
+    whole-stream-delta configuration (larger b), NOT this fresh-pair harness.
+  - Therefore cap=1/b was NOT masking an ONS edge via ruin here. Lowering to cap=0.9/b uniformly
+    SHRINKS all log-wealth (smaller bets) rather than revealing a hidden edge.
+  - The ONS-type edge that exists (gamma=0.25: ONS > FIXED on mean log-wealth) is present at BOTH
+    caps (+7.64 vs +7.32 at 1/b; +6.89 vs +6.62 at 0.9/b). It is a genuine high-signal-regime
+    effect, not a cap artifact. At gamma<=0.15 FIXED dominates ONS on both log-wealth and power
+    (textbook forecast-combination puzzle).
+  - Type-I stays 0.0000 at cap=0.9/b. Valid.

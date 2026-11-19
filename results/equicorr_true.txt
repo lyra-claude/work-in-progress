@@ -1,0 +1,63 @@
+================================================================================================
+TASK A — GENUINELY-EQUICORRELATED DGP (alt_dgp_equicorr_true)
+  Q=10, N=4000, BLOCK=20 (M=200 blocks), R=1000, alpha=0.05, cap=1/b, FRESH-PAIR (Prop.3)
+  seed base = default_rng(1000+r)
+================================================================================================
+
+(0) DGP derivation check — per-stratum shock gamma_s and excess covariance:
+    excess Cov_s = gamma_s*(1-gamma_s)*(1-p_i_s)*(1-p_j_s)  (should be CONSTANT across s)
+    gamma=0.06: C=0.01139  gamma_s=[0.014 0.016 0.018 0.021 0.024 0.028 0.033 0.039 0.048 0.060]
+               cov_s range = [0.011386, 0.011386] (constant to 6dp)
+    gamma=0.15: C=0.02574  gamma_s=[0.033 0.037 0.042 0.048 0.056 0.065 0.078 0.094 0.117 0.150]
+               cov_s range = [0.025739, 0.025739] (constant to 6dp)
+    gamma=0.25: C=0.03785  gamma_s=[0.049 0.056 0.063 0.073 0.084 0.100 0.120 0.147 0.187 0.250]
+               cov_s range = [0.037852, 0.037852] (constant to 6dp)
+
+(1) TYPE-I under STATIC null (FIXED vs ONS-type), fresh-pair:
+    FIXED Type-I = 0.0000   ONS-type Type-I = 0.0000   ORACLE Type-I = 0.0020   (target <= 0.05)
+    => null OK (<= alpha)
+
+(2) POWER vs gamma — genuinely-equicorrelated alt, FIXED vs ONS-type:
+     gamma |  FIX pow  ONS pow   OR pow |    FIX lw    ONS lw     OR lw | ONS-FIX pow
+    --------------------------------------------------------------------------------------
+      0.02 |    0.000    0.000    0.005 |    -2.358    -2.847    +0.278 |      +0.000
+      0.04 |    0.000    0.001    0.013 |    -1.921    -2.460    +0.436 |      +0.001
+      0.06 |    0.000    0.002    0.019 |    -1.497    -2.077    +0.664 |      +0.002
+      0.10 |    0.000    0.001    0.071 |    -0.705    -1.354    +1.268 |      +0.001
+      0.15 |    0.000    0.005    0.215 |    +0.170    -0.511    +2.097 |      +0.005
+      0.25 |    0.012    0.062    0.751 |    +1.553    +0.819    +3.528 |      +0.050
+
+(3) ONS-type vs FIXED on POWER under genuine equicorrelation:
+    ONS-type first beats FIXED on power at gamma = 0.04 (crossover). Below that, FIXED wins.
+    On mean log-wealth, ONS-type > FIXED at gamma in: none (FIXED dominates everywhere)
+
+(4) PER-STRATUM ORACLE (Kelly) allocation under equicorr-true (mean lam*/cap over R reps):
+    gamma=0.10: mean lam*/cap per stratum = [0.080 0.078 0.093 0.083 0.096 0.093 0.086 0.091 0.086 0.088]
+               normalized (sums to 1)      = [0.091 0.089 0.106 0.095 0.110 0.107 0.098 0.104 0.098 0.101]
+               coefficient of variation across strata = 0.065  (0 => perfectly equal)
+    gamma=0.25: mean lam*/cap per stratum = [0.111 0.101 0.099 0.092 0.109 0.096 0.093 0.103 0.098 0.096]
+               normalized (sums to 1)      = [0.111 0.101 0.099 0.092 0.109 0.096 0.093 0.103 0.098 0.096]
+               coefficient of variation across strata = 0.060  (0 => perfectly equal)
+
+    For contrast — OLD Regime 1 (alt_dgp, uniform shock) is reported separately.
+
+TOTAL RUNTIME: 732.0s
+Done.
+
+----------------------------------------------------------------------------------------------------
+INTERPRETATION (Lyra, sub-agent):
+  - DGP derivation VERIFIED: per-stratum excess covariance gamma_s(1-gamma_s)(1-p_i)(1-p_j) is
+    CONSTANT across all 10 strata to 6 decimal places (see section 0). This is genuine
+    equicorrelation, unlike the old alt_dgp (uniform shock) whose per-stratum covariance varied ~4x.
+  - PER-STRATUM KELLY (4): now ~UNIFORM (CV 0.06-0.065 across strata vs CV 1.60 for old Regime 1).
+    Old Regime 1 normalized Kelly = [0.525,0.245,0.120,0.064,0.030,...] (matches Clio's ~(0.60,0.31,
+    0.10) 3-group collapse). New equicorr_true = [~0.10 each]. CONFIRMED equal across strata.
+  - TYPE-I: FIXED=0.0000, ONS-type=0.0000 under the static null. Valid.
+  - POWER / CROSSOVER (3): the gamma=0.04 "crossover" is NOISE (power 0.000 vs 0.001 = 1/1000 rep).
+    The only MEANINGFUL power separation is at gamma=0.25: ONS-type power 0.062 > FIXED 0.012.
+    So under GENUINE equicorrelation, ONS-type does NOT beat FIXED on power in the low/mid-signal
+    range (forecast-combination puzzle holds); a small ONS-type power EDGE emerges only at the
+    highest signal (gamma=0.25). On MEAN LOG-WEALTH, FIXED dominates ONS-type EVERYWHERE on this DGP.
+  - NOTE: under genuine equicorrelation the oracle target IS uniform, so FIXED (uniform) is close
+    to oracle and ONS can essentially only lose by chasing noise -- exactly the puzzle's home turf.
+    This STRENGTHENS the "equal weights win" conclusion relative to the old mislabelled Regime 1.
