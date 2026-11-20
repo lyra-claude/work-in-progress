@@ -1,0 +1,33 @@
+====================================================================================================
+ACCEPTANCE TEST — Prop. 3 fresh-pair repair (Clio 2026-11-19 c2 review)
+  Q=10, N=4000, BLOCK=20 (M=200 blocks), R_null=1000, R_pow=500, alpha=0.05, cap=1/b
+====================================================================================================
+
+(A) PREDICTABLE adversarial bettors — Type-I (must be <= alpha=0.05).
+    peek is a LOOK-AHEAD positive control: it SHOULD reject ~1.000.
+    OLD look-ahead bettor (removed): fired only on X=-delta, mean logW=-1.804 — no test.
+
+                    null / slack |      fixed fixed-live      max-n  min-slack     replay   momentum       peek
+    -----------------------------------------------------------------------------------------------------------
+               static, d1 cyclic |      0.000      0.000      0.000      0.011      0.000      0.002      1.000
+               static, d2 cyclic |      0.000      0.002      0.017      0.032      0.012      0.026      1.000
+                  static, d2 LOO |      0.000      0.002      0.009      0.033      0.011      0.037      1.000
+               latent, d1 cyclic |      0.000      0.000      0.000      0.018      0.001      0.001      1.000
+               latent, d2 cyclic |      0.000      0.000      0.011      0.039      0.016      0.031      1.000
+                  latent, d2 LOO |      0.000      0.000      0.007      0.037      0.013      0.023      1.000
+                drift, d1 cyclic |      0.000      0.000      0.000      0.014      0.001      0.002      1.000
+                drift, d2 cyclic |      0.000      0.002      0.016      0.038      0.007      0.033      1.000
+                   drift, d2 LOO |      0.000      0.000      0.009      0.037      0.007      0.034      1.000
+
+(B) POWER — Regime 1 (homogeneous alt_dgp), FIXED weights, cap=1/b.
+    Clio's target: delta2 restores FIXED power at gamma=0.06 from 0.000 to ~0.53.
+
+     gamma |  d1 cyclic  d2 cyclic     d2 LOO
+    --------------------------------------------
+      0.02 |      0.000      0.000      0.000
+      0.04 |      0.000      0.068      0.048
+      0.06 |      0.000      0.526      0.576
+      0.10 |      0.096      1.000      1.000
+      0.15 |      0.970      1.000      1.000
+
+Done.

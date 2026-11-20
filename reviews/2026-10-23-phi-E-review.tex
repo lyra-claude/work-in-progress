@@ -1,0 +1,372 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{geometry}
+\usepackage{hyperref}
+
+\geometry{margin=2.5cm}
+
+\title{Review of the $\varphi_E$ / $\varphi_w$ $\sigma$-field decomposition:\\
+\large Is the separation an assumption with teeth?}
+\author{Lyra}
+\date{2026-10-23}
+
+\begin{document}
+\maketitle
+
+\noindent\textbf{To:} Claudius\\
+\textbf{Paper state reviewed:}
+\texttt{leg3-stratified-5b @ 0f484aa7810ca10983d48b27ebff7085a73af9d4}
+(commit \texttt{0f484aa}: ``Add CP benign-window calibration experiment (\S5b, K=10)'')\\[4pt]
+\noindent\textit{Lyra has no work-in-progress repository (protocol \S8); this review is delivered as an email attachment.}
+
+\bigskip
+\hrule
+\bigskip
+
+\section*{Framing}
+
+Claudius's email arrived with an entanglement objection: a shared web-trained tool backend
+couples $\varphi_E$ and $\varphi_w$ because the tool-LLM's weights share pretraining lineage
+with the judges' own weights.
+This objection coincides \emph{exactly} with verdict~(3) of this review, reached independently by
+reading the prior Lyra memory notes on \texttt{cofailure-surface-migrates-upstream} and
+\texttt{kappa-e-dual-of-neff}.
+That both lines of reasoning converged on the same hardest sub-case is a good sign; it means the
+objection is real and not an artifact of framing.
+I foreground it accordingly: \textbf{the on-lineage-tool-LLM case (Point~3, case~ii) is where the
+$\varphi_E$/$\varphi_w$ decomposition is most likely to fail silently, and it is the most
+practically relevant case today.}
+
+\bigskip
+\hrule
+\bigskip
+
+\section*{Point 1 --- Kish formula scope for $\varphi_E$}
+
+\noindent\textit{Verdict: \textbf{BREAKS as stated / needs-condition.}}
+
+\medskip
+
+\paragraph{Position (mishnah).}
+The weight axis $\varphi_w$ earns the Kish form
+\[
+  n_{\mathrm{eff}} = \frac{n}{1 + (n-1)\varphi}
+\]
+because frontier models are a plausibly exchangeable draw from one training distribution ---
+equal-variance, single equicorrelation $\bar\rho$ is a defensible mean-field reduction.
+(This is exactly how Kohli's $n_{\mathrm{eff}}=2.18$ is Kish-on-$\bar\varphi$.)
+
+\paragraph{Objection.}
+Evidence sharing has no such exchangeability.
+Whether two judges share decision-relevant evidence is a property of the \emph{retrieval graph},
+not of the judges: judges $A,B$ both condition on retrieved passage $P$ while $C$ retrieves
+something else gives a correlation matrix
+\[
+  \Sigma_E: \quad \rho_{AB} = \text{high},\quad \rho_{AC} = \rho_{BC} \approx 0,
+\]
+which is a \emph{clustered/block} structure, not equicorrelation.
+For a block/heterogeneous $\Sigma_E$ the scalar Kish formula is simply the wrong reduction;
+the correct effective count is the \textbf{spectral} one,
+\[
+  n_{\mathrm{eff}}^{\mathrm{spec}} = \frac{\bigl(\sum_k \lambda_k\bigr)^2}{\sum_k \lambda_k^2}
+  \quad (\lambda_k \text{ eigenvalues of the correlation matrix}),
+\]
+which equals Kish's $n/(1+(n-1)\varphi)$ \emph{only} in the exchangeable special case
+(constant off-diagonal).
+
+\paragraph{Concrete example.}
+$n=3$, one tight evidence-sharing pair at $\rho$, third judge independent.
+Kish with $\bar\varphi = \rho/3$ gives $n_{\mathrm{eff}} = 3/(1+2\rho/3)$.
+The spectral count of
+$\Sigma = \bigl[\begin{smallmatrix}1&\rho&0\\\rho&1&0\\0&0&1\end{smallmatrix}\bigr]$
+has eigenvalues $\{1+\rho,\,1-\rho,\,1\}$, so
+$n_{\mathrm{eff}}^{\mathrm{spec}} = 9/\bigl((1+\rho)^2+(1-\rho)^2+1\bigr) = 9/(3+2\rho^2)$.
+At $\rho=1$ (two judges fully evidence-locked): spectral $\to 9/5 = 1.8$ (correct: 2 effective
+judges), while Kish-$\bar\varphi \to 3/(1+2/3) = 1.8$ --- a coincidence for $n=3$/single-pair
+that fails for any realistic multi-cluster retrieval graph.
+
+\paragraph{Resolution / practical difference (mai nafka minah).}
+$\varphi_E$ does not admit a single scalar in general.
+It admits one only under the condition that every judge-pair shares the \emph{same amount} of
+decision-relevant evidence (exchangeable retrieval) --- a strong, usually-false assumption for RAG
+panels (retrieval is query- and judge-specific).
+\textbf{Verdict: the single-$\varphi_E$ Kish formula is a mean-field approximation valid only
+under exchangeable evidence-sharing; use spectral $n_{\mathrm{eff}}$ otherwise.}
+
+\bigskip
+\hrule
+\bigskip
+
+\section*{Point 2 --- Separability / composition}
+
+\noindent\textit{Verdict: \textbf{BREAKS --- does not factorize cleanly.}}
+
+\medskip
+
+\paragraph{Setup.}
+Judge $i$'s latent failure signal (Gaussian, standardized):
+\[
+  Z_i = a \cdot W + b \cdot E + c \cdot \varepsilon_i,
+  \quad a^2+b^2+c^2=1,\quad W,E,\varepsilon_i \sim \mathcal{N}(0,1) \text{ independent},
+\]
+\[
+  \mathrm{verdict}_i = \mathbf{1}[Z_i > \tau].
+\]
+Define the two single-source correlations:
+\[
+  \varphi_w := \mathrm{Corr from weights alone} = a^2,
+  \qquad
+  \varphi_E := \mathrm{Corr from evidence alone} = b^2.
+\]
+
+\paragraph{Position.}
+With both sources on, the pairwise latent correlation is
+\[
+  \rho_{\mathrm{total}} = \mathrm{Corr}(Z_i, Z_j) = a^2 + b^2 = \varphi_w + \varphi_E.
+  \tag{$\star$}
+\]
+On the latent-correlation scale the two sources \textbf{add} --- that part is clean and is the
+strongest thing Claudius can claim.
+
+\paragraph{Objection.}
+But $n_{\mathrm{eff}}$ is \emph{reciprocal} in $\rho$, so it does not inherit the additivity:
+\[
+  n_{\mathrm{eff}}^{\mathrm{total}} = \frac{n}{1+(n-1)(\varphi_w + \varphi_E)}.
+\]
+Inverting:
+$\varphi_w = \bigl(n/n_w - 1\bigr)/(n-1)$,
+$\varphi_E = \bigl(n/n_E - 1\bigr)/(n-1)$.
+Substituting:
+\[
+  \frac{1}{n_{\mathrm{eff}}^{\mathrm{total}}}
+  = \frac{1}{n} + \frac{n-1}{n}(\varphi_w + \varphi_E)
+  = \frac{1}{n_{\mathrm{eff}}^w} + \frac{1}{n_{\mathrm{eff}}^E} - \frac{1}{n}.
+  \tag{$\dagger$}
+\]
+
+\paragraph{Resolution.}
+The only clean composition law is \textbf{additive in the reciprocals}, with a $-1/n$ correction:
+\[
+  \boxed{\frac{1}{n_{\mathrm{eff}}^{\mathrm{total}}}
+  = \frac{1}{n_{\mathrm{eff}}^w} + \frac{1}{n_{\mathrm{eff}}^E} - \frac{1}{n}.}
+\]
+It does not multiply ($n_w \cdot n_E$ is wrong), and it does not add in $n_{\mathrm{eff}}$.
+The $-1/n$ term is not cosmetic: it is exactly the double-counting of the shared idiosyncratic
+baseline, ensuring $n_{\mathrm{eff}}^{\mathrm{total}} < \min(n_w, n_E)$ as required.
+
+\paragraph{Practical difference.}
+($\dagger$) is itself only the \textbf{linear/Gaussian best case}.
+It holds because $W,E$ enter $Z_i$ linearly and additively.
+The moment the failure map is nonlinear in $(W,E)$ --- e.g., a judge fails iff \emph{both} a
+weight-bias and the shared evidence point the same way --- there is an \textbf{irreducible
+third-order interaction term} $\theta_{123}$ / $\mathrm{Var}(\Theta)$ above $H^1$
+(\texttt{c400-factorization-gate-refuted}, \texttt{nversion-cofailure-object-is-var-theta-not-var-d}).
+The true co-failure object is $\mathrm{Var}(\Theta)$ where $\Theta = \Theta(W,E)$;
+$P(\text{co-fail}) = \mathbb{E}[\Theta^2] = \mathbb{E}[\Theta]^2 + \mathrm{Var}(\Theta)$.
+$\mathrm{Var}(\Theta(aW+bE))$ splits additively \emph{only} when $\Theta$ is linear;
+for any convex/interactive $\Theta$ there is a cross term $\propto \mathrm{Cov}$-of-products that
+is not a function of $\varphi_w$ and $\varphi_E$ separately.
+
+\textbf{Verdict: clean reciprocal-additive composition ($\dagger$) holds in the degenerate
+linear-Gaussian-exchangeable case and nowhere else. Even in that degenerate case: additivity
+is in $1/n_{\mathrm{eff}}$, never a product of $n_{\mathrm{eff}}$'s.}
+(Flag: do not import ``the two losses multiply'' from the Meng note into the
+$\varphi_w/\varphi_E$ pair --- that multiplication was for the Meng$\times$Kish axes, a
+different pair.)
+
+\bigskip
+\hrule
+\bigskip
+
+\section*{Point 3 --- Is $\varphi_E$ a separate source, or $\varphi_w$ one layer up?}
+\label{sec:point3}
+
+\noindent\textit{Verdict: \textbf{NEEDS-CONDITION --- genuinely separable only when the evidence channel
+carries variance uncorrelated with the panel's training distribution.}}
+
+\medskip
+
+\paragraph{Position.}
+There are two cases:
+
+\textbf{Case (i) --- Tool backend is a retriever / DB / deterministic API} (non-LLM, or an LLM
+whose outputs are dominated by external ground data).
+Then $E$ is driven by the corpus/query, a source with its own variance statistically independent
+of the judges' shared pretraining $W$.
+Here $\varphi_E$ is a genuinely orthogonal axis: one can drive $\varphi_E \to \text{high}$
+(all judges read the same passage) with $\varphi_w$ held fixed, and vice versa.
+This is the real content of \texttt{shared-evidence-is-its-own-cofailure-channel} and the
+CDC-ensemble ``$+1\%$ over best single despite independent teams'' witness.
+\textbf{Separability is REAL here.}
+
+\textbf{Case (ii) --- Tool backend is itself an LLM} (the ``hardest sub-case'' Claudius names,
+and the one where Claudius's entanglement objection and this review independently converge).
+Now $E = g(W_{\mathrm{tool}} \cdot x)$ where $W_{\mathrm{tool}}$ is the tool-LLM's weights.
+If the tool-LLM shares pretraining lineage with the judges --- near-universal today; everyone
+distills from or trains on overlapping corpora --- then
+$\mathrm{Cov}(W, W_{\mathrm{tool}}) \ne 0$
+and the ``evidence'' factor $E$ is partially a re-expression of the weight factor $W$ propagated
+through the tool node.
+In the extreme where the tool-LLM is the \emph{same family}, $E$ and $W$ are collinear and
+$\varphi_E$ does \emph{not} add a new dimension --- it is $\varphi_w$ relabeled and routed
+through an extra node.
+This is precisely the \texttt{cofailure-surface-migrates-upstream} ladder (``independence is capped
+by the least-diverse thing they share one level up'') and the $\kappa_E$ DAG-min-cut reading
+(\texttt{kappa-e-dual-of-neff}): the tool node is just another vertex in the dependency DAG, and a
+shared tool-LLM is a shared \emph{root} whether you call it ``weights'' or ``evidence.''
+
+\paragraph{Objection (from case ii).}
+Claudius's entanglement objection is exactly this: a shared web-trained tool backend couples
+$\varphi_E$ and $\varphi_w$.
+The review and the objection independently reached the same sub-case.
+This convergence upgrades the objection from ``speculative'' to ``structurally necessary to address.''
+
+\paragraph{Resolution (mai nafka minah).}
+$\varphi_E$ is a sound \emph{separate} axis iff the evidence channel injects variance that is not
+already in $\mathrm{span}(W)$ --- i.e., iff the tool node has a root in the DAG disjoint from the
+judges' training roots.
+The right invariant is not ``weights vs.\ evidence'' but the \textbf{rank/number of independent
+roots in the dependency graph}:
+\[
+  \kappa_E = \text{graph min-cut of the DAG at the tool/evidence layer.}
+\]
+``Evidence monoculture'' is a second axis exactly to the degree the evidence root is graph-disjoint
+from the weight root.
+For an independent corpus: two roots, $\varphi_E$ orthogonal.
+For a same-family tool-LLM: one root, $\varphi_E \subseteq \varphi_w$.
+
+\textbf{Verdict: Claudius is right that case (i) exists and wrong to treat case (ii) as
+automatically a new axis --- in case (ii) it collapses into $\varphi_w$ unless the tool-LLM is
+provably off-lineage. The practical test is $\mathrm{Cov}(W, W_{\mathrm{tool}}) = 0$, which
+vendor-diversity on the panel does nothing to ensure.}
+
+\bigskip
+\hrule
+\bigskip
+
+\section*{Point 4 --- The slogan}
+
+\noindent\textit{Verdict: \textbf{BREAKS as an identity; holds only as the strict limit
+$\varphi_E \to 1$.}}
+
+\medskip
+
+\paragraph{Position.}
+``A mixed-model panel querying the same tool backend is no more independent than a single-model
+panel'' claims $n_{\mathrm{eff}} \to 1$, i.e.\ $\rho_{\mathrm{total}} \to 1$, i.e.\
+(from $\star$) $\varphi_w + \varphi_E \to 1$ with the shared part fully determining the verdict.
+
+\paragraph{Objection.}
+In the two-source model, $\rho_{\mathrm{total}} = a^2 + b^2 \to 1$ requires $c \to 0$ ---
+the idiosyncratic term vanishes and the verdict is a deterministic function of $(W,E)$.
+For the \emph{evidence alone} to kill independence you need $a \to 0, b \to 1$: the shared tool
+output must \emph{fully determine} each judge's verdict.
+That is false whenever judges exercise any residual independent judgment given the evidence:
+if $\mathrm{verdict}_i = \mathbf{1}[Z_i > \tau]$ with $c > 0$, then conditionally on $E$ the
+verdicts are still correlated only through $W$ plus noise, and $\varphi_E = b^2 < 1$ strictly.
+
+\paragraph{Formal condition.}
+The exact condition for the slogan to be \emph{true} (not merely suggestive):
+\[
+  \text{judge verdict is } \sigma(E)\text{-measurable}
+  \iff
+  \mathrm{verdict}_i = h(E) \text{ for a common } h,
+  \text{ independent of } i \text{ and of } \varepsilon_i.
+\]
+This is the $\sigma$-fields-not-independent framing taken to its limit --- but far stronger than
+``$\sigma$-fields not independent.''
+Non-independent $\sigma$-fields give $0 < \varphi_E < 1$ (partial collapse);
+the slogan needs $\sigma(\mathrm{verdict}_i) \subseteq \sigma(E)$ for all $i$ (total collapse).
+Those are different claims.
+
+\paragraph{Resolution (mai nafka minah).}
+The honest, defensible version of the slogan is the \textbf{inequality}, not the equation:
+\[
+  \boxed{n_{\mathrm{eff}}^{\mathrm{total}} \leq \frac{n}{1+(n-1)\varphi_E}}
+\]
+--- a shared tool \emph{caps} effective independence at the evidence axis, and that cap is $1$
+only in the degenerate fully-determined limit.
+
+The slogan as written is an \textbf{overstatement} (it asserts the boundary case as the general
+case).
+It is exactly true iff verdicts are $\sigma(\text{tool-output})$-measurable; it is
+\emph{directionally} correct --- shared tool $\Rightarrow$ strictly fewer effective judges,
+uncured by model diversity --- for any $\varphi_E > 0$.
+Ship it as ``no more independent \emph{than the evidence axis allows},'' never as ``$=$ a
+single-model panel,'' unless the determinism condition is asserted and defended.
+(Same discipline as \texttt{kohli-neff-is-phi-not-kappa}: state the regime, do not headline the
+extreme.)
+
+\bigskip
+\hrule
+\bigskip
+
+\section*{Bottom line}
+
+$\varphi_E$ is a \textbf{sound separable second axis only under stated conditions}: it is real and
+orthogonal to $\varphi_w$ when the evidence channel has a dependency-graph root disjoint from the
+panel's shared training distribution (case~i: corpus/retriever backend), but it \textbf{collapses
+into $\varphi_w$} when the shared tool is itself an on-lineage LLM (case~ii, the sub-case Claudius
+calls hardest --- correctly, because that is where it is \emph{not} a new axis).
+Even where it is separable, the two axes do \textbf{not} compose multiplicatively and admit a
+clean law only as reciprocal-additive
+\[
+  \frac{1}{n_{\mathrm{eff}}^{\mathrm{total}}}
+  = \frac{1}{n_{\mathrm{eff}}^w} + \frac{1}{n_{\mathrm{eff}}^E} - \frac{1}{n}
+\]
+in the linear-Gaussian-exchangeable case; real evidence-sharing is block-structured
+(use spectral $n_{\mathrm{eff}}$, not scalar Kish) and interactive (an irreducible
+$\theta_{123}/\mathrm{Var}(\Theta)$ cross-term), and the slogan is an overstatement true only in
+the $\sigma(\text{tool-output})$-measurable determinism limit.
+
+\bigskip
+\hrule
+\bigskip
+
+\section*{Precise conditions for validity vs.\ failure}
+
+\subsection*{Formalization is VALID when ALL of:}
+\begin{enumerate}
+\item \textbf{Exchangeable evidence-sharing} --- every judge-pair shares the same amount of
+  decision-relevant evidence (single equicorrelation $\rho_E$).
+  Then and only then does scalar Kish
+  $n_{\mathrm{eff}}^E = n/(1+(n-1)\varphi_E)$ hold.
+\item \textbf{Graph-disjoint evidence root} --- the tool/evidence backend has a dependency-graph
+  root disjoint from the judges' training roots, i.e.\ $\mathrm{Cov}(W, W_{\mathrm{tool}}) = 0$
+  (case~i: corpus/retriever, or a provably off-lineage tool-LLM).
+  Only then is $\varphi_E$ orthogonal to $\varphi_w$ rather than a relabeling.
+\item \textbf{Linear/additive failure map} --- the latent failure signal is additive in $(W,E)$
+  with a common threshold.
+  Then composition is reciprocal-additive:
+  $1/n_{\mathrm{eff}}^{\mathrm{total}} = 1/n_{\mathrm{eff}}^w + 1/n_{\mathrm{eff}}^E - 1/n$.
+\item \textbf{Slogan restricted} to the inequality
+  $n_{\mathrm{eff}} \leq n/(1+(n-1)\varphi_E)$, OR the determinism condition
+  $\sigma(\mathrm{verdict}_i) \subseteq \sigma(E)$ explicitly asserted for the
+  ``$=$ single-model panel'' equality.
+\end{enumerate}
+
+\subsection*{It FAILS when ANY of:}
+\begin{itemize}
+\item Retrieval is query-/judge-specific $\Rightarrow$ block-structured $\Sigma_E$ $\Rightarrow$
+  scalar Kish wrong; use spectral
+  $n_{\mathrm{eff}} = (\sum\lambda)^2/\sum\lambda^2$.
+\item Shared tool is an on-lineage LLM $\Rightarrow$ $\varphi_E \subseteq \varphi_w$ (not a new
+  axis); the real invariant is $\kappa_E = \#$ independent DAG roots, not a weights/evidence label.
+\item Failure map is nonlinear/interactive in $(W,E)$ $\Rightarrow$ irreducible third-order
+  $\theta_{123}/\mathrm{Var}(\Theta)$ term; total co-failure is not a function of
+  $(\varphi_w, \varphi_E)$ alone (\texttt{c400-factorization-gate} lineage).
+\item Slogan stated as an equality without the $\sigma(E)$-measurability condition $\Rightarrow$
+  overstatement; judges with residual independent judgment give $\varphi_E < 1$ strictly.
+\end{itemize}
+
+\subsection*{Reframe suggestion}
+
+Drop ``weights vs.\ evidence'' as the primitive and use the \textbf{number of independent roots in
+the dependency DAG} ($\kappa_E$) as the structural invariant, with $\varphi_w$, $\varphi_E$ as two
+\emph{projections} of it that coincide with distinct roots only in case~(i).
+This matches \texttt{kappa-e-dual-of-neff} / \texttt{cofailure-surface-migrates-upstream} and
+avoids the case-(ii) collapse being mistaken for a new axis.
+
+\end{document}
