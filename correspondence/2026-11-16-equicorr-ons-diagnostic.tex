@@ -16,9 +16,13 @@
 \medskip
 \noindent I ran the adversarial equicorrelation test for the ONS-type online-learned stratum
 weights on the \S5b joint-bet combiner.
-The punchline: equal weights (\textsc{Fixed}) dominate the ONS-type corrector (\textsc{Online})
-on power and on expected log-wealth everywhere we tested, and the ONS-type weight-learner
-is relegated to diagnostic duty only.
+The punchline (restated from the fresh-pair tables only; see the correction note below):
+equal weights (\textsc{Fixed}) lead on \emph{mean log-wealth} at $\gamma\le 0.15$ in the
+heterogeneous-signal Regime~1 and everywhere in the genuine-equicorrelation case
+(\texttt{equicorr\_true}); \emph{power has no uniform winner} (the ONS-type learner wins
+power at a few high-$\gamma$ points); and validity is proved for the whole predictable class.
+We retain equal weights as the deployable default and treat the ONS-type weight-learner as a
+diagnostic.
 This note documents the experiment in full so you can tell me where the proof gaps are.
 
 %------------------------------------------------------------------
@@ -81,49 +85,29 @@ commit~\texttt{c762498} (past-only pairing, predictable betting factors).
 
 \subsection{Learner-vs-biased-fixed-point regime (Regime~1)}
 
-At all $\gamma$ giving $\bar\phi\lesssim 0.31$:
-\textsc{Online} strictly loses to \textsc{Fixed} on paired per-seed log-wealth
-(Wilcoxon $p\le 0.005$ at every point; win-fraction $0.25$--$0.43$ for \textsc{Online}).
+On mean log-wealth, \textsc{Fixed} leads \textsc{Online} at every $\gamma\le 0.15$ in
+the fresh-pair (Prop.~3) construction. Power, by contrast, has no uniform winner: under the
+fresh-pair harness the ONS-type learner wins power at the higher-$\gamma$ points (e.g.\
+$0.213$ vs \textsc{Fixed} $0.095$ at $\gamma=0.10$, $R=1000$, cap $=1/b$). So the
+honest Regime-1 statement is: \emph{\textsc{Fixed} leads on mean log-wealth in the tested
+range; power is mixed; validity holds for both.}
 
-At $\bar\phi\approx 0.40$ ($\gamma=0.25$, extended grid):
-the per-seed \emph{median} log-wealth gap closes to near-zero
-(\textsc{Online} vs \textsc{Fixed}: median diff $+0.086$, win-fraction $0.515$,
-Wilcoxon $p=0.98$~--- indistinguishable from chance).
-But \textsc{Fixed} still dominates on every other metric:
-\[
-  \text{\textsc{Fixed}:}\;\bar{W}=+5.57,\quad \text{power}=0.98
-  \qquad\text{vs}\qquad
-  \text{\textsc{Online}:}\;\bar{W}=+1.85,\quad \text{power}=0.84.
-\]
+\emph{Correction (retracted numbers).} An earlier draft reported
+$\bar{W}=+5.57$ vs $+1.85$ (``left-tail wealth collapse'') and a $6$--$16$~percentage-point
+power loss for \textsc{Online}. Those figures came from the \textbf{past-only /
+whole-stream-$\delta$} pairing (commit \texttt{44e1f1d}) with a terminal log clamp at
+$10^{-300}$: the ``collapse'' was the \emph{clamp}, not the learner, and it is \textbf{not
+present} in the shipped fresh-pair construction (no path ruins at cap $=1/b$; see Prop.~3 of
+Clio's 2026-11-19 review, the raw cell mean never drops below $-\tfrac12$). I have removed the
+floor-laden $\bar{W}$ table and the ``dominates on power and log-wealth everywhere'' claim it
+supported.
 
-At $\bar\phi\approx 0.44$--$0.47$:
-\textsc{Online}'s per-seed median edge grows to $+0.44$ (win-fraction $0.57$),
-but \textsc{Fixed} continues to dominate mean log-wealth ($+7.26$ vs $+0.44$)
-and power ($1.00$ vs $\le 0.975$) at every tested point.
-
-The mechanism is the \textbf{Forecast Combination Puzzle}
-\cite{Timmermann2006,SmithWallis2009,Claeskens2016}:
-\textsc{Online}'s estimation variance manifests as a \emph{left-tail wealth collapse}
-(mean $\ll$ median) plus a $6$--$16$ percentage-point power loss.
-Table~\ref{tab:r1} summarises the two key $\bar\phi$ checkpoints.
-
-\begin{table}[h]
-\centering
-\caption{Regime~1 (homogeneous shock): mean log-wealth $\bar{W}$ and power
-at two $\bar\phi$ checkpoints. $R=200$, $N=4000$, $Q=10$.}
-\label{tab:r1}
-\begin{tabular}{lcccc}
-\toprule
- & \multicolumn{2}{c}{$\bar\phi\approx 0.40$} & \multicolumn{2}{c}{$\bar\phi\approx 0.44$}\\
-\cmidrule(lr){2-3}\cmidrule(lr){4-5}
-Combiner & $\bar{W}$ & Power & $\bar{W}$ & Power\\
-\midrule
-\textsc{Fixed}  & $+5.57$ & $0.98$ & $+7.26$ & $1.00$\\
-\textsc{Online} & $+1.85$ & $0.84$ & $+0.44$ & ${\le}0.975$\\
-\textsc{Oracle} & (upper bound) & & & \\
-\bottomrule
-\end{tabular}
-\end{table}
+The relevant mechanism remains the \textbf{Forecast Combination Puzzle}
+\cite{Timmermann2006,SmithWallis2009,Claeskens2016}: where the oracle allocation is near
+uniform, \textsc{Online}'s estimation variance costs mean log-wealth with no compensating
+power gain. Where the signal is concentrated (higher $\gamma$), the learner can recover some
+power. That is why the winner depends on the metric and the regime, not on a single global
+ordering.
 
 \subsection{Genuine equicorrelation (\texttt{equicorr\_true})}
 
@@ -193,16 +177,19 @@ values).
 %------------------------------------------------------------------
 \section{Interpretation and decision}
 
-\paragraph{Equal weights are the publishable \S5b combiner.}
-\textsc{Fixed} (equal weights $\lambda_{\mathrm{fixed}}$) dominates \textsc{Online}
-on the metrics that matter for a deployed test: power and expected log-wealth.
-The median advantage \textsc{Online} acquires at $\bar\phi\gtrsim 0.40$ is
-razor-thin ($p=0.98$), is bought with a catastrophic left-tail collapse
-(mean log-wealth $+1.85$ vs $+5.57$), and corresponds to a $14$-percentage-point
-power loss.
-This is the textbook Forecast Combination Puzzle signature: estimation variance
-of the learned weights swamps the gain from reweighting, even when the optimal weights
-are genuinely non-uniform (Regime~2).
+\paragraph{Equal weights are the deployable \S5b default.}
+\textsc{Fixed} (equal weights $\lambda_{\mathrm{fixed}}$) leads \textsc{Online} on
+\emph{mean expected log-wealth} at every tested $\gamma\le 0.15$ in Regime~1 and at every
+$\gamma$ in the genuine-equicorrelation case (\texttt{equicorr\_true}). It does \emph{not}
+dominate on power: power has no uniform winner, and the ONS-type learner wins power at some
+high-$\gamma$ points in the fresh-pair harness. So the recommendation rests on the
+log-wealth (expected-growth) criterion and on simplicity, not on a claimed dominance over
+every metric. \emph{(The earlier ``catastrophic left-tail collapse, $+1.85$ vs $+5.57$,
+$14$-point power loss'' justification is retracted: those were past-only / clamp artifacts,
+not fresh-pair behaviour.)}
+Where the oracle allocation is near uniform, this is the textbook Forecast Combination Puzzle
+signature: estimation variance of the learned weights costs log-wealth with no compensating
+reweighting gain.
 
 \paragraph{ONS-type is retained as a diagnostic.}
 The ONS-type corrector is not discarded---it is reframed.
@@ -211,18 +198,22 @@ co-failure signal is concentrated enough that reweighting could \emph{in princip
 matter.
 That is useful signal for a practitioner deciding whether to invest in a richer
 combiner design.
-But ONS-type is not sold as a deployment improvement: it does not beat equal weights on
-power or expected log-wealth anywhere in the $\bar\phi$ range tested.
+But ONS-type is not sold as a deployment improvement: it never beats equal weights on
+\emph{mean expected log-wealth} in the tested range, and its occasional power edge (at
+isolated high-$\gamma$ points) does not justify the added estimation machinery for a
+deployed test.
 
-\paragraph{The log-wealth floor is a pairing artifact, not an ONS-type signal.}
-The mean-log-wealth floor near $-690.8$ that motivated a cap sensitivity check is an
-artifact of the earlier past-only / whole-stream-$\delta$ pairing, \emph{not} of the
-shipped fresh-pair (Prop.~3) construction. In the fresh-pair construction the per-block
-$\delta$ is small (so $b\approx 1$) and no wealth path reaches the floor at either
-cap $=1/b$ or cap $=0.9/b$; hence the cap choice does not mask an ONS-type edge. The only
-ONS-type log-wealth advantage (at $\gamma=0.25$ in the heterogeneous-signal regime,
-Regime~1) is present at \emph{both} caps and is a genuine high-signal effect, not a cap
-artifact.
+\paragraph{No path ruins in the fresh-pair construction (there is no log-wealth floor).}
+An earlier draft reported a mean-log-wealth ``floor'' that motivated a cap sensitivity
+check. That floor was an artifact of the earlier past-only / whole-stream-$\delta$ pairing
+with a terminal log clamp, \emph{not} of the shipped fresh-pair (Prop.~3) construction, so I
+have dropped it as a motivating number. In the fresh-pair construction no wealth path reaches
+any floor at either cap $=1/b$ or cap $=0.9/b$. The reason is \emph{not} ``$\delta$ small
+$\Rightarrow b\approx 1$'' (at cap $=1/b$ one has $\mathrm{cap}\cdot b = 1$ exactly): it is
+that the cyclic cell mean of $U-V$ never drops below $-\tfrac12$ (Clio's Prop.~3), so every
+betting factor stays at least $\approx\tfrac12 > 0$. Hence the cap choice cannot mask an
+ONS-type edge: any ONS-type log-wealth advantage present is a real signal effect, not a cap
+or clamp artifact.
 
 \paragraph{Forecast Combination Puzzle framing.}
 Timmermann~\cite{Timmermann2006}, Smith \& Wallis~\cite{SmithWallis2009}, and
@@ -256,17 +247,23 @@ not of Marshall--Olkin structure specifically.
 However, only a single co-failure generative family was tested; a DGP with sharply
 concentrated signal and very low noise could in principle reverse the conclusion.
 
-\textbf{Explicit limitation (Regime-2 blindness).}
-The cross-item co-failure statistic is \emph{blind} to co-failure on items that both
-judges almost always fail: when both marginals are near~$1$, the per-pair excess
-signal collapses below the construction's $\delta$, so no valid weighting detects it.
-The heterogeneous-shock regime (Regime~2) lies in exactly this zone --- outside the
-detection envelope. Concretely, Regime~2 was limited to $\gamma\le 0.35$ (whole-sample
-$\bar\phi\le 0.27$); reaching $\bar\phi\approx 0.40$ would require $\gamma\gtrsim 0.6$,
-a very large shock. But the point is not merely the tested $\gamma$ range: co-failure
-concentrated on items both judges usually fail is \emph{structurally} undetectable by
-this statistic, and for LLM judges that may be exactly where co-failure matters most.
-We state this as an explicit limitation.
+\textbf{Explicit limitation (the real blind spot: marginals near $1$).}
+The cross-item co-failure signal is $\propto (1-p_i)(1-p_j)$, so it $\to 0$ as the marginals
+approach~$1$: co-failure concentrated on items that \emph{both} judges almost always fail is
+structurally invisible to this statistic, no matter how it is weighted. For LLM judges that
+may be exactly where co-failure matters most. We state this as the explicit limitation.
+
+\emph{Correction (Regime~2 is a weighting problem, not an envelope problem).} An earlier
+draft claimed Regime~2 ``lies in exactly this zone --- outside the detection envelope.''
+That is retracted (it inherited a claim that was relative to the old whole-stream
+$\delta\approx 0.05$). Regime~2's marginals are $0.40$--$0.60$, \emph{not} near~$1$: in the
+hardest strata the per-item signal at $\gamma=0.35$ is $0.04$--$0.075$, which sits
+\emph{above} the fresh-pair per-cell $\delta_1$ (mean $\approx 0.017$) and far above
+$\delta_2$. A \emph{valid}, fixed-before-data bettor placing $\mathrm{cap}/3$ on strata
+$7$--$9$ detects it (power $0.145/0.690$ at $\gamma=0.20/0.35$ under $\delta_1$;
+$0.790/0.995$ under $\delta_2$). So Regime~2 is within the envelope --- equal weights simply
+dilute the concentrated signal, which is precisely where a \emph{valid} non-uniform weighting
+has something real to find.
 If Clio sees a DGP where equal weights definitively lose, I want to know.
 
 %------------------------------------------------------------------
@@ -284,9 +281,11 @@ If Clio sees a DGP where equal weights definitively lose, I want to know.
     ONS-type weight updates.  Is there a formal argument ruling this out, or should we add
     a scope caveat?
 
-  \item Regime~2 (heterogeneous shock, top-$30\%$ strata): \textsc{Oracle} detects but
-    \textsc{Fixed} and \textsc{Online} do not, at the tested $\gamma$ grid.  Is this
-    a gap worth pursuing, or is Regime~2 outside the realistic operating envelope?
+  \item Regime~2 (heterogeneous shock, top-$30\%$ strata): a valid fixed-before-data bettor
+    on strata $7$--$9$ detects it (power up to $0.995$ under $\delta_2$), whereas equal
+    weights dilute the concentrated signal and do not.  This is a \emph{weighting} gap, not
+    an envelope gap.  Is a \emph{valid} non-uniform prior (e.g.\ difficulty-concentrated
+    weights fixed in advance) worth pursuing as a deployment option alongside equal weights?
 \end{enumerate}
 
 \noindent Nothing here is time-critical---questions 1--3 are for whenever you have
