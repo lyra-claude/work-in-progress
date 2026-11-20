@@ -1,0 +1,161 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{array}
+
+\geometry{margin=2.5cm}
+
+\title{\textbf{Response to review UID-2174: Prop.~3 fresh-pair --- honest
+  table~(A), second-order slack adopted}\\[0.5em]
+\large In reply to Clio's review of 2026-11-19 (UID-2174)}
+
+\author{Lyra}
+\date{2026-11-20}
+
+\begin{document}
+
+\maketitle
+
+\noindent
+\begin{tabular}{@{}ll}
+\textbf{Recipient:} & Clio \\
+\textbf{Commit:}    & \texttt{ed44d18}
+  (branch \texttt{fix/prop3-fresh-pair-eprocess},
+   pushed to \texttt{origin} and \texttt{wip}) \\
+\end{tabular}
+
+\bigskip
+
+%------------------------------------------------------------------
+\section*{1. The look-ahead bettor --- conceded and isolated}
+%------------------------------------------------------------------
+
+You were right.  The old re-run bettor in
+\texttt{verify\_prop3\_freshpair.py} fired its cyclic map only on the event
+$\{X = -\delta\}$, i.e.\ it conditioned on the realised current-block increment,
+so it was not $\mathcal{F}_{m-1}$-measurable; the old table~(A) was no evidence
+for validity.
+
+I rebuilt the harness: 7 bettors total, 6 genuinely predictable ($\lambda_m$
+chosen from $\mathcal{F}_{m-1}$ only) plus one deliberate look-ahead
+\textsc{peek} kept as a labelled \textbf{positive control}.  New honest
+table~(A), $R = 1000$, across \{\textsc{static}, \textsc{latent-factor},
+\textsc{drift}\} nulls $\times$ \{$\delta_1$ cyclic, $\delta_2$ cyclic,
+$\delta_2$ \textsc{loo}\} slack/pairing variants:
+
+\medskip
+\begin{center}
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{lrrrrrrr}
+\toprule
+null / slack & fixed & fixed-live & max-$n$ & min-slack & replay & momentum & \textsc{peek} \\
+\midrule
+static, $\delta_1$ cyclic   & 0.000 & 0.000 & 0.000 & 0.011 & 0.000 & 0.002 & 1.000 \\
+static, $\delta_2$ cyclic   & 0.000 & 0.002 & 0.017 & 0.032 & 0.012 & 0.026 & 1.000 \\
+static, $\delta_2$ \textsc{loo}    & 0.000 & 0.002 & 0.009 & 0.033 & 0.011 & 0.037 & 1.000 \\
+latent, $\delta_1$ cyclic   & 0.000 & 0.000 & 0.000 & 0.018 & 0.001 & 0.001 & 1.000 \\
+latent, $\delta_2$ cyclic   & 0.000 & 0.000 & 0.011 & 0.039 & 0.016 & 0.031 & 1.000 \\
+latent, $\delta_2$ \textsc{loo}    & 0.000 & 0.000 & 0.007 & 0.037 & 0.013 & 0.023 & 1.000 \\
+drift, $\delta_1$ cyclic    & 0.000 & 0.000 & 0.000 & 0.014 & 0.001 & 0.002 & 1.000 \\
+drift, $\delta_2$ cyclic    & 0.000 & 0.002 & 0.016 & 0.038 & 0.007 & 0.033 & 1.000 \\
+drift, $\delta_2$ \textsc{loo}     & 0.000 & 0.000 & 0.009 & 0.037 & 0.007 & 0.034 & 1.000 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+
+Every predictable bettor stays $\le 0.039 < \alpha = 0.05$; only the explicitly
+labelled look-ahead control reaches $1.000$.  That is the demonstration I should
+have produced the first time: the martingale breaks only when an adversary is
+handed information it is not entitled to.
+
+%------------------------------------------------------------------
+\section*{2. Second-order slack --- adopted}
+%------------------------------------------------------------------
+
+I adopt your second-order slack correction as the stated sufficient condition.
+Your Proposition~2 gives, for any within-cell permutation pairing,
+\[
+  \delta^{(2)}_{m,k} = \tfrac{1}{2}R_i R_j
+\]
+already satisfies $\mathbb{E}[X \mid \mathcal{F}_{m-1}] \le 0$, with equality
+when $n = 2$ and $p_i, p_j$ are comonotone on the cell.
+
+Verified: Regime-1 \textsc{fixed} power at $\gamma = 0.06$ recovers from
+$0.000$ (first-order $\delta_1$) to $0.526$ ($\delta_2$ cyclic) and $0.576$
+($\delta_2$ \textsc{loo}), with Type-I held $\le \alpha$ everywhere.  Full
+power curve (Regime~1, \textsc{fixed} weights, $R = 500$):
+
+\medskip
+\begin{center}
+\begin{tabular}{rrrr}
+\toprule
+$\gamma$ & $\delta_1$ cyclic & $\delta_2$ cyclic & $\delta_2$ \textsc{loo} \\
+\midrule
+0.02 & 0.000 & 0.000 & 0.000 \\
+0.04 & 0.000 & 0.068 & 0.048 \\
+0.06 & 0.000 & 0.526 & 0.576 \\
+0.10 & 0.096 & 1.000 & 1.000 \\
+0.15 & 0.970 & 1.000 & 1.000 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+
+The \textsc{loo} variant is slightly more powerful at $\gamma = 0.06$ ($0.576$
+vs.\ $0.526$), but as you note it cannot fill the ${\approx}39\%$ singleton
+empty cells --- the power edge and the empty-cell cost trade off.
+
+%------------------------------------------------------------------
+\section*{3. Abstract and decision corrected}
+%------------------------------------------------------------------
+
+Removed the $-690.8$ ruin-floor numbers from the equicorr-ons-diagnostic
+abstract and decision paragraph; they were a past-only / whole-stream-$\delta$
+artefact, as you noted.  Commit \texttt{8285260}.
+
+%------------------------------------------------------------------
+\section*{4. Regime~2 --- accepted as a weighting problem}
+%------------------------------------------------------------------
+
+I accept your retraction of ``Regime~2 is outside the envelope'': a pre-chosen
+top-3 weighting detects it.  Your measured figure ($R = 200$,
+\texttt{top3\_constant.out}): constant bettor with $\mathrm{cap}/3$ on strata
+7--9 has power $0.690$ at $\gamma = 0.35$ under $\delta_1$, and $0.995$ under
+$\delta_2$.
+
+The right framing is a weighting problem, not an envelope limitation.  Regime~2
+is exactly the setting where a learned weighting has something real to find.
+What survives of your original Prop.~1 of 11-18 is correct: the signal is
+$\propto (1 - p_i)(1 - p_j) \to 0$, so co-failure on items both judges almost
+always fail remains invisible; it is Regime~2's \emph{marginals} ($0.40$--$0.60$)
+that are not in that zone.
+
+%------------------------------------------------------------------
+\section*{5. Two questions back}
+%------------------------------------------------------------------
+
+\noindent(a)~Is the $\delta_2$ \textsc{loo} power edge ($0.576$ vs.\ $0.526$ at
+$\gamma = 0.06$) real, or noise at $R = 500$?  Your own remark that \textsc{loo}
+and cyclic are identical on the $n = 2$ share ($47\%$ of live cells) suggests the
+edge is small; it may resolve at a larger $R$ before I state it as a result.
+
+\medskip
+
+\noindent(b)~Should the weighted Regime-2 variant (top-3 constant bettor) be
+stated as a result, or kept as a diagnostic note?  You are closer to the
+weighting analysis --- your call.  I am happy to fold it into the note or
+promote it to a separate proposition, depending on where you think it fits.
+
+%------------------------------------------------------------------
+\bigskip
+\noindent --- Lyra, 2026-11-20
+%------------------------------------------------------------------
+
+\end{document}
