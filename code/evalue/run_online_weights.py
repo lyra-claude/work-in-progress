@@ -87,7 +87,8 @@ ONS_EPS     = 1.0      # regularizer A_0 = eps * I
 # ── Build the per-block, per-stratum increment stream X[m, s] ───────────────────
 
 def build_increment_stream(data: dict, rng: np.random.Generator,
-                           pairing: str = 'within_block', return_t: bool = False):
+                           pairing: str = 'within_block', return_t: bool = False,
+                           slack: str = 'first_order', pairing_rule: str = 'cyclic'):
     """
     Build the per-block, per-stratum centered co-failure increment stream X[m, s].
 
@@ -110,6 +111,23 @@ def build_increment_stream(data: dict, rng: np.random.Generator,
           t(s) is an earlier same-stratum item whose outcome is already F_{s-1}-measurable.
           A predictable bettor can exploit the observable {W_j[t(s)]=0} event to drive
           Type-I to 1.000.  Uses whole-stream delta_s = 2 eps_s.
+
+    slack (only affects the 'within_block' arm):
+      'first_order' (delta_1): delta = max(R_i, R_j), the original conservative slack.
+          R_bullet is the full p-range over the cell.  In code: 2*max(range_i, range_j)
+          with range_bullet = (p_max - p_min)/2 = R_bullet/2, so delta_1 = max(R_i, R_j).
+      'second_order' (delta_2, Clio's Prop. 2): delta = (1/2) R_i R_j.  The within-cell
+          CYCLIC/LOO pairing is a permutation of the cell, so the partner sum equals the
+          cell's own sum and  E[X|F_{m-1}] = (1/n) sum_r p_i(s_r)(p_j(s_r) - p_j(s_sigma(r)))
+          <= (1/2) R_i R_j - delta.  Setting delta_2 = (1/2) R_i R_j already gives E[X] <= 0
+          (Prop. 2).  In code: delta_2 = 2 * range_i * range_j since R_bullet = 2*range_bullet.
+          This costs no validity and restores power (the slack shrinks from O(R) to O(R^2)).
+
+    pairing_rule (only affects the 'within_block' arm):
+      'cyclic' (DEFAULT): t(s_r) = s_{(r+1) mod n} within each cell (np.roll(cell, -1)).
+      'loo'   : leave-one-out baseline V(s_r) = W_i(s_r) * mean_{u != r} W_j(s_u) over the
+          cell.  Valid with delta_LOO = (n/(n-1)) R_i R_j / 4 (Prop. 4).  Identical to
+          cyclic when n = 2.
     """
     W_i, W_j = data['W_i'], data['W_j']
     p_i, p_j = data['p_i'], data['p_j']
@@ -136,18 +154,51 @@ def build_increment_stream(data: dict, rng: np.random.Generator,
         # ---- FRESH-PAIR repair (Prop. 3): within-block partner, per-block delta ----
         t = make_within_block_pairing(strata, block_ids, Q=Q)
         has_partner = (t != np.arange(Nloc))
-        V = (W_i * W_j[t]).astype(float)
-        # per-item delta keyed to its (block, stratum) cell = 2 * within-cell p-range
+        # Baseline V(s): either the cyclic single-partner product W_i(s) W_j(t(s)),
+        # or the leave-one-out cell mean W_i(s) * mean_{u != s in cell} W_j(u).
+        if pairing_rule == 'cyclic':
+            V = (W_i * W_j[t]).astype(float)
+        elif pairing_rule == 'loo':
+            V = np.zeros(Nloc)
+            for m in range(M):
+                sel_m = block_ids == m
+                for k in range(Q):
+                    cell_idx = np.where(sel_m & (strata == k))[0]
+                    n = len(cell_idx)
+                    if n < 2:
+                        continue
+                    wj = W_j[cell_idx].astype(float)
+                    sumj = wj.sum()
+                    loo_mean = (sumj - wj) / (n - 1)          # leave item r out
+                    V[cell_idx] = W_i[cell_idx].astype(float) * loo_mean
+        else:
+            raise ValueError(f"unknown pairing_rule {pairing_rule!r}; use 'cyclic' or 'loo'")
+        # per-item delta keyed to its (block, stratum) cell.
+        #   range_bullet = (p_max - p_min)/2 = R_bullet / 2, so R_bullet = 2*range_bullet.
+        #   first_order  : delta_1  = max(R_i, R_j)          = 2*max(range_i, range_j)
+        #   second_order : delta_2  = (1/2) R_i R_j          = 2 * range_i * range_j   (cyclic, Prop. 2)
+        #                  delta_LOO = (n/(n-1)) R_i R_j / 4  = (n/(n-1)) * range_i * range_j (Prop. 4)
         delta_item = np.zeros(Nloc)
         for m in range(M):
             sel_m = block_ids == m
             for k in range(Q):
                 cell = sel_m & (strata == k) & has_partner
-                if cell.sum() < 1:
+                ncell = int(cell.sum())
+                if ncell < 1:
                     continue
                 range_i = (p_i[cell].max() - p_i[cell].min()) / 2.0
                 range_j = (p_j[cell].max() - p_j[cell].min()) / 2.0
-                delta_item[cell] = 2.0 * max(range_i, range_j)
+                if slack == 'first_order':
+                    delta_item[cell] = 2.0 * max(range_i, range_j)
+                elif slack == 'second_order':
+                    if pairing_rule == 'loo':
+                        # delta_LOO = (n/(n-1)) * R_i R_j / 4 = (n/(n-1)) * range_i * range_j
+                        delta_item[cell] = (ncell / (ncell - 1.0)) * range_i * range_j
+                    else:
+                        # delta_2 = (1/2) R_i R_j = 2 * range_i * range_j
+                        delta_item[cell] = 2.0 * range_i * range_j
+                else:
+                    raise ValueError(f"unknown slack {slack!r}; use 'first_order' or 'second_order'")
         inc_item = np.where(has_partner, U - V - delta_item, 0.0)
         valid    = has_partner.astype(float)
         b = 1.0 + float(delta_item.max())
