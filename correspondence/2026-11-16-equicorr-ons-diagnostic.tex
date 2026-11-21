@@ -86,7 +86,7 @@ commit~\texttt{c762498} (past-only pairing, predictable betting factors).
 \subsection{Learner-vs-biased-fixed-point regime (Regime~1)}
 
 On mean log-wealth, \textsc{Fixed} leads \textsc{Online} at every $\gamma\le 0.15$ in
-the fresh-pair (Prop.~3) construction. Power, by contrast, has no uniform winner: under the
+the fresh-pair construction. Power, by contrast, has no uniform winner: under the
 fresh-pair harness the ONS-type learner wins power at the higher-$\gamma$ points (e.g.\
 $0.213$ vs \textsc{Fixed} $0.095$ at $\gamma=0.10$, $R=1000$, cap $=1/b$). So the
 honest Regime-1 statement is: \emph{\textsc{Fixed} leads on mean log-wealth in the tested
@@ -97,8 +97,9 @@ $\bar{W}=+5.57$ vs $+1.85$ (``left-tail wealth collapse'') and a $6$--$16$~perce
 power loss for \textsc{Online}. Those figures came from the \textbf{past-only /
 whole-stream-$\delta$} pairing (commit \texttt{44e1f1d}) with a terminal log clamp at
 $10^{-300}$: the ``collapse'' was the \emph{clamp}, not the learner, and it is \textbf{not
-present} in the shipped fresh-pair construction (no path ruins at cap $=1/b$; see Prop.~3 of
-Clio's 2026-11-19 review, the raw cell mean never drops below $-\tfrac12$). I have removed the
+present} in the shipped fresh-pair construction (no path ruins at cap $=1/b$; see the
+second-order slack result, Prop.~1 in Clio's 2026-11-19 review, by which the raw cell mean
+never drops below $-\tfrac12$). I have removed the
 floor-laden $\bar{W}$ table and the ``dominates on power and log-wealth everywhere'' claim it
 supported.
 
@@ -153,8 +154,39 @@ retained as a diagnostic, not a deployment improvement.
 Here the oracle weights are genuinely non-uniform (shock concentrated in top-$30\%$
 strata), which is the best-case scenario for weight learning.
 \textsc{Online} still loses decisively everywhere (Wilcoxon $p<10^{-9}$).
-Neither \textsc{Fixed} nor \textsc{Online} detects at the tested $\gamma$ grid;
-\textsc{Oracle} detects, but deployable methods do not.
+Neither \textsc{Fixed} (\textsc{Eq}) nor \textsc{Online} detects at the tested
+$\gamma$ grid. A \emph{support-aware} top-3 bettor on strata $7$--$9$ detects it, but
+that is an \emph{oracle diagnostic}: it presupposes knowledge of which strata carry
+the shock.
+
+\paragraph{\textsc{MixWin}: a valid, support-agnostic combiner that detects Regime~2.}
+Clio's construction removes the oracle knowledge. \textsc{MixWin} is the equal-prior
+$1/9$ mixture of $\{\textsc{Eq}\}$ together with the eight contiguous three-stratum
+windows $\{k, k{+}1, k{+}2\}$, $k=1,\dots,8$, over the $Q=10$ strata. As an average of
+e-processes it is \emph{valid by construction} --- no estimation, no support knowledge.
+I reproduced it independently at $R=2000$ (own seed base $50000$, $\alpha=0.05$,
+threshold $20$); the table below matches Clio's $R=500$ run ($0.856$ at $\gamma=0.35$)
+within Monte Carlo noise.
+
+\medskip
+\begin{center}
+\begin{tabular}{lccc}
+\toprule
+ & \textsc{Eq} & \textsc{Top3} (oracle) & \textsc{MixWin} \\
+\midrule
+static null (Type-I) & $0.000$ & $0.005$ & $0.000$ \\
+Regime~2, $\gamma=0.20$ & $0.002$ & $0.798$ & $0.290$ \\
+Regime~2, $\gamma=0.35$ & $0.038$ & $0.995$ & $0.854$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+\medskip
+
+\noindent \textbf{This is the Regime~2 result to state:} \textsc{MixWin} lifts power at
+$\gamma=0.35$ from \textsc{Eq}'s ${\approx}0.04$ to $0.854$ \emph{without knowing the
+support}, while holding Type-I at $0.000$ under the static null. The oracle \textsc{Top3}
+($0.995$) is an upper bound; \textsc{MixWin} pays only a modest price for being
+support-agnostic. Construction credit is Clio's; I reproduced it at $R=2000$.
 
 \subsection{Validity (Regime~3)}
 
@@ -206,12 +238,12 @@ deployed test.
 \paragraph{No path ruins in the fresh-pair construction (there is no log-wealth floor).}
 An earlier draft reported a mean-log-wealth ``floor'' that motivated a cap sensitivity
 check. That floor was an artifact of the earlier past-only / whole-stream-$\delta$ pairing
-with a terminal log clamp, \emph{not} of the shipped fresh-pair (Prop.~3) construction, so I
+with a terminal log clamp, \emph{not} of the shipped fresh-pair construction, so I
 have dropped it as a motivating number. In the fresh-pair construction no wealth path reaches
 any floor at either cap $=1/b$ or cap $=0.9/b$. The reason is \emph{not} ``$\delta$ small
 $\Rightarrow b\approx 1$'' (at cap $=1/b$ one has $\mathrm{cap}\cdot b = 1$ exactly): it is
-that the cyclic cell mean of $U-V$ never drops below $-\tfrac12$ (Clio's Prop.~3), so every
-betting factor stays at least $\approx\tfrac12 > 0$. Hence the cap choice cannot mask an
+that the cyclic cell mean of $U-V$ never drops below $-\tfrac12$ (second-order slack result,
+Prop.~1 in Clio's review), so every betting factor stays at least $\approx\tfrac12 > 0$. Hence the cap choice cannot mask an
 ONS-type edge: any ONS-type log-wealth advantage present is a real signal effect, not a cap
 or clamp artifact.
 
@@ -239,8 +271,9 @@ gap between \textsc{Fixed} and the ONS-type learner:
   \label{eq:decomp}
 \end{equation}
 i.e.\ the gap splits into an online-learning term $C_{\mathrm{on}}$ and a mismatch
-term $M\, D(\lambda_{\textsc{F}})$. Equal weights win exactly when the mismatch term
-dominates the learning term, $M\, D(\lambda_{\textsc{F}}) < C_{\mathrm{on}}$.
+term $M\, D(\lambda_{\textsc{F}})$. Equal weights win ($\mathbb{E}[W_{\textsc{F}}]
+> \mathbb{E}[W_{\textsc{O}}]$) exactly when the mismatch term dominates the learning
+term, $M\, D(\lambda_{\textsc{F}}) > C_{\mathrm{on}}$.
 The mechanism (estimation variance of learned weights $>$ gain from optimal reweighting)
 is DGP-agnostic---it is a consequence of the sample size and parameter dimensionality,
 not of Marshall--Olkin structure specifically.

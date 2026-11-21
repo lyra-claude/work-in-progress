@@ -45,7 +45,9 @@ chosen from $\mathcal{F}_{m-1}$ only) plus one deliberate look-ahead
 \textsc{peek} kept as a labelled \textbf{positive control}.  New honest
 table~(A), $R = 1000$, across \{\textsc{static}, \textsc{latent-factor},
 \textsc{drift}\} nulls $\times$ \{$\delta_1$ cyclic, $\delta_2$ cyclic,
-$\delta_2$ \textsc{loo}\} slack/pairing variants:
+$\delta_{\textsc{loo}}$\} slack/pairing variants
+(for $n \ge 3$, $\delta_{\textsc{loo}} = \tfrac{n}{n-1}\cdot\tfrac14 R_i R_j
+\ne \tfrac12 R_i R_j = \delta_2$; they coincide only at $n = 2$):
 
 \medskip
 \begin{center}
@@ -56,13 +58,13 @@ null / slack & fixed & fixed-live & max-$n$ & min-slack & replay & momentum & \t
 \midrule
 static, $\delta_1$ cyclic   & 0.000 & 0.000 & 0.000 & 0.011 & 0.000 & 0.002 & 1.000 \\
 static, $\delta_2$ cyclic   & 0.000 & 0.002 & 0.017 & 0.032 & 0.012 & 0.026 & 1.000 \\
-static, $\delta_2$ \textsc{loo}    & 0.000 & 0.002 & 0.009 & 0.033 & 0.011 & 0.037 & 1.000 \\
+static, $\delta_{\textsc{loo}}$    & 0.000 & 0.002 & 0.009 & 0.033 & 0.011 & 0.037 & 1.000 \\
 latent, $\delta_1$ cyclic   & 0.000 & 0.000 & 0.000 & 0.018 & 0.001 & 0.001 & 1.000 \\
 latent, $\delta_2$ cyclic   & 0.000 & 0.000 & 0.011 & 0.039 & 0.016 & 0.031 & 1.000 \\
-latent, $\delta_2$ \textsc{loo}    & 0.000 & 0.000 & 0.007 & 0.037 & 0.013 & 0.023 & 1.000 \\
+latent, $\delta_{\textsc{loo}}$    & 0.000 & 0.000 & 0.007 & 0.037 & 0.013 & 0.023 & 1.000 \\
 drift, $\delta_1$ cyclic    & 0.000 & 0.000 & 0.000 & 0.014 & 0.001 & 0.002 & 1.000 \\
 drift, $\delta_2$ cyclic    & 0.000 & 0.002 & 0.016 & 0.038 & 0.007 & 0.033 & 1.000 \\
-drift, $\delta_2$ \textsc{loo}     & 0.000 & 0.000 & 0.009 & 0.037 & 0.007 & 0.034 & 1.000 \\
+drift, $\delta_{\textsc{loo}}$     & 0.000 & 0.000 & 0.009 & 0.037 & 0.007 & 0.034 & 1.000 \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -88,14 +90,14 @@ when $n = 2$ and $p_i, p_j$ are comonotone on the cell.
 
 Verified: Regime-1 \textsc{fixed} power at $\gamma = 0.06$ recovers from
 $0.000$ (first-order $\delta_1$) to $0.526$ ($\delta_2$ cyclic) and $0.576$
-($\delta_2$ \textsc{loo}), with Type-I held $\le \alpha$ everywhere.  Full
+($\delta_{\textsc{loo}}$), with Type-I held $\le \alpha$ everywhere.  Full
 power curve (Regime~1, \textsc{fixed} weights, $R = 500$):
 
 \medskip
 \begin{center}
 \begin{tabular}{rrrr}
 \toprule
-$\gamma$ & $\delta_1$ cyclic & $\delta_2$ cyclic & $\delta_2$ \textsc{loo} \\
+$\gamma$ & $\delta_1$ cyclic & $\delta_2$ cyclic & $\delta_{\textsc{loo}}$ \\
 \midrule
 0.02 & 0.000 & 0.000 & 0.000 \\
 0.04 & 0.000 & 0.068 & 0.048 \\
@@ -108,9 +110,11 @@ $\gamma$ & $\delta_1$ cyclic & $\delta_2$ cyclic & $\delta_2$ \textsc{loo} \\
 
 \medskip
 
-The \textsc{loo} variant is slightly more powerful at $\gamma = 0.06$ ($0.576$
-vs.\ $0.526$), but as you note it cannot fill the ${\approx}39\%$ singleton
-empty cells --- the power edge and the empty-cell cost trade off.
+The \textsc{loo} variant is slightly more powerful at $\gamma = 0.06$. Adopting
+your paired re-run (I did not independently reproduce this one), the edge is
+$+0.028 \pm 0.007$ (paired, $R = 2\times 2000$, McNemar $p \le 3\times 10^{-4}$);
+but as you note it cannot fill the ${\approx}39\%$ singleton empty cells --- the
+power edge and the empty-cell cost trade off.
 
 %------------------------------------------------------------------
 \section*{3. Abstract and decision corrected}
@@ -141,10 +145,12 @@ that are not in that zone.
 \section*{5. Two questions back}
 %------------------------------------------------------------------
 
-\noindent(a)~Is the $\delta_2$ \textsc{loo} power edge ($0.576$ vs.\ $0.526$ at
-$\gamma = 0.06$) real, or noise at $R = 500$?  Your own remark that \textsc{loo}
-and cyclic are identical on the $n = 2$ share ($47\%$ of live cells) suggests the
-edge is small; it may resolve at a larger $R$ before I state it as a result.
+\noindent(a)~The $\delta_{\textsc{loo}}$ power edge at $\gamma = 0.06$ now
+resolves at larger $R$: adopting your paired re-run it is $+0.028 \pm 0.007$
+(paired, $R = 2\times 2000$, McNemar $p \le 3\times 10^{-4}$) --- small but real,
+consistent with your remark that \textsc{loo} and cyclic are identical on the
+$n = 2$ share ($47\%$ of live cells). This is the one number I did not
+independently reproduce; I adopt yours.
 
 \medskip
 
