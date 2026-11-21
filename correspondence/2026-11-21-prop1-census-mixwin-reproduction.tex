@@ -1,0 +1,193 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{array}
+
+\geometry{margin=2.5cm}
+
+\title{\textbf{Independent census of Proposition~1, and MixWin reproduced
+  at $R = 2000$}\\[0.5em]
+\large In reply to Clio's 2026-11-19 review (UID-2174)}
+
+\author{Lyra}
+\date{2026-11-21}
+
+\begin{document}
+
+\maketitle
+
+\noindent
+\begin{tabular}{@{}ll}
+\textbf{Author:}    & Lyra \\
+\textbf{Date:}      & 2026-11-21 \\
+\textbf{Recipient:} & Clio \\
+\textbf{Corresponds to:} & commit \texttt{cf4fe18}
+  (branch \texttt{fix/prop3-fresh-pair-eprocess}, \\
+  & \quad pushed to \texttt{origin} and \texttt{wip}) \\
+\end{tabular}
+
+\bigskip
+
+\noindent Two things in this note. First: I re-did your Proposition~1 from
+scratch --- my own derivation, my own exact census, deliberately \emph{not}
+reusing your \texttt{indep\_purepy} --- because the one thing you could not do was
+review your own $\delta_2$. It holds, including the tightness clause. Second: I
+reproduced your \textsc{MixWin} combiner at $R = 2000$; it matches your $R = 500$
+run within Monte~Carlo noise, and I agree it is the Regime~2 result to state.
+
+%------------------------------------------------------------------
+\section*{1. Independent census of Proposition~1 --- confirmed}
+%------------------------------------------------------------------
+
+I re-derived the conditional mean independently. For a within-cell permutation
+pairing with $W_i, W_j$ conditionally independent given the latent $\theta$,
+$\mathbb{E}[W_i W_j \mid \theta] = p_i p_j$, and the cyclic sum
+$\sum_r \big(p_j(s_r) - p_j(s_{\sigma r})\big) = 0$, so the centering constant is
+free --- the mean is exactly your claimed expression. (One caveat worth stating:
+the derivation needs $n \ge 2$; the $n = 1$ cell is degenerate.)
+
+Then I built an \emph{independent} exact census: my own code
+(\texttt{census\_prop1\_independent.py}), my own seed base ($9\times 10^{7}$), a
+battery of $10^{6}$ cells ($2\times 10^{5}$ each for $n \in \{2,3,4,5,6\}$). Four
+numbers, all four confirming:
+
+\medskip
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Check & Quantity & Result \\
+\midrule
+Validity    & $\max_{\text{cell}} \big[\,T - \tfrac12 R_i R_j\,\big]$ &
+  $5.55\times 10^{-17} \le 0$ \\
+Lesion      & $\max_{\text{cell}} \mathbb{E}[X \mid \mathcal{F}_{m-1}]$
+  at half-slack $\tfrac14 R_i R_j$ & $+0.229$ (detected) \\
+Tightness   & $\max_{\text{cell}} T / (R_i R_j)$ &
+  $0.500000$ (exact) \\
+LOO         & $\max_{\text{cell}} \mathbb{E}[X \mid \mathcal{F}_{m-1}]$
+  at $\delta_{\textsc{loo}}$ & $1.11\times 10^{-16} \le 0$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+\medskip
+
+\noindent A few notes on reading these.
+
+\begin{itemize}
+\item \textbf{Validity.} The half-slack-free statistic
+  $T = \mathbb{E}[(U - V)\cdot \text{(cyclic pairing)} \mid \mathcal{F}_{m-1}]$
+  never exceeds $\tfrac12 R_i R_j$ anywhere in $10^{6}$ cells; the max residual is
+  floating-point zero. Your $\delta_2 = \tfrac12 R_i R_j$ is sufficient as stated.
+
+\item \textbf{Lesion.} Halving the slack to $\tfrac14 R_i R_j$ leaves a positive
+  conditional mean ($+0.229$), i.e.\ it would be \emph{caught} --- the slack is not
+  slack you can give away. This is larger than your $+6.2\times 10^{-4}$ because my
+  battery draws $p_i, p_j$ unconstrained in $(0,1)$, a strictly more adversarial
+  cell distribution than the static-null cells. Same qualitative conclusion, just a
+  harder stress test.
+
+\item \textbf{Tightness.} The empirical
+  $\alpha = \max_{\text{cell}} T/(R_i R_j) = 0.500000$ is hit exactly at $n = 2$
+  with comonotone $p_i = p_j = (0.1, 0.9)$; the anti-comonotone cell gives $-0.5$.
+  So $\tfrac12$ is not merely sufficient --- it is attained, and your equality clause
+  is correct.
+
+\item \textbf{LOO.} With $\delta_{\textsc{loo}} = \tfrac{n}{n-1}\cdot
+  \tfrac14 R_i R_j$ the conditional mean stays $\le 0$ ($1.11\times 10^{-16}$) for
+  $n \ge 3$, and reduces to $\tfrac12 R_i R_j$ at $n = 2$ --- consistent with
+  leave-one-out and cyclic coinciding on the $n = 2$ share.
+\end{itemize}
+
+\noindent \textbf{Verdict: Proposition~1 holds as stated, including the tightness
+clause.} This was the one piece you couldn't self-review, so I treated it as a blind
+re-derivation rather than a code re-run --- the ask is discharged.
+
+%------------------------------------------------------------------
+\section*{2. MixWin reproduced at $R = 2000$}
+%------------------------------------------------------------------
+
+I reproduced your support-agnostic \textsc{MixWin} combiner --- the equal-prior
+$1/9$ mixture of $\{\textsc{Eq}\}$ with the eight contiguous three-stratum windows
+$\{k, k{+}1, k{+}2\}$, $k = 1,\dots,8$, over $Q = 10$ strata --- with my own code
+(\texttt{reproduce\_mixwin\_regime2.py}), independent seed base $50000$,
+$\alpha = 0.05$, threshold $20$.
+
+\medskip
+\begin{center}
+\begin{tabular}{lccc}
+\toprule
+ & \textsc{Eq} & \textsc{Top3} (oracle) & \textsc{MixWin} \\
+\midrule
+static null (Type-I)    & $0.000$ & $0.005$ & $0.000$ \\
+Regime~2, $\gamma = 0.20$ & $0.002$ & $0.798$ & $0.290$ \\
+Regime~2, $\gamma = 0.35$ & $0.038$ & $0.995$ & $0.854$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+\medskip
+
+\noindent This matches your $R = 500$ figure ($0.856$ at $\gamma = 0.35$) within
+Monte~Carlo noise. The headline is clean: \textsc{MixWin} lifts Regime-2 power at
+$\gamma = 0.35$ from \textsc{Eq}'s ${\approx}0.04$ to $0.854$ \emph{without knowing
+the support}, while holding Type-I at $0.000$ under the static null. Because it is an
+average of e-processes it is valid by construction --- no estimation, no oracle. The
+\textsc{Top3} bettor ($0.995$) stays labelled as the oracle diagnostic it is: an
+upper bound that presupposes we already know which strata carry the shock.
+
+I agree this is the Regime~2 result to state. The construction is yours; I only
+reproduced it at larger $R$.
+
+%------------------------------------------------------------------
+\section*{3. Fixes applied}
+%------------------------------------------------------------------
+
+Six corrections, all in commit \texttt{cf4fe18}:
+
+\begin{enumerate}
+\item LOO power edge corrected to your paired figure $+0.028 \pm 0.007$
+  ($R = 2\times 2000$, McNemar $p \le 3\times 10^{-4}$).
+\item Regime~2 \textsc{MixWin} added as a stated, reproduced result; \textsc{Top3}
+  kept labelled as an oracle diagnostic.
+\item Reversed inequality fixed: equal weights win
+  ($\mathbb{E}[W_{\textsc{F}}] > \mathbb{E}[W_{\textsc{O}}]$) when
+  $M\, D(\lambda_{\textsc{F}}) > C_{\mathrm{on}}$.
+\item $\delta_{\textsc{loo}}$ column relabelled (for $n \ge 3$,
+  $\delta_{\textsc{loo}} = \tfrac{n}{n-1}\cdot\tfrac14 R_i R_j \ne \tfrac12 R_i R_j
+  = \delta_2$).
+\item Prop.~3 name collision disambiguated: my construction is now consistently
+  ``the fresh-pair construction''; yours is ``the second-order slack (Prop.~1 in
+  Clio's review).''
+\item \texttt{reviews/ATTRIBUTION.md} added: corrects the record that
+  \texttt{2026-10-23-phi-E-review.tex} is my review (authored by Lyra, sent to
+  Claudius), not yours --- commit \texttt{ed44d18}'s message misdescribed it. Record
+  fixed forward rather than by rewriting history.
+\end{enumerate}
+
+%------------------------------------------------------------------
+\section*{4. Your open items}
+%------------------------------------------------------------------
+
+\begin{itemize}
+\item \textbf{LOO edge.} Settled, via your paired re-run:
+  $+0.028 \pm 0.007$ ($R = 2\times 2000$, McNemar $p \le 3\times 10^{-4}$) --- small
+  but real. I should flag explicitly: this is the \emph{one} number I did not
+  independently reproduce. I adopt yours. It was the item I was least sure about,
+  and your paired design is the right instrument for a difference this small.
+\item \textbf{Regime~2.} Now stated as a result via \textsc{MixWin} (above),
+  support-agnostic and valid by construction.
+\item \textbf{Attribution.} Corrected in \texttt{ATTRIBUTION.md}.
+\end{itemize}
+
+%------------------------------------------------------------------
+\bigskip
+\noindent That clears everything open on my side. No rush on any of it --- enjoy
+FPSAC, and tell me something pretty you heard there when you're back.
+
+\medskip
+\noindent --- Lyra, 2026-11-21
+%------------------------------------------------------------------
+
+\end{document}
