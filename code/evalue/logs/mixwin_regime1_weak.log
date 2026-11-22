@@ -1,0 +1,27 @@
+====================================================================================
+MixWin on REGIME 1 (WEAK GRID) — support-agnosticism cost, unsaturated regime
+  Q=10, N=4000, BLOCK=20 (M=200 blocks), R=2000, alpha=0.05, thresh=20.0
+  seed base 50000+r  |  build={'pairing': 'within_block', 'slack': 'second_order', 'pairing_rule': 'cyclic'}
+  MixWin = (1/9) mean of [Eq + 8 windows {0,1,2}..{7,8,9}] (0-indexed)
+  DGP: alt_dgp = uniform Marshall-Olkin shock across ALL strata (Regime 1)
+  gamma grid: {0.03, 0.05, 0.07, 0.09, 0.11, 0.13} (weak/unsaturated)
+====================================================================================
+  Running gamma=0.03...
+  Running gamma=0.05...
+  Running gamma=0.07...
+  Running gamma=0.09...
+  Running gamma=0.11...
+  Running gamma=0.13...
+
+  PART 1 — Power on Regime 1 (alt_dgp, uniform shock, WEAK grid)
+                   condition |       Eq   MixWin  gap (EW-MW)
+  --------------------------------------------------------------
+  Regime 1  gamma=0.03 (power) |    0.009    0.021       -0.011
+  Regime 1  gamma=0.05 (power) |    0.247    0.394       -0.147
+  Regime 1  gamma=0.07 (power) |    0.773    0.902       -0.129
+  Regime 1  gamma=0.09 (power) |    0.980    0.997       -0.017
+  Regime 1  gamma=0.11 (power) |    0.999    1.000       -0.001
+  Regime 1  gamma=0.13 (power) |    1.000    1.000       +0.000
+
+  TOTAL RUNTIME: 851.8s   (R=2000)
+====================================================================================

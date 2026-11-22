@@ -1,0 +1,26 @@
+====================================================================================
+MixWin on REGIME 1 — support-agnosticism cost where equal weights are near-Kelly
+  Q=10, N=4000, BLOCK=20 (M=200 blocks), R=2000, alpha=0.05, thresh=20.0
+  seed base 50000+r  |  build={'pairing': 'within_block', 'slack': 'second_order', 'pairing_rule': 'cyclic'}
+  MixWin = (1/9) mean of [Eq + 8 windows {0,1,2}..{7,8,9}] (0-indexed)
+  DGP: alt_dgp = uniform Marshall-Olkin shock across ALL strata (Regime 1)
+====================================================================================
+
+  PART 1 — Power on Regime 1 (alt_dgp, uniform shock)
+                   condition |       Eq   MixWin  gap (EW-MW)
+  --------------------------------------------------------------
+  Regime 1  gamma=0.15 (power) |    1.000    1.000       +0.000
+  Regime 1  gamma=0.20 (power) |    1.000    1.000       +0.000
+  Regime 1  gamma=0.25 (power) |    1.000    1.000       +0.000
+  Regime 1  gamma=0.30 (power) |    1.000    1.000       +0.000
+  Regime 1  gamma=0.35 (power) |    1.000    1.000       +0.000
+
+  PART 2 — Type-I error completeness (all should be <= alpha=0.05)
+                        null |  Eq Type-I  MixWin Type-I       status
+  --------------------------------------------------------------------
+                 static null |      0.000          0.000   OK
+          latent-factor null |      0.000          0.000   OK
+                  drift null |      0.000          0.000   OK
+
+  TOTAL RUNTIME: 1119.2s   (R=2000)
+====================================================================================

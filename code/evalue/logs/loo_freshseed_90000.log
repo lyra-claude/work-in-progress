@@ -1,0 +1,63 @@
+====================================================================================================
+LOO vs CYCLIC fresh-seed reproduction — Clio peer-review request
+  SEED_BASE=90000, seed=SEED_BASE+r for r=0..1999
+  R=2000, N=4000, Q=10, BLOCK=20, alpha=0.05, THRESH=20.0
+  Arms:
+    A = cyclic  + delta_2  (second_order, cyclic formula)
+    B = LOO     + delta_LOO (second_order, LOO/Prop.4 formula = (n/(n-1))*range_i*range_j)
+    C = LOO     + delta_2   (second_order, cyclic formula — isolates pairing from slack)
+  PAIRED: same data per replication for all three arms.
+  Gammas: [0.0, 0.04, 0.06, 0.08, 0.1]
+====================================================================================================
+
+  Running gamma=0.00 ...
+    A(cyclic+d2) = 0.0000  B(LOO+dLOO) = 0.0000  C(LOO+d2) = 0.0000 <- TYPE-I OK
+    B-A (LOO_dLOO - cyclic_d2) = +0.0000 +/- 0.0000
+    C-A (LOO_d2   - cyclic_d2) = +0.0000 +/- 0.0000
+
+  Running gamma=0.04 ...
+    A(cyclic+d2) = 0.0775  B(LOO+dLOO) = 0.0665  C(LOO+d2) = 0.0645
+    B-A (LOO_dLOO - cyclic_d2) = -0.0110 +/- 0.0042
+    C-A (LOO_d2   - cyclic_d2) = -0.0130 +/- 0.0041
+
+  Running gamma=0.06 ...
+    A(cyclic+d2) = 0.5475  B(LOO+dLOO) = 0.5710  C(LOO+d2) = 0.5630
+    B-A (LOO_dLOO - cyclic_d2) = +0.0235 +/- 0.0069
+    C-A (LOO_d2   - cyclic_d2) = +0.0155 +/- 0.0070
+
+  Running gamma=0.08 ...
+    A(cyclic+d2) = 0.9305  B(LOO+dLOO) = 0.9485  C(LOO+d2) = 0.9480
+    B-A (LOO_dLOO - cyclic_d2) = +0.0180 +/- 0.0040
+    C-A (LOO_d2   - cyclic_d2) = +0.0175 +/- 0.0040
+
+  Running gamma=0.10 ...
+    A(cyclic+d2) = 0.9975  B(LOO+dLOO) = 0.9985  C(LOO+d2) = 0.9985
+    B-A (LOO_dLOO - cyclic_d2) = +0.0010 +/- 0.0007
+    C-A (LOO_d2   - cyclic_d2) = +0.0010 +/- 0.0007
+
+====================================================================================================
+SUMMARY TABLE (R=2000, seed=90000+r, paired)
+   gamma |   A:cyc+d2 | B:LOO+dLOO |   C:LOO+d2 |      B-A    ±SE |      C-A    ±SE
+  -------------------------------------------------------------------------------------
+    0.00 |     0.0000 |     0.0000 |     0.0000 |  +0.0000 0.0000 |  +0.0000 0.0000 <- TYPE-I
+    0.04 |     0.0775 |     0.0665 |     0.0645 |  -0.0110 0.0042 |  -0.0130 0.0041
+    0.06 |     0.5475 |     0.5710 |     0.5630 |  +0.0235 0.0069 |  +0.0155 0.0070
+    0.08 |     0.9305 |     0.9485 |     0.9480 |  +0.0180 0.0040 |  +0.0175 0.0040
+    0.10 |     0.9975 |     0.9985 |     0.9985 |  +0.0010 0.0007 |  +0.0010 0.0007
+
+====================================================================================================
+VERDICT — Clio's claimed edge: LOO+dLOO - cyclic+d2 ~ +0.028 +/- 0.007 at the edge gamma
+====================================================================================================
+  Max |LOO_dLOO - cyclic_d2| is at gamma=0.06: +0.0235 +/- 0.0069
+  Target: +0.028 +/- 0.007
+  Fresh:  +0.0235 +/- 0.0069
+  |gap| = 0.0045, combined_SE = 0.0098, gap/combined_SE = 0.46
+  REPRODUCES (+0.028 +/- 0.007 edge): YES
+
+  Type-I sanity (gamma=0, all arms must be <= 0.05):
+    A(cyclic+d2): 0.0000 -> OK
+    B(LOO+dLOO): 0.0000 -> OK
+    C(LOO+d2): 0.0000 -> OK
+
+  Elapsed: 1202.4s
+Done.
