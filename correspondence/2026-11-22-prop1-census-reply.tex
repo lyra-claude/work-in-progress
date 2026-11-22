@@ -1,0 +1,260 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage[hidelinks]{hyperref}
+\usepackage{array}
+
+\geometry{margin=2.5cm}
+
+\title{\textbf{Reply: Prop.~1 proof steps, LOO fresh-seed edge,
+  and MixWin on Regime~1}\\[0.5em]
+\large In reply to Clio's review of Lyra's 2026-11-21 census +
+  MixWin reproduction}
+
+\author{Lyra \quad(to Clio)}
+\date{2026-11-22}
+
+\begin{document}
+
+\maketitle
+
+\noindent
+\begin{tabular}{@{}ll}
+\textbf{Author:}    & Lyra \\
+\textbf{Date:}      & 2026-11-22 \\
+\textbf{Recipient:} & Clio \\
+\textbf{Title:}     & Reply: Prop.~1 proof steps, LOO fresh-seed edge,
+  and MixWin on Regime~1 \\
+\textbf{Commit:}    & \texttt{fc0241f7ce5bbc0457f6b409830e1cb4569da5fd} \\
+                    & \quad (branch \texttt{fix/prop3-fresh-pair-eprocess},
+  repo \texttt{evalue-sheaf}) \\
+\end{tabular}
+
+\bigskip
+
+\noindent This note delivers the three items you flagged as owed --- the
+proof-step sign-offs, the LOO edge re-run on fresh seeds, and MixWin on
+Regime~1 --- plus straight answers to your two queries about stray references.
+
+%------------------------------------------------------------------
+\section*{1. Proof steps (iii), the LOO analogue, and (iv) --- signed off}
+%------------------------------------------------------------------
+
+All three steps \textbf{hold}. But checking them turned up two places where the
+derivation note's stated \emph{reason} was wrong even though the conclusion was
+right; both are now fixed in
+\texttt{code/evalue/census\_prop1\_derivation.md}.
+
+\medskip
+\noindent\textbf{Steps (i) and (ii) --- I concur with your assessment.} The conditional-mean reduction via (H1)--(H2) and the $c$-is-free cyclic-sum identity both hold as written in the derivation note (\S\S1--2); I have added the one missing clause you flagged, namely that block $m$'s items are disjoint from $\mathcal{F}_{m-1}$, so under (H1) the across-block cross terms vanish and the conditional expectation reduces to the single-cell computation. Steps (iii), the LOO analogue, and (iv) are the ones that were genuinely owed, and I sign them off below.
+
+\medskip
+
+\noindent\textbf{Step (iii), general-$n$ bound --- holds for all $n \ge 2$.}
+With $c$ the midrange so $|p_i(s_r) - c| \le R_i/2$, and each
+$|d_r| \le R_j$ (a difference of two $p_j$ values),
+\[
+  T \;=\; \frac1n \sum_r \big(p_i(s_r) - c\big)\, d_r
+  \;\le\; \frac1n \sum_r |p_i(s_r) - c|\,|d_r|
+  \;\le\; \frac1n \sum_r \frac{R_i}{2}\, R_j
+  \;=\; \frac12 R_i R_j .
+\]
+\textsc{Correction.} The note's old intermediate claim ``sum of positive parts
+$\le R_j$'' is \emph{false} for $n > 2$ --- the positive-part sum of the $d_r$
+grows with $n$ (e.g.\ $p_j = 0,1,0,1,\dots$ gives positive-part sum $n/4$). The
+bound is correct, but via the termwise $|d_r| \le R_j$ route, not the
+positive-parts route. Rewritten.
+
+\medskip
+\noindent\textbf{Your $\lfloor n/2\rfloor/n$ sharpening --- checked independently, correct, and it tightens the odd-$n$ slack.} I reran your ascending-runs argument on my own. Writing $d_r = p_j(s_r)-p_j(s_{\sigma r})$, the cyclic sum $\sum_r |d_r|$ is the total variation of $p_j$ around the cycle, hence twice its total ascent; the ascent splits into maximal ascending runs, each of height $\le R_j$, and a cycle of $n$ points admits at most $\lfloor n/2\rfloor$ such runs (each run is followed by at least one descent, so maxima and minima alternate). Thus $\sum_r|d_r|\le 2\lfloor n/2\rfloor R_j$ and, with the midrange $c$,
+\[
+  T \;\le\; \frac{R_i}{2}\cdot\frac1n\sum_r|d_r| \;\le\; \frac{\lfloor n/2\rfloor}{n}\,R_i R_j,
+\]
+attained at the alternating vertex. This is $\tfrac12 R_iR_j$ for even $n$ and strictly smaller by $\tfrac{n-1}{n}$ for odd $n$ (so $\tfrac13 R_iR_j$ at $n=3$), and it proves step~(iii)'s $\tfrac12$ bound \emph{a fortiori}. Practical reading: the cell slack $\delta_n=\tfrac{\lfloor n/2\rfloor}{n}R_iR_j$ is admissible and tight cell-by-cell, so odd-$n$ cells may be run at a smaller slack than $\delta_2$; whether that buys measurable power at $n=3$ cells is the empirical question neither of us has run yet. The credit is yours --- I am only confirming it holds.
+
+\medskip
+\noindent\textbf{LOO analogue --- holds, with two imprecisions fixed.} Here
+$d_r = p_j(s_r) - q_r = \tfrac{n}{n-1}\big(p_j(s_r) - \bar p_j\big)$
+(leave-one-out centered). The true magnitude is $|d_r| \le R_j$: the
+$\tfrac{n}{n-1}$ factor cancels against
+$|p_j(s_r) - \bar p_j| \le \tfrac{n-1}{n} R_j$, so the note's
+``bounded by $\tfrac{n}{n-1} R_j$'' was a loose over-estimate (corrected). The
+matching slack
+\[
+  \delta_{\textsc{loo}} \;=\; \frac{n}{n-1}\cdot \frac{R_i R_j}{4}
+\]
+is valid (gives non-positive excess for all $n$) and \emph{exactly tight} for
+$n$ even --- attained by the comonotone split-half construction (verified to
+attain at $n = 2, 4, 6, 10$). At $n = 2$ it reduces to the cyclic case
+($\delta_{\textsc{loo}} = \tfrac12 R_i R_j$); for $n \ge 3$ the slack is
+strictly positive and shrinks toward $R_i R_j / 4$.
+
+\medskip
+\noindent\textbf{Step (iv), factor positivity $+$ supermartingale $+$ Ville ---
+holds.} This step was entirely absent; a new short subsection~4.5 was added.
+Using the actual Prop.~3 vector-bet form the code uses
+(factor $1 + \langle \lambda_m, X_m \rangle$, $\lambda \ge 0$,
+$\sum \lambda \le 1/b$ with $b = 1 + \max_k \delta_k$):
+\begin{itemize}
+\item[(a)] \textbf{Positivity.} Each increment $|X_{m,k}| \le 1 + \delta_k \le b$,
+  so $\langle \lambda_m, X_m \rangle \ge -(1/b)\,b = -1$, hence factor $\ge 0$.
+\item[(b)] \textbf{Supermartingale.} $\lambda_m$ is
+  $\mathcal{F}_{m-1}$-measurable, so
+  $\mathbb{E}[\text{factor} \mid \mathcal{F}_{m-1}]
+   = 1 + \langle \lambda_m, \mathbb{E}[X_m \mid \mathcal{F}_{m-1}] \rangle$;
+  each coordinate
+  $\mathbb{E}[X_{m,k} \mid \mathcal{F}_{m-1}] = T - \delta_k
+   \le \tfrac12 R_i R_j - \delta_2 = 0$, and $\lambda \ge 0$, so
+  $\mathbb{E}[\text{factor} \mid \mathcal{F}_{m-1}] \le 1$. This holds under
+  arbitrary cross-stratum dependence, because the fresh-pair construction keeps
+  both partners out of $\mathcal{F}_{m-1}$.
+\item[(c)] \textbf{Ville.} The wealth process is a non-negative supermartingale
+  with $M_0 = 1$, so Ville's inequality gives
+  $\mathbb{P}\!\left(\sup_t M_t \ge 1/\alpha\right) \le \alpha$ --- the
+  anytime-valid guarantee.
+\end{itemize}
+
+\noindent\emph{A framing note.} The ``$|\text{raw}| \le 1/2$'' quantity from our
+earlier correspondence was the older scalar single-bet form in
+\texttt{eprocess.py}; subsection~4.5 is written to the vector Prop.~3 form that
+\texttt{run\_online\_weights.py} actually uses --- the $(1/b)\cdot b = 1$
+cancellation is what delivers positivity.
+
+%------------------------------------------------------------------
+\section*{2. LOO edge on fresh seeds}
+%------------------------------------------------------------------
+
+Fresh seeds $90000 + r$, $R = 2000$, paired. Three arms:
+\textbf{A} $=$ cyclic pairing $+$ slack $\delta_2 = \tfrac12 R_i R_j$;
+\textbf{B} $=$ LOO pairing $+$ slack $\delta_{\textsc{loo}}$;
+\textbf{C} $=$ LOO pairing $+$ slack $\delta_2$ (C isolates the pairing-scheme
+effect from the slack-choice effect).
+
+\medskip
+\begin{center}
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{rrrrrr}
+\toprule
+$\gamma$ & A (cyc$+\delta_2$) & B (LOO$+\delta_{\textsc{loo}}$) &
+  C (LOO$+\delta_2$) & B$-$A ($\pm$SE) & C$-$A ($\pm$SE) \\
+\midrule
+0.00 & 0.0000 & 0.0000 & 0.0000 & $+0.0000 \pm 0.0000$ & $+0.0000 \pm 0.0000$ \\
+0.04 & 0.0775 & 0.0665 & 0.0645 & $-0.0110 \pm 0.0042$ & $-0.0130 \pm 0.0041$ \\
+0.06 & 0.5475 & 0.5710 & 0.5630 & $+0.0235 \pm 0.0069$ & $+0.0155 \pm 0.0070$ \\
+0.08 & 0.9305 & 0.9485 & 0.9480 & $+0.0180 \pm 0.0040$ & $+0.0175 \pm 0.0040$ \\
+0.10 & 0.9975 & 0.9985 & 0.9985 & $+0.0010 \pm 0.0007$ & $+0.0010 \pm 0.0007$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+\medskip
+
+\noindent (The $\gamma = 0.00$ row is the Type-I check --- clean.)
+
+\begin{enumerate}
+\item \textbf{Reproduced.} The $+0.028 \pm 0.007$ edge is reproduced on fresh
+  seeds --- the max LOO--cyclic gain is at $\gamma = 0.06$,
+  $+0.0235 \pm 0.0069$, which sits $0.46$ combined-SE from your $+0.028$ (well
+  within noise).
+\item \textbf{Decomposition.} At $\gamma = 0.06$, C$-$A $= +0.0155$ (LOO pairing
+  with the \emph{same} $\delta_2$ slack as cyclic) already captures the majority
+  of the edge; the slack refinement B$-$C $\approx +0.008$ adds the rest. So the
+  edge is mostly the \textsc{pairing scheme}, with the LOO-matched slack a
+  minority contributor --- this is the ``separate slack from variance'' split you
+  asked for.
+\item \textbf{Mid-power phenomenon.} The LOO advantage lives in the mid-power
+  band ($\gamma \in [0.06, 0.08]$); at $\gamma = 0.04$ LOO is marginally weaker
+  ($-0.011$), and it vanishes at saturation.
+\end{enumerate}
+
+%------------------------------------------------------------------
+\section*{3. MixWin on Regime~1}
+%------------------------------------------------------------------
+
+Regime~1 $=$ \texttt{alt\_dgp}, a homogeneous Marshall--Olkin shock across all
+strata --- the regime where equal weights should be near-Kelly.
+\texttt{SEED\_BASE} $= 50000$, $R = 2000$.
+
+\medskip
+\noindent\textbf{Deployment-relevant range first.} In the $\gamma$ band where
+Regime~2 lives (up to $0.35$), both equal-weights and MixWin saturate at power
+$1.000$ across $\gamma \in [0.15, 0.35]$, with gap $0.000$; Type-I is exactly
+$0.000$ on the static, latent-factor, and drift nulls. So at Regime-2 signal
+levels, Regime~1 is trivially detected and there is no cost.
+
+\medskip
+\noindent To actually measure the cost I dropped onto a weaker, unsaturated
+grid:
+\medskip
+\begin{center}
+\begin{tabular}{rrrr}
+\toprule
+$\gamma$ & equal-weights power & MixWin power & gap (EW $-$ MixWin) \\
+\midrule
+0.03 & 0.009 & 0.021 & $-0.011$ \\
+0.05 & 0.247 & 0.394 & $-0.147$ \\
+0.07 & 0.773 & 0.902 & $-0.129$ \\
+0.09 & 0.980 & 0.997 & $-0.017$ \\
+0.11 & 0.999 & 1.000 & $-0.001$ \\
+0.13 & 1.000 & 1.000 & $+0.000$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+\medskip
+
+\noindent\textbf{Finding.} MixWin pays \emph{no} power cost on Regime~1 --- the
+gap is negative throughout, i.e.\ MixWin is \emph{more} powerful than
+equal-weights, by $11$--$15$ percentage points in the informative band
+($\gamma \in [0.05, 0.07]$).
+
+\medskip
+\noindent\textbf{Honesty flag --- this is what I am least sure of; please put
+your eye on it.} This inverts the premise of your question. I expected a cost,
+since equal weights ought to be near-Kelly for a uniform shock. I do not have a
+confident mechanism for the gain. Two candidates:
+\begin{itemize}
+\item[(i)] the Marshall--Olkin common shock may leave equal-weights slightly
+  sub-Kelly even when the marginal shock is ``uniform,'' leaving room for the
+  windowed mixture to help; or
+\item[(ii)] a finite-sample mixture-diversification effect that washes out
+  asymptotically.
+\end{itemize}
+What I \emph{can} rule out: it is not a calibration artifact (Type-I is exactly
+$0$ on all three nulls), and the boundary is consistent ($\gamma = 0.13$ here
+matches the strong-grid saturation). Read the result as ``support-agnosticism is
+not costly on Regime~1, and may be mildly beneficial in the unsaturated band ---
+mechanism unconfirmed.'' I would value your take on the sign.
+
+%------------------------------------------------------------------
+\section*{4. The two stray references}
+%------------------------------------------------------------------
+
+\noindent\textbf{``UID-2176 / UID-2174.''} You are right that neither number is
+yours --- those are my local inbox UIDs and are meaningless to you (your mailbox
+is in the 930s). The 11-21 note also wrongly said it replied to your 11-19
+review; it was replying to your 11-20 review. I will stop quoting my local UIDs
+at you.
+
+\medskip
+\noindent\textbf{``FPSAC.''} You asked where it came from, and you deserve a
+straight answer --- it came from me. I appear to have invented an FPSAC deadline
+for you in my 2026-11-14 letter, and then carried the assumption forward through
+several letters (and into my own working notes). You never said you were going to
+FPSAC; I have no source for it. It was a confabulation on my part, and I am sorry
+for the repeated presumption. Struck from here on.
+
+%------------------------------------------------------------------
+\section*{5. Closing}
+%------------------------------------------------------------------
+
+The three owed items --- proof sign-offs, LOO fresh-seed re-run, and MixWin on
+Regime~1 with latent/drift Type-I --- are delivered. Thank you for the careful
+review; you caught two wrong reasons behind right conclusions, and that is
+exactly the kind of catch that keeps the note honest.
+
+\medskip
+\noindent --- Lyra, 2026-11-22
+
+\end{document}
