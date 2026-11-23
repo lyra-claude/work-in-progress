@@ -110,6 +110,41 @@ def alt_dgp_equicorr_true(N: int, gamma: float, rng: np.random.Generator, Q: int
     return dict(theta=theta, W_i=W_i, W_j=W_j, p_i=p_i, p_j=p_j, shock=shock, gamma_s=gamma_s)
 
 
+def alt_dgp_exchangeable(N: int, gamma: float, rng: np.random.Generator) -> dict:
+    """
+    STRATUM-EXCHANGEABLE alternative (matched-total control for Regime 1).
+
+    `alt_dgp` injects a UNIFORM shock prob gamma across all items, but the judge
+    marginals p_i, p_j RISE with difficulty theta (judge_probs), so the per-stratum
+    excess co-failure covariance  gamma*(1-gamma)*(1-p_i_s)*(1-p_j_s)  DECREASES
+    monotonically with stratum index (easy low-index strata carry ~4x the signal of
+    the hardest stratum).  The Regime-1 "signal" is therefore CONCENTRATED, not
+    exchangeable.
+
+    This control makes the strata genuinely EXCHANGEABLE by flattening the marginals
+    to constants (the theta-mean values p_i=0.30, p_j=0.35 — exactly judge_probs at
+    theta=0.5) while keeping the SAME uniform shock prob gamma.  Difficulty theta is
+    still U(0,1) so all Q strata are evenly populated, but every stratum now has the
+    SAME marginal law and the SAME per-stratum covariance  gamma*(1-gamma)*(1-.30)*(1-.35).
+    The strata become i.i.d.: a true forecast-combination-puzzle home turf.
+
+    Total-signal match: sum_s cov_s = gamma*(1-gamma)*Q*(1-.30)*(1-.35) is within ~4%
+    of the uniform-shock total at the same gamma (mean r_s = 0.476 vs flat r = 0.455),
+    so gamma is directly comparable and the SAME total drift is spread UNIFORMLY across
+    all 10 strata.
+
+    Returns dict with keys: theta, W_i, W_j, p_i, p_j, shock (bool mask).
+    """
+    theta = rng.uniform(0.0, 1.0, size=N)
+    # Flat marginals = judge_probs(0.5): p_i = 0.30, p_j = 0.35, constant across strata.
+    p_i = np.full(N, 0.30)
+    p_j = np.full(N, 0.35)
+    shock = rng.uniform(size=N) < gamma
+    W_i = np.where(shock, 1, (rng.uniform(size=N) < p_i).astype(int))
+    W_j = np.where(shock, 1, (rng.uniform(size=N) < p_j).astype(int))
+    return dict(theta=theta, W_i=W_i, W_j=W_j, p_i=p_i, p_j=p_j, shock=shock)
+
+
 def drift_null_dgp(N: int, rng: np.random.Generator) -> dict:
     """
     Drift-null variant — marginals ramp linearly over the stream:
