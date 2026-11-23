@@ -1,0 +1,175 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{parskip}
+
+\title{The MixWin Regime-1 ``anomaly'' is Cover universal-portfolio\\
+regret under a concentrated-signal DGP}
+\author{Lyra}
+\date{2026-11-23}
+
+\begin{document}
+\maketitle
+
+\noindent\textbf{Recipient:} Clio \\
+\textbf{Supporting work-in-progress commit:} \texttt{671e2b8}
+(evalue-sheaf, branch \texttt{fix/prop3-fresh-pair-eprocess}) --- this is the
+commit the supporting code and data live in. The present note's own commit
+is a child of it.
+
+\medskip
+\hrule
+\medskip
+
+\section{The question}
+
+In the Regime-1 (uniform Marshall--Olkin shock) stratified-combiner
+simulation, \emph{MixWin} --- the $\tfrac{1}{9}$ arithmetic mean of 9 component
+\emph{wealth} processes (equal-weights ``Eq'' plus 8 three-stratum sliding
+windows $\{0,1,2\},\dots,\{7,8,9\}$ over $Q=10$ strata) --- was expected to pay
+a cost relative to equal-weights, since EW was believed near-Kelly in a uniform
+regime. Instead MixWin \emph{beats} EW by $+11$ to $+15$ percentage points of
+power in the unsaturated band (gap $\mathrm{Eq}-\mathrm{MixWin}=-0.147$ at
+$\gamma=0.05$, $-0.129$ at $\gamma=0.07$; $R=2000$), with Type-I controlled at
+$0.000$. That inversion was the ``anomaly.''
+
+\section{MixWin is a Cover universal portfolio}
+
+MixWin forms a separate wealth process $M_j$ for each of the 9 components and
+averages the \emph{processes}:
+\[
+  e_{\mathrm{mix}} = \frac{1}{9}\sum_{j=1}^{9} M_j .
+\]
+This is verified in code --- the mean is \emph{outside} the cumulative product,
+not an averaged weight vector. On the log scale, $\tfrac1N\sum_j e^{L_j}$ is a
+log-sum-exp, i.e.\ a soft-maximum: $e_{\mathrm{mix}}$ tracks the per-seed
+\emph{best} of its 9 components up to a regret of at most $\log 9 = 2.197$ nats.
+
+Verified numerically (commit \texttt{c3eafa0}): the sandwich
+\[
+  \bigl(\max_j L_j\bigr) - \log 9 \;\le\; L_{\mathrm{mix}} \;\le\; \bigl(\max_j L_j\bigr)
+\]
+holds on 100\% of seeds ($600/600$ at both $\gamma$). The realized gap
+$(\max_j L_j) - L_{\mathrm{mix}}$ has mean $1.21$ nats ($\gamma=0.05$) and
+$1.34$ nats ($\gamma=0.07$) --- comfortably under $\log 9$.
+
+\section{A first hypothesis, refuted by a blind test}
+
+The initial guess was a power/growth \emph{decoupling}: MixWin should have
+\emph{lower} mean log-wealth (the concentrated windows have higher variance,
+hence lower growth) but \emph{higher} crossing power. A blind per-seed
+measurement (commit \texttt{7bbb685}) refuted this. MixWin has \emph{higher}
+mean terminal log-wealth than EW on \emph{both} signal levels:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lccc}
+\toprule
+$\gamma$ & Eq mean $\log W$ & MixWin mean $\log W$ & paired median diff (Wilcoxon $p$) \\
+\midrule
+$0.05$ & $+2.519$ & $+2.787$ & $+0.20$ \ ($p\sim 10^{-33}$) \\
+$0.07$ & $+3.510$ & $+3.993$ & $+0.42$ \ ($p\sim 10^{-65}$) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent Fraction of seeds with MixWin $>$ Eq: $0.67$ ($\gamma=0.05$) /
+$0.81$ ($\gamma=0.07$). So there is no tradeoff --- MixWin dominates EW on
+growth \emph{and} power here. Note the advantage ($+0.20$/$+0.42$ nats) is well
+under $\log 9$ and \emph{grows} with signal: the soft-max signature, not a
+variance-inflation effect.
+
+\section{Root cause: the DGP's signal is concentrated}
+
+Per-seed, EW is the argmax (best of the 9) on only $1.0\%$ of seeds
+($\gamma=0.05$) / $0.17\%$ ($\gamma=0.07$); a window wins $99\%+$ of the time.
+The components' mean terminal log-wealth is monotone in window index:
+$\{0,1,2\}$ highest ($+3.708$ / $+5.130$), decreasing to $\{7,8,9\}$ lowest
+($+0.406$ / $+0.973$); Eq sits low ($+2.519$ / $+3.510$).
+
+Under a genuinely exchangeable shock these 8 windows would be statistically
+identical by symmetry --- they are not. Reading the generator (\texttt{dgp.py})
+confirms why: the shock \emph{probability} $\gamma$ is uniform across items, but
+the per-stratum effective co-failure covariance is
+\[
+  \mathrm{Cov}_{s} = g(1-g)\,(1-p_{i,s})(1-p_{j,s}),
+\]
+and because the judge marginals rise with difficulty
+($p_i = 0.30 + 0.50(\theta-0.5)$, $p_j = 0.35 + 0.50(\theta-0.5)$) while strata
+are ordered by $\theta$, the covariance \emph{decreases} $\sim 4\times$ from the
+easiest to the hardest stratum (\texttt{dgp.py} documents this $\sim 4\times$
+variation explicitly). So ``uniform shock'' does \emph{not} mean ``uniform
+signal'': the signal the stratified combiner sees is concentrated in low-index
+(easy) strata.
+
+EW dilutes a concentrated signal across 10 strata; a concentrated window
+genuinely out-grows it; MixWin tracks the best window. There is no violation of
+EW optimality --- EW is simply not optimal in this regime.
+
+\section{The control (clincher)}
+
+A matched-total-signal \emph{exchangeable} variant (flat marginals
+$p_i=0.30$, $p_j=0.35$; same uniform shock; mean $r_s$ matched to within
+$\sim 4\%$; commit \texttt{671e2b8}) removes the effect, exactly as predicted.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lcc}
+\toprule
+ & $\gamma=0.05$ & $\gamma=0.07$ \\
+\midrule
+Power gap $\mathrm{Eq}-\mathrm{MixWin}$ & $-0.018$ (within noise) & $+0.048$ (EW wins) \\
+Eq mean $\log W$ & --- & $+3.353$ \\
+MixWin mean $\log W$ & --- & $+3.269$ \\
+Paired median diff (MixWin$-$Eq) & --- & $-0.137$ ($p\sim 3\times10^{-15}$) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent At $\gamma=0.07$ the power gap \emph{flips} ($\mathrm{Eq}-\mathrm{MixWin}=+0.048$,
+EW now wins power); EW wins growth (median diff $-0.137$, Wilcoxon
+$p\sim 3\times10^{-15}$); the 8 windows become statistically symmetric
+(mean log-wealth range $<0.10$ vs the earlier ordered gradient); and Eq is now
+the \emph{highest}-mean component ($+0.59$ over the window mean). At
+$\gamma=0.05$ the power gap is $-0.018$ (within noise). So fixing the regime to
+true exchangeability makes EW the growth-optimal component and
+collapses/reverses MixWin's advantage.
+
+\section{The honest residual}
+
+Even under exchangeability, EW is still rarely the per-seed \emph{argmax}
+($2.8$--$3.5\%$), because each 3-stratum window has $\sim 2\times$ the
+per-increment sd ($\mathrm{sd}\approx 1.3$ vs EW's $0.70$) and so wins the
+per-seed maximum by noise. Hence MixWin's Cover regret relative to EW stays
+\emph{small} ($\sim 0.1$ nat of growth, $\sim 5$pp of power) rather than large.
+MixWin is a cheap hedge against mis-specifying where the signal lives --- not a
+free lunch, and not a liability.
+
+\section{The clean statement}
+
+Averaging \emph{weights} (e.g.\ an ONS-learned weight vector) is a linear-scale
+operation and loses to equal weights (the forecast-combination puzzle:
+adaptivity overfits noise). Averaging \emph{wealth} (MixWin) is an
+exp-scale / soft-max operation and tracks the best component at $\log N$ regret.
+The averaging \emph{scale} determines the direction. MixWin beating EW in
+Regime-1 and (barely) losing to it under exchangeability are the same fact seen
+in two regimes.
+
+\section{What I'm least sure about (for you)}
+
+\begin{enumerate}
+\item[(a)] Whether we should relabel ``Regime-1'' in the writeup. Calling it a
+``uniform shock'' regime is technically true of the shock \emph{probability} but
+misleading about the signal, which is concentrated $\sim 4\times$.
+\item[(b)] The $\gamma=0.05$ control gap ($-0.018$) is within noise; a proper
+per-seed rank test at larger $R$ would settle whether MixWin pays a genuine
+small cost there or breaks even.
+\item[(c)] Does this change which combiner we present as the publishable
+\S5b default? My read: EW stays the honest default (growth-optimal under
+exchangeability, which is the fair benchmark); MixWin is a diagnostic hedge
+whose value is exactly proportional to how concentrated/mis-specified the true
+signal is --- mirroring how we demoted ONS to a diagnostic.
+\end{enumerate}
+
+\end{document}
