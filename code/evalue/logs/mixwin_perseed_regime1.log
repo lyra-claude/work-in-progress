@@ -1,0 +1,66 @@
+####################################################################################
+MixWin vs Eq — PER-SEED continuous diagnostics on Regime-1 uniform shock
+  Q=10, N=4000, BLOCK=20 (M=200 blocks), alpha=0.05, THRESH=20.0
+  DGP: alt_dgp (uniform Marshall-Olkin shock across all strata)
+  combiners: eq_wealth / mixwin_wealth from reproduce_mixwin_regime1_weak
+  scipy.stats.wilcoxon available: True
+####################################################################################
+
+====================================================================================
+gamma = 0.05   (R = 600 paired seeds, seed base 50000+r, build={'pairing': 'within_block', 'slack': 'second_order', 'pairing_rule': 'cyclic'})
+====================================================================================
+[1] Reject rate (fraction ever-crossing THRESH=20.0)
+      Eq     : 0.2783  (167/600)
+      MixWin : 0.4317  (259/600)
+[2] Terminal log-wealth  (mean, median, sd, p10, p90)
+      Eq     : mean=+2.5186  median=+2.5201  sd=0.6780  p10=+1.6542  p90=+3.3989
+      MixWin : mean=+2.7873  median=+2.7889  sd=0.7385  p10=+1.8441  p90=+3.7340
+[3] Terminal wealth, linear scale  (mean, median)
+      Eq     : mean=15.5960  median=12.4301
+      MixWin : mean=21.2545  median=16.2631
+[4] Paired terminal log-wealth difference  (MixWin - Eq, per seed)
+      median paired diff : +0.2014
+      Wilcoxon p-value   : 5.796e-33   [scipy.stats.wilcoxon; n_nonzero=600]
+      Cliff's delta      : +0.3467   (paired sign form)
+      frac(MixWin > Eq)  : 0.6733
+[5] 2x2 paired reject table
+      both reject   : 152
+      only Eq       : 15
+      only MixWin   : 107
+      neither       : 326
+
+  (gamma=0.05 runtime: 41.8s)
+
+====================================================================================
+gamma = 0.07   (R = 600 paired seeds, seed base 50000+r, build={'pairing': 'within_block', 'slack': 'second_order', 'pairing_rule': 'cyclic'})
+====================================================================================
+[1] Reject rate (fraction ever-crossing THRESH=20.0)
+      Eq     : 0.7883  (473/600)
+      MixWin : 0.9200  (552/600)
+[2] Terminal log-wealth  (mean, median, sd, p10, p90)
+      Eq     : mean=+3.5098  median=+3.5120  sd=0.6733  p10=+2.6613  p90=+4.3628
+      MixWin : mean=+3.9930  median=+3.9642  sd=0.7644  p10=+3.0328  p90=+4.9177
+[3] Terminal wealth, linear scale  (mean, median)
+      Eq     : mean=41.8834  median=33.5168
+      MixWin : mean=72.9382  median=52.6758
+[4] Paired terminal log-wealth difference  (MixWin - Eq, per seed)
+      median paired diff : +0.4150
+      Wilcoxon p-value   : 2.537e-65   [scipy.stats.wilcoxon; n_nonzero=600]
+      Cliff's delta      : +0.6100   (paired sign form)
+      frac(MixWin > Eq)  : 0.8050
+[5] 2x2 paired reject table
+      both reject   : 465
+      only Eq       : 8
+      only MixWin   : 87
+      neither       : 40
+
+  (gamma=0.07 runtime: 41.9s)
+
+====================================================================================
+SANITY CHECK vs known weak-grid reject rates (R=2000 reference)
+====================================================================================
+  gamma=0.05: Eq observed=0.278 expected~0.247 (|d|=0.031) | MixWin observed=0.432 expected~0.394 (|d|=0.038)
+  gamma=0.07: Eq observed=0.788 expected~0.773 (|d|=0.015) | MixWin observed=0.920 expected~0.902 (|d|=0.018)
+
+TOTAL RUNTIME: 83.7s   (R=600 per gamma, 2 gammas)
+====================================================================================
