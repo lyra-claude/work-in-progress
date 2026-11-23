@@ -1,0 +1,99 @@
+########################################################################################
+MixWin PER-COMPONENT terminal log-wealth — Regime-1 uniform shock
+  Q=10, N=4000, BLOCK=20 (M=200 blocks), alpha=0.05, THRESH=20.0
+  N_COMP=9 (component 0 = equal-weights; 1..8 = sliding windows)
+  DGP: alt_dgp (uniform Marshall-Olkin shock across all strata)
+  mixture L = log((1/9) * sum_j terminal_wealth_j)
+########################################################################################
+
+========================================================================================
+gamma = 0.05   (R = 600 paired seeds, seed base 50000+r)
+  build={'pairing': 'within_block', 'slack': 'second_order', 'pairing_rule': 'cyclic'}
+========================================================================================
+[1] Per-seed ARGMAX (component with highest terminal log-wealth)
+      argmax = component 0 (equal-weights) : 0.0100  (6/600)
+      argmax in windows (components 1..8)   : 0.9900  (594/600)
+      per-component argmax breakdown:
+        [0] Eq (component 0)            : 0.0100  (6/600)
+        [1] win{0,1,2} (component 1)    : 0.5867  (352/600)
+        [2] win{1,2,3} (component 2)    : 0.1483  (89/600)
+        [3] win{2,3,4} (component 3)    : 0.0950  (57/600)
+        [4] win{3,4,5} (component 4)    : 0.0600  (36/600)
+        [5] win{4,5,6} (component 5)    : 0.0433  (26/600)
+        [6] win{5,6,7} (component 6)    : 0.0250  (15/600)
+        [7] win{6,7,8} (component 7)    : 0.0200  (12/600)
+        [8] win{7,8,9} (component 8)    : 0.0117  (7/600)
+[2] SANDWICH:  (max_j L_j) - log(9) <= L_mixture <= (max_j L_j)
+      fraction of seeds where bound holds : 1.0000  (600/600)
+      gap = (max_j L_j) - L_mixture:
+        mean   = 1.208452
+        p10    = 0.743976
+        median = 1.202316
+        p90    = 1.687334
+      (log(9) = 2.197225 is the sandwich width upper bound on the gap)
+[3] MixWin vs EW via the max  (means across all seeds)
+      mean(max_j L_j)                 : +3.995775
+      mean(L_0, equal-weights)        : +2.518646
+      mean(L_mixture)                 : +2.787323
+      frac(max_j L_j > L_0)           : 0.9900  (594/600)
+      mean(max_j L_j - L_0 | beats)   : +1.492050
+[4] Mean terminal log-wealth per component (across all seeds)
+        [0] Eq (component 0)            : mean=+2.518646  median=+2.520106  sd=0.677973
+        [1] win{0,1,2} (component 1)    : mean=+3.707963  median=+3.729414  sd=0.902343  <- highest MEAN
+        [2] win{1,2,3} (component 2)    : mean=+3.139272  median=+3.154213  sd=1.055271
+        [3] win{2,3,4} (component 3)    : mean=+2.596579  median=+2.540564  sd=1.172964
+        [4] win{3,4,5} (component 4)    : mean=+2.088483  median=+2.070006  sd=1.284900
+        [5] win{4,5,6} (component 5)    : mean=+1.635475  median=+1.680904  sd=1.328782
+        [6] win{5,6,7} (component 6)    : mean=+1.198660  median=+1.312857  sd=1.394040
+        [7] win{6,7,8} (component 7)    : mean=+0.792520  median=+0.809749  sd=1.414632
+        [8] win{7,8,9} (component 8)    : mean=+0.406481  median=+0.443156  sd=1.407929
+
+  (gamma=0.05 runtime: 42.1s, R=600)
+
+========================================================================================
+gamma = 0.07   (R = 600 paired seeds, seed base 50000+r)
+  build={'pairing': 'within_block', 'slack': 'second_order', 'pairing_rule': 'cyclic'}
+========================================================================================
+[1] Per-seed ARGMAX (component with highest terminal log-wealth)
+      argmax = component 0 (equal-weights) : 0.0017  (1/600)
+      argmax in windows (components 1..8)   : 0.9983  (599/600)
+      per-component argmax breakdown:
+        [0] Eq (component 0)            : 0.0017  (1/600)
+        [1] win{0,1,2} (component 1)    : 0.6900  (414/600)
+        [2] win{1,2,3} (component 2)    : 0.1500  (90/600)
+        [3] win{2,3,4} (component 3)    : 0.0683  (41/600)
+        [4] win{3,4,5} (component 4)    : 0.0450  (27/600)
+        [5] win{4,5,6} (component 5)    : 0.0200  (12/600)
+        [6] win{5,6,7} (component 6)    : 0.0183  (11/600)
+        [7] win{6,7,8} (component 7)    : 0.0050  (3/600)
+        [8] win{7,8,9} (component 8)    : 0.0017  (1/600)
+[2] SANDWICH:  (max_j L_j) - log(9) <= L_mixture <= (max_j L_j)
+      fraction of seeds where bound holds : 1.0000  (600/600)
+      gap = (max_j L_j) - L_mixture:
+        mean   = 1.338133
+        p10    = 0.850058
+        median = 1.333555
+        p90    = 1.833973
+      (log(9) = 2.197225 is the sandwich width upper bound on the gap)
+[3] MixWin vs EW via the max  (means across all seeds)
+      mean(max_j L_j)                 : +5.331135
+      mean(L_0, equal-weights)        : +3.509750
+      mean(L_mixture)                 : +3.993002
+      frac(max_j L_j > L_0)           : 0.9983  (599/600)
+      mean(max_j L_j - L_0 | beats)   : +1.824425
+[4] Mean terminal log-wealth per component (across all seeds)
+        [0] Eq (component 0)            : mean=+3.509750  median=+3.512047  sd=0.673278
+        [1] win{0,1,2} (component 1)    : mean=+5.129999  median=+5.101723  sd=0.955661  <- highest MEAN
+        [2] win{1,2,3} (component 2)    : mean=+4.412787  median=+4.386629  sd=1.100257
+        [3] win{2,3,4} (component 3)    : mean=+3.719369  median=+3.728278  sd=1.201423
+        [4] win{3,4,5} (component 4)    : mean=+3.084191  median=+3.032643  sd=1.272842
+        [5] win{4,5,6} (component 5)    : mean=+2.510164  median=+2.554022  sd=1.325787
+        [6] win{5,6,7} (component 6)    : mean=+1.965748  median=+2.030461  sd=1.393188
+        [7] win{6,7,8} (component 7)    : mean=+1.469158  median=+1.481341  sd=1.422681
+        [8] win{7,8,9} (component 8)    : mean=+0.972697  median=+0.981142  sd=1.390346
+
+  (gamma=0.07 runtime: 42.2s, R=600)
+
+========================================================================================
+TOTAL RUNTIME: 84.3s   (R=600 per gamma, 2 gammas)
+========================================================================================
