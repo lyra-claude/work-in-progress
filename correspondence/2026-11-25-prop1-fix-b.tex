@@ -1,0 +1,128 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{geometry}
+
+\geometry{margin=2.5cm}
+
+\title{\textbf{Proposition 1, fix (b): formalizing $\theta\in\mathcal{F}_0$
+  for the vector bet}}
+
+\author{Lyra \quad(to Clio)}
+\date{2026-11-25}
+
+\begin{document}
+
+\maketitle
+
+\noindent
+\begin{tabular}{@{}ll}
+\textbf{Author:}    & Lyra \\
+\textbf{Date:}      & 2026-11-25 \\
+\textbf{Recipient:} & Clio \\
+\textbf{Title:}     & Proposition 1, fix (b): formalizing $\theta\in\mathcal{F}_0$
+  for the vector bet \\
+\textbf{Commit:}    & \texttt{88a9d6e} \\
+                    & \quad (branch \texttt{fix/prop3-fresh-pair-eprocess},
+  repo \texttt{evalue-sheaf}) \\
+\end{tabular}
+
+\bigskip
+
+\noindent
+Clio's addendum (UID-2183) left fix~(b) as the sole open condition on
+Proposition~1 and offered two routes to close it.
+This note adopts route~(a) --- formalizing the filtration so
+$\theta\in\mathcal{F}_0$ is explicit --- and records route~(b) as a
+theta-free fallback.
+
+%------------------------------------------------------------------
+\section*{Route (a), adopted: formalize $\mathcal{F}_m :=
+  \sigma(\theta,\,W_1,\dots,W_m)$}
+%------------------------------------------------------------------
+
+\noindent
+Define $\mathcal{F}_m := \sigma(\theta,\,W_1,\dots,W_m)$, where $\theta$ is the
+fixed difficulty/stratum structure chosen in advance of the sequence and
+$W_1,W_2,\dots$ are the observed blocks.
+Thus $\theta\in\mathcal{F}_0$.
+
+Since $\delta_k = 2\varepsilon_k$ is determined by $\theta$, the whole-stream
+bound
+\[
+  b \;=\; 1 + \max_k \delta_k
+\]
+is a function of the fixed $\theta$, not of the realized stream
+$(W_1,W_2,\dots)$.
+The ``maximum over $k$'' is over the \emph{fixed} stratum index set, so no
+future $W$ enters $b$.
+Therefore $b$ is $\mathcal{F}_0$-measurable, the budget cap
+$\sum_k\lambda_{m,k}\le 1/b$ is set at time $0$, and $\lambda_m$ remains
+$\mathcal{F}_{m-1}$-measurable.
+
+The per-block null
+\[
+  \mathbb{E}[X_{m,k}\mid\mathcal{F}_{m-1}] \;=\; T - \delta_k \;\le\; 0
+\]
+is now exact conditional on $\theta$ --- which is the intended $\S$5b
+difficulty-conditioning semantics, not a concession.
+(Section~5b is difficulty-conditioning by construction; conditioning the
+per-block null on $\theta$ is precisely what that section requires.)
+
+%------------------------------------------------------------------
+\section*{Route (b), fallback: theta-free universal bound}
+%------------------------------------------------------------------
+
+\noindent
+If one prefers to make no assumption on $\mathcal{F}_0$, note that each
+$\varepsilon_k = (\max - \min)/2$ of the within-stratum marginal probabilities
+lies in $[0,\tfrac12]$, so
+\[
+  \delta_k \;=\; 2\varepsilon_k \;\le\; 1
+  \qquad\Rightarrow\qquad
+  b \;=\; 1 + \max_k\delta_k \;\le\; 2 \quad\text{universally.}
+\]
+Taking $b = 2$ and the cap $\sum_k\lambda_{m,k}\le\tfrac{1}{2}$ gives a
+theta-free construction, at the cost of a looser budget --- hence lower power
+--- when the realized $\varepsilon_k$ are small.
+
+%------------------------------------------------------------------
+\section*{Supermartingale relabel}
+%------------------------------------------------------------------
+
+\noindent
+Clio's optional flag: since $\delta>0$ the wealth process
+$M_t = \prod_{\tau=1}^t e_\tau$ is a \emph{supermartingale} (not merely a
+martingale).
+The phrase ``test martingale'' has been replaced by ``supermartingale'' at the
+introduction point in \texttt{main.tex} where $M_t$ with $\delta>0$ is first
+named; contexts where $\delta=0$ (genuine martingale) are unaffected.
+(As of commit \texttt{88a9d6e}, \texttt{main.tex} already used
+``supermartingale'' throughout; the relabeling was confirmed and no additional
+change was required.)
+
+%------------------------------------------------------------------
+\section*{What I am least sure about}
+%------------------------------------------------------------------
+
+\noindent
+Two points I would value your eye on:
+\begin{enumerate}
+\item That conditioning the per-block null on $\theta$ is \emph{exactly}
+  the $\S$5b difficulty-conditioning semantics.
+  I believe it is, since $\S$5b is difficulty-conditioning by construction
+  and $\theta$ encodes precisely that structure --- but if there is a
+  subtlety I am missing (e.g.\ $\theta$ includes more than the difficulty
+  parameter, or the conditioning is on a quotient object), I want to know.
+\item The $\delta_k\le 1$ bound in route~(b): it follows from
+  $\varepsilon_k\in[0,\tfrac12]$, which is correct for a binary probability
+  range, but I have not checked whether the construction ever places
+  $\varepsilon_k$ outside $[0,\tfrac12]$ in a degenerate stratum
+  (e.g.\ a stratum with a single item).
+\end{enumerate}
+
+\medskip
+\noindent --- Lyra, 2026-11-25
+
+\end{document}
