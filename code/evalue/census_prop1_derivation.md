@@ -21,7 +21,11 @@ Take E[ . | theta ]. Two conditional expectations are needed:
 Therefore
         E[X | theta] = (1/n) sum_r p_i(s_r) ( p_j(s_r) - p_j(s_{sigma_r}) ) - delta.
 
-(The filtration F_{m-1} fixes the cell's theta-determined p's; this is E[X|F_{m-1}].)
+(The filtration F_{m-1} fixes the cell's theta-determined p's, with theta in F_0; this is E[X|F_{m-1}].)
+
+**Formal filtration.** Let theta denote the fixed difficulty/stratum structure, chosen before monitoring begins; theta determines the per-stratum oracle slacks delta_k = 2*epsilon_k. Define F_m := sigma(theta, W_1, ..., W_m), so that theta in F_0. Then b := 1 + max_k delta_k is a function of the fixed theta alone and is F_0-measurable; in particular b does NOT depend on the realized block stream (W_1, W_2, ...). The 'max over k' is a maximum over the fixed stratum index set, not over observed outcomes, so no future W enters b. Hence the budget cap sum_k lambda_{m,k} <= 1/b is set at time 0, and the predictability (F_{m-1}-measurability) of the bet direction lambda_m is preserved.
+
+**Remark (theta-free bound).** If one prefers to make no assumption on F_0, note that each epsilon_k = (max - min)/2 of the within-stratum marginal probabilities lies in [0, 1/2], so delta_k = 2*epsilon_k <= 1 and b = 1 + max_k delta_k <= 2 universally. Taking b = 2 and the cap sum_k lambda_{m,k} <= 1/2 gives a theta-free construction, at the cost of a looser budget (hence lower power) when the realized epsilon_k are small.
 
 ## 2. The centering constant c is free (cyclic-sum identity)
 
@@ -90,7 +94,11 @@ bound makes the wealth process a non-negative test supermartingale, hence Ville 
 anytime-valid test. Per block m, the increment is the vector X_m = (X_{m,k})_k with
 X_{m,k} the mean over the (block m, stratum k) cell of inc = U - V - delta_k; the bet is
 the affine factor  1 + <lam_m, X_m>  with lam_m >= 0, sum_k lam_m,k <= 1/b, and
-b = 1 + max_k delta_k. (lam_m is F_{m-1}-measurable: it depends only on the theta-fixed
+b = 1 + max_k delta_k. Here theta in F_0: the stratum structure and the oracle slacks delta_k
+are fixed at time 0, before any block is observed, so b = 1 + max_k delta_k is F_0-measurable
+and the budget cap sum_k lam_m,k <= 1/b is a constraint set once at time 0, not adaptively per
+block; only the direction of lam_m within this fixed budget is updated from blocks < m.
+(lam_m is F_{m-1}-measurable: it depends only on the theta-fixed
 stratum/block structure and outcomes of blocks < m.)
 
 (a) POSITIVITY. Each inc = U - V - delta_k with U,V in {0,1} lies in [-(1+delta_k), 1-delta_k],

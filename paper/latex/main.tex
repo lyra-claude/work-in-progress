@@ -121,7 +121,7 @@ This paper fills that cell (\S\ref{sec:method}). The key idea: compare the
 same-item co-failure indicator $U=W_i^s W_j^s$ against a cross-item product
 $V=W_i^s W_j^t$ for a \emph{different} item $t \ne s$. Because $s\ne t$, $V$
 provides an exact baseline for $p_i p_j$ without estimating either marginal;
-the running product $M_t=\prod e_\tau$ is a nonnegative test martingale, and
+the running product $M_t=\prod e_\tau$ is a nonnegative supermartingale, and
 Ville's inequality \citep{ville1939} delivers a level-$\alpha$ alarm at every
 stopping time under drifting marginals.
 
@@ -173,15 +173,31 @@ difficulty stratification the running product $M_t$ is a nonnegative
 supermartingale under the null.
 
 \paragraph{E-process construction.}
-The betting increment is:
+The betting increment is the vector form
 \begin{equation}
-  e_\tau = 1 + \lambda(U_\tau - V_\tau - \delta)
+  e_\tau = 1 + \langle \lambda,\, X_\tau \rangle,
+  \qquad X_{\tau,k} = U_\tau - V_\tau - \delta_k ,
 \end{equation}
-where $\delta = 2\varepsilon$ is a worst-case bias slack (adversarial marginals
-anywhere within a stratum of width $2\varepsilon$) and $\lambda \in [0,
-1/(1+2\varepsilon)]$ is the betting fraction, chosen $\mathcal{F}_0$-measurably
-(fixed in advance of the sequence). The running product $M_t =
-\prod_{\tau=1}^t e_\tau$ is a nonnegative test martingale; by Ville's inequality
+where $\delta_k = 2\varepsilon$ is a worst-case bias slack (adversarial marginals
+anywhere within a stratum of width $2\varepsilon$), the bet weights satisfy
+$\lambda_k \ge 0$ with the $\ell_1$ budget cap $\sum_k \lambda_k \le 1/b$ and
+$b = 1 + \max_k \delta_k$.
+We work on the filtration $\mathcal{F}_m := \sigma(\theta,\, W_1,\dots,W_m)$,
+where $\theta$ is the fixed difficulty/stratum structure (chosen in advance of
+the sequence) and $W_1,W_2,\dots$ are the observed blocks.
+Thus $\theta\in\mathcal{F}_0$, and since $\delta_k = 2\varepsilon_k$ is
+determined by $\theta$, the whole-stream bound $b = 1+\max_k \delta_k$ is
+$\mathcal{F}_0$-measurable --- it is a function of the fixed $\theta$, not of
+the realized stream.
+The betting direction $\lambda_m$ is $\mathcal{F}_{m-1}$-measurable.
+The oracle slack $\delta$, the cap $b$, and the bet
+$\lambda$ are all $\mathcal{F}_0$-measurable: the difficulty parameter
+$\theta \in \mathcal{F}_0$ (known at time $0$, i.e.\ fixed in advance of the
+sequence), so $\delta$ and the whole-stream bound $b$ are determined at time $0$.
+Since each $|X_{\tau,k}| \le b$, the $\ell_1$ cap gives
+$\langle \lambda, X_\tau \rangle \ge -(1/b)\,b = -1$, so each factor is
+nonnegative. The running product $M_t = \prod_{\tau=1}^t e_\tau$ is a nonnegative
+supermartingale; by Ville's inequality
 \citep{ville1939}, $\mathbb{P}(\sup_t M_t \ge 1/\alpha) \le \alpha$---a
 level-$\alpha$ sequential alarm valid at every stopping time.
 
