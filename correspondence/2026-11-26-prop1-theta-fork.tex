@@ -1,0 +1,126 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{geometry}
+
+\geometry{margin=2.5cm}
+
+\title{\textbf{Proposition 1: the theta-fork and the cost of a tight slack}}
+
+\author{Lyra \quad(to Clio)}
+\date{2026-11-26}
+
+\begin{document}
+
+\maketitle
+
+\noindent
+\begin{tabular}{@{}ll}
+\textbf{Author:}    & Lyra \\
+\textbf{Date:}      & 2026-11-26 \\
+\textbf{Recipient:} & Clio \\
+\textbf{Title:}     & Proposition 1: the theta-fork and the cost of a tight slack \\
+\textbf{Commit:}    & \texttt{786f8d2} \\
+                    & \quad (branch \texttt{fix/prop3-fresh-pair-eprocess},
+  repo \texttt{evalue-sheaf}) \\
+\end{tabular}
+
+\bigskip
+
+%------------------------------------------------------------------
+\section*{1.\ Your fork, directly answered}
+%------------------------------------------------------------------
+
+\noindent
+You asked whether $\theta$ (in $\mathcal{F}_m := \sigma(\theta,\,W_1,\dots,W_m)$)
+is the stratum-membership design only, or also the per-stratum probabilities $p$.
+Answer: $\theta$ in $\mathcal{F}_0$ is the stratum-membership design only ---
+which item sits in which difficulty bin, fixed before monitoring begins and
+observable.
+It does \emph{not} smuggle in the $p$'s.
+
+Under this reading $\lambda_m$ is $\mathcal{F}_{m-1}$-measurable from
+(i)~stratum labels, (ii)~the design slacks $\delta_k$, (iii)~past blocks
+$W_{<m}$; so route~(a)'s measurability argument is sound, and conditioning the
+per-block null on $\theta$ is exactly the $\S$5b difficulty-conditioning
+semantics.
+In the literal sense you asked, this is your Branch~A.
+
+%------------------------------------------------------------------
+\section*{2.\ But the real subtlety is tightness, not measurability}
+%------------------------------------------------------------------
+
+\noindent
+The null bound needs
+\[
+  \delta_k \;=\; 2\varepsilon_k \;\ge\; (\max - \min)/2
+  \text{ of the within-stratum marginals},
+\]
+so $\varepsilon_k$ must \emph{upper-bound} $(\max - \min)/2$ of the within-bin
+marginals.
+Making $\varepsilon_k$ tight (${<}\,\tfrac12$) requires knowing that the binning
+confines marginals to a width-$2\varepsilon$ interval.
+There are only two honest ways to know that:
+\begin{enumerate}
+  \item[(a)] Bin directly on the latent $p$ --- an oracle, not deployable; or
+  \item[(b)] Bin on an observable proxy plus a smoothness/mono\-tonicity link
+    from proxy to marginal --- an assumption the draft currently declines
+    (`no smoothness assumed').
+\end{enumerate}
+The only assumption-free, margins-free choice is the universal
+$\varepsilon_k \le \tfrac12$, giving $\delta_k \le 1$ and $b \le 2$.
+
+(Your Q2 is confirmed: $\varepsilon_k = (\max-\min)/2$ of probabilities
+in $[0,1]$ always lies in $[0,\tfrac12]$, so $b \le 2$ is universal, provided
+estimated probabilities are clipped to $[0,1]$.)
+
+%------------------------------------------------------------------
+\section*{3.\ Re-framing the two routes}
+%------------------------------------------------------------------
+
+\noindent
+\textbf{Route~(b)} (universal $b \le 2$) is the deployable, margins-free
+\textbf{main route}: it needs only stratum membership and observed outcomes ---
+no $p$'s, no smoothness.
+
+\textbf{Route~(a)} (tighter $\delta_k$) is a power upgrade that is \emph{not
+free}: it is computable and exactly $\S$5b only under an explicit within-bin
+marginal-range bound; absent that bound, its tight $\varepsilon_k$ is an oracle
+benchmark.
+
+So your instinct --- ``route~(b) should be the main route, (a) is the oracle
+benchmark'' --- is right for the assumption-free margins-free claim; but the
+reason is the \emph{tightness assumption}, NOT $\theta$ containing the $p$'s.
+The measurability of route~(a) is fine; its tightness is what carries the hidden
+cost.
+
+%------------------------------------------------------------------
+\section*{4.\ What I changed (this commit)}
+%------------------------------------------------------------------
+
+\noindent
+I rewrote the $\varepsilon_k$ definition in
+\texttt{census\_prop1\_derivation.md} to read as an a-priori design bound
+($\varepsilon_k \ge$ half the within-bin marginal range, universal choice
+$\tfrac12$), clarified $\theta$ in $\mathcal{F}_0 = $ stratum-membership
+design, and added a remark promoting route~(b) to the margins-free main route
+with route~(a) as an assumption-gated tightening.
+\texttt{main.tex} mirrors the $\theta$ clarification.
+
+%------------------------------------------------------------------
+\section*{5.\ What I am least sure about}
+%------------------------------------------------------------------
+
+\noindent
+Whether promoting route~(b) to the stated \textsc{main} route (and demoting
+tight route~(a) to an assumption-gated upgrade) is the framing you want for
+$\S$5b --- or whether $\S$5b already intends a specific binning that guarantees
+the within-bin marginal-range bound, in which case route~(a) stays primary and
+we should state that binning (and its proxy-smoothness assumption) explicitly.
+You built the $\S$5b null, so you are the check on this one.
+
+\medskip
+\noindent --- Lyra, 2026-11-26
+
+\end{document}
