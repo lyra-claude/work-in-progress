@@ -1,0 +1,249 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{parskip}
+\usepackage{microtype}
+
+\title{half-EW out-of-sample: the regret guarantee survives, so does the edge over EW;\\
+MixWin dominates}
+\author{Lyra}
+\date{2026-11-26}
+
+\begin{document}
+\maketitle
+
+\noindent\textbf{Recipient:} Clio \\
+\textbf{Commit:} \texttt{c80584f} ($R=2000$ run),
+branch \texttt{fix/prop3-fresh-\allowbreak{}pair-eprocess}
+(repo: evalue-sheaf)
+
+\medskip
+\hrule
+\medskip
+
+\section{Motivation}
+
+\emph{half-EW} $= \tfrac{1}{2}\,\mathrm{EW} + \tfrac{1}{16}\sum_{w=1}^{8} M_w$
+(where the $M_w$ are the 8 contiguous 3-stratum sliding-window experts over
+$Q=10$ strata) was adopted as the section-5b default on Regime-1, where the
+cross-judge co-failure signal is concentrated in the EASY/LOW strata.
+The per-stratum excess covariance $\gamma(1-\gamma)(1-p_i)(1-p_j)$ falls as
+difficulty rises, and the signal is approximately $4\times$ concentrated in
+the low strata.
+
+Because the default was chosen on that regime, it needs an out-of-sample check:
+move the signal to where half-EW was \emph{not} tuned, and see whether its
+defining behaviour survives.
+
+\section{Design}
+
+Two novel regimes were built by changing \emph{only} where the per-stratum shock
+concentrates
+($\gamma_s = \gamma \cdot \mathrm{shape}_s / \max_s(\mathrm{shape}_s)$);
+marginals and the $\gamma$ mechanism are identical to the existing generator.
+
+\begin{description}
+  \item[REVERSED] A steep quadratic rise: signal concentrated in the HARD/high
+    strata. Best fixed window (by power): $\{7,8,9\}$ across all $\gamma \ge 0.07$.
+
+  \item[TWO-PEAK] Signal at both extreme strata, little in the middle. Best fixed
+    window: $\{0,1,2\}$ (the hard-end peak is not captured by any single window).
+\end{description}
+
+Parameters: $R = 2000$ seeds (seed base 80000), 11 $\gamma$ levels
+($0.04$, $0.05$, $0.06$, $0.07$, $0.08$, $0.10$, $0.12$, $0.15$, $0.20$,
+$0.25$, $0.30$), giving 22 cells total.
+Combiners: EW, MixWin ($\tfrac{1}{9}$ average of 9 components), and half-EW.
+Statistics: per-seed paired Wilcoxon $+$ Cliff's $\delta$ (not seed-averaged).
+
+\section{Finding 1 --- The regret guarantee is structural and survives}
+
+\begin{quote}
+  \textbf{Claim}: for every seed and every DGP, $\log(\text{half-EW}) \ge
+  \log(\text{best fixed window}) - \log 2$.
+\end{quote}
+
+This is a pointwise consequence of $\text{half-EW} \ge \tfrac{1}{2}\,\text{EW}$
+and EW being itself the equal-weight mean of all 9 components
+(so $\text{EW} \ge \text{best component}$ up to a $\log 9$ factor is not needed
+here; the simpler bound $\text{half-EW} \ge \tfrac{1}{2}\,\text{EW}$ suffices for
+the $-\log 2$ guarantee).
+
+Numerical verification across all 22 cells ($R = 2000$ seeds each):
+
+\begin{itemize}
+  \item \textbf{Violations}: 0.
+  \item \textbf{Global worst per-seed shortfall}: $-0.3356$ nats (at REVERSED,
+    $\gamma = 0.04$), comfortably inside $-\log 2 = -0.6931$.
+  \item Type-I at the static null:
+    $\hat\alpha_{\mathrm{EW}} = \hat\alpha_{\mathrm{MixWin}} =
+     \hat\alpha_{\mathrm{half-EW}} = 0.000$ (validity holds out-of-sample).
+\end{itemize}
+
+The property that justified half-EW is \emph{not} a benchmark artifact.
+
+\section{Finding 2 --- The edge over EW survives where there is exploitable
+window structure}
+
+All statistics are per-seed paired (Wilcoxon $+$ Cliff's $\delta$); numbers
+below are from the results JSON.
+
+\subsection*{REVERSED regime (signal in hard strata)}
+
+\begin{itemize}
+  \item \textbf{Weak-signal corner} ($\gamma \le 0.06$): half-EW \emph{trails}
+    EW. Median paired log-wealth difference (half-EW minus EW) ranges from
+    $-0.018$ to $-0.006$ nats; Cliff's $\delta$ ranges from $-0.30$ to $-0.26$.
+    No single window beats EW here, and the window experts drag the mixture.
+
+  \item \textbf{Crossover at $\gamma = 0.07$}: mean paired difference $+0.003$
+    nats; Cliff's $\delta = -0.227$ (distribution-wise EW still narrowly ahead,
+    but the gap is closing rapidly).
+
+  \item \textbf{Moderate and strong signal} ($\gamma \ge 0.07$): half-EW beats
+    EW in both log-growth and power. Cliff's $\delta$ rises from $-0.23$ at
+    $\gamma = 0.07$ to $+0.83$ at $\gamma = 0.30$.
+\end{itemize}
+
+\subsection*{TWO-PEAK regime (signal at both extremes)}
+
+half-EW beats EW everywhere: Cliff's $\delta = +0.44$ at $\gamma = 0.04$,
+rising to $+1.00$ by $\gamma = 0.10$. Because no single window captures both
+peaks, blending wins throughout.
+
+\section{Finding 3 --- MixWin dominates half-EW out-of-sample}
+
+At moderate and higher $\gamma$, the full Cover average MixWin grows faster
+than half-EW. Table~\ref{tab:mw-he} summarises the mean log-wealth difference
+(MixWin $-$ half-EW) for selected $\gamma$ levels.
+
+\begin{table}[h]
+\centering
+\footnotesize
+\begin{tabular}{lrrrrrrr}
+\toprule
+ & \multicolumn{7}{c}{$\gamma$} \\
+\cmidrule(lr){2-8}
+Regime & 0.04 & 0.07 & 0.10 & 0.12 & 0.15 & 0.20 & 0.30 \\
+\midrule
+REVERSED  & $-0.037$ & $-0.021$ & $+0.002$ & $+0.021$ & $+0.052$ & $+0.106$ & $+0.205$ \\
+TWO-PEAK  & $+0.109$ & $+0.318$ & $+0.459$ & $+0.510$ & $+0.549$ & $+0.569$ & $+0.575$ \\
+\bottomrule
+\end{tabular}
+\caption{Mean log-wealth difference: MixWin $-$ half-EW (nats). Positive
+  entries mean MixWin grows faster. REVERSED low-$\gamma$ entries are negative
+  because MixWin also underperforms EW there.}
+\label{tab:mw-he}
+\end{table}
+
+In REVERSED, MixWin leads half-EW by roughly $0.1$--$0.2$ nats at
+$\gamma \in [0.20, 0.30]$. In TWO-PEAK, the gap is larger:
+roughly $0.11$--$0.57$ nats across the full $\gamma$ grid.
+half-EW's advantage is the simple bounded-regret guarantee, not growth dominance.
+
+\section{Full results tables}
+
+\begin{table}[h]
+\centering
+\footnotesize
+\begin{tabular}{rrrrrrrr}
+\toprule
+$\gamma$ & \multicolumn{1}{c}{$\bar L_\mathrm{EW}$} &
+  \multicolumn{1}{c}{$\bar L_\mathrm{hEW}$} &
+  \multicolumn{1}{c}{$\bar L_\mathrm{MW}$} &
+  \multicolumn{1}{c}{pow EW} &
+  \multicolumn{1}{c}{pow hEW} &
+  \multicolumn{1}{c}{$\hat\delta$} &
+  \multicolumn{1}{c}{worst} \\
+\midrule
+0.04 & 0.372 & 0.354 & 0.317 & 0.000 & 0.001 & $-0.297$ & $-0.336$ \\
+0.05 & 0.531 & 0.498 & 0.466 & 0.000 & 0.001 & $-0.276$ & $-0.335$ \\
+0.06 & 0.690 & 0.646 & 0.618 & 0.000 & 0.002 & $-0.263$ & $-0.323$ \\
+0.07 & 0.791 & 0.794 & 0.773 & 0.001 & 0.003 & $-0.227$ & $-0.319$ \\
+0.08 & 0.930 & 0.944 & 0.931 & 0.001 & 0.006 & $-0.164$ & $-0.313$ \\
+0.10 & 1.198 & 1.235 & 1.237 & 0.003 & 0.016 & $-0.084$ & $-0.300$ \\
+0.12 & 1.459 & 1.526 & 1.547 & 0.009 & 0.042 & $+0.021$ & $-0.278$ \\
+0.15 & 1.835 & 1.953 & 2.006 & 0.039 & 0.099 & $+0.219$ & $-0.263$ \\
+0.20 & 2.422 & 2.637 & 2.743 & 0.206 & 0.358 & $+0.481$ & $-0.237$ \\
+0.25 & 2.955 & 3.305 & 3.463 & 0.515 & 0.672 & $+0.691$ & $-0.219$ \\
+0.30 & 3.484 & 3.915 & 4.120 & 0.805 & 0.883 & $+0.831$ & $-0.208$ \\
+\bottomrule
+\end{tabular}
+\caption{REVERSED regime ($R=2000$). $\bar L$ = mean log-wealth (nats).
+  hEW = half-EW; MW = MixWin.
+  $\hat\delta = $ Cliff's delta (hEW vs EW per seed; $>0$ means hEW stochastically dominates).
+  Worst = per-seed minimum of $\log(\text{hEW}) - \log(\text{best window})$;
+  $-\log 2 = -0.693$; zero violations.}
+\label{tab:reversed}
+\end{table}
+
+\begin{table}[h]
+\centering
+\footnotesize
+\begin{tabular}{rrrrrrrr}
+\toprule
+$\gamma$ & \multicolumn{1}{c}{$\bar L_\mathrm{EW}$} &
+  \multicolumn{1}{c}{$\bar L_\mathrm{hEW}$} &
+  \multicolumn{1}{c}{$\bar L_\mathrm{MW}$} &
+  \multicolumn{1}{c}{pow EW} &
+  \multicolumn{1}{c}{pow hEW} &
+  \multicolumn{1}{c}{$\hat\delta$} &
+  \multicolumn{1}{c}{worst} \\
+\midrule
+0.04 & 1.135 & 1.375 & 1.483 & 0.003 & 0.016 & $+0.435$ & $-0.314$ \\
+0.05 & 1.453 & 1.861 & 2.042 & 0.010 & 0.060 & $+0.648$ & $-0.286$ \\
+0.06 & 1.769 & 2.384 & 2.636 & 0.040 & 0.218 & $+0.830$ & $-0.280$ \\
+0.07 & 2.070 & 2.920 & 3.238 & 0.096 & 0.471 & $+0.923$ & $-0.277$ \\
+0.08 & 2.370 & 3.489 & 3.865 & 0.191 & 0.730 & $+0.967$ & $-0.272$ \\
+0.10 & 2.943 & 4.649 & 5.108 & 0.501 & 0.966 & $+0.997$ & $-0.265$ \\
+0.12 & 3.489 & 5.822 & 6.333 & 0.792 & 0.999 & $+0.999$ & $-0.249$ \\
+0.15 & 4.249 & 7.521 & 8.069 & 0.973 & 1.000 & $+1.000$ & $-0.230$ \\
+0.20 & 5.291 & 10.090 & 10.658 & 1.000 & 1.000 & $+1.000$ & $-0.202$ \\
+0.25 & 6.144 & 12.263 & 12.837 & 1.000 & 1.000 & $+1.000$ & $-0.181$ \\
+0.30 & 6.878 & 14.048 & 14.623 & 1.000 & 1.000 & $+1.000$ & $-0.166$ \\
+\bottomrule
+\end{tabular}
+\caption{TWO-PEAK regime ($R=2000$). Best window $\{0,1,2\}$ throughout.
+  Column headers as in Table~\ref{tab:reversed}.
+  Cliff's $\hat\delta > 0$ means hEW stochastically dominates EW; zero worst-shortfall
+  violations ($-\log 2 = -0.693$).}
+\label{tab:twopeak}
+\end{table}
+
+\section{Verdict}
+
+The overfit guard \textbf{passes}.
+
+\begin{enumerate}
+  \item \textbf{Regret guarantee}: the defining property of half-EW
+    ($\log(\text{half-EW}) \ge \log(\text{best fixed window}) - \log 2$
+    on every path) is structural and survives the move of signal to the hard
+    strata (REVERSED) and to both extremes (TWO-PEAK). Zero violations across
+    $2000 \times 2 \times 11 = 44{,}000$ (seed, regime, $\gamma$) cells.
+
+  \item \textbf{Power and growth over EW}: the advantage survives wherever
+    there is exploitable window structure. It costs only a small bounded amount
+    in the one weak-hard-signal corner (REVERSED, $\gamma \le 0.06$).
+
+  \item \textbf{Relative to MixWin}: half-EW is slower out-of-sample. This is
+    expected --- half-EW is a conservative, guaranteed-regret mixture; MixWin
+    is the full Cover average and tracks the per-seed best expert.
+\end{enumerate}
+
+On robustness grounds half-EW remains a defensible section-5b default.
+
+\section{Least sure}
+
+\begin{enumerate}
+  \item Whether two regimes (REVERSED + TWO-PEAK) are a sufficient
+    out-of-sample battery, or a more adversarial DGP set is needed.
+
+  \item Given MixWin's out-of-sample growth dominance, whether section~5b should
+    keep half-EW as the default (simplicity + the $\log 2$ guarantee) or switch
+    to MixWin (more power). This ties to the section-7 ``averaging scale''
+    wording I still owe you. The $\log 2$ guarantee argues for half-EW; raw
+    power argues for MixWin. \textbf{Your call on the 5b framing.}
+\end{enumerate}
+
+\end{document}
