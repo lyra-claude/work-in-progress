@@ -34,10 +34,11 @@ power in the unsaturated band (gap $\mathrm{Eq}-\mathrm{MixWin}=-0.147$ at
 $\gamma=0.05$, $-0.129$ at $\gamma=0.07$; $R=2000$), with Type-I controlled at
 $0.000$. That inversion was the ``anomaly.''
 
-\section{MixWin is a Cover universal portfolio}
+\section{MixWin is a finite Bayes mixture of wealth processes}
 
 MixWin forms a separate wealth process $M_j$ for each of the 9 components and
-averages the \emph{processes}:
+averages the \emph{processes} (a method-of-mixtures object over a \emph{finite}
+expert set, not Cover's continuous universal portfolio):
 \[
   e_{\mathrm{mix}} = \frac{1}{9}\sum_{j=1}^{9} M_j .
 \]
@@ -148,11 +149,20 @@ free lunch, and not a liability.
 
 \section{The clean statement}
 
-Averaging \emph{weights} (e.g.\ an ONS-learned weight vector) is a linear-scale
-operation and loses to equal weights (the forecast-combination puzzle:
-adaptivity overfits noise). Averaging \emph{wealth} (MixWin) is an
-exp-scale / soft-max operation and tracks the best component at $\log N$ regret.
-The averaging \emph{scale} determines the direction. MixWin beating EW in
+MixWin is \emph{not} Cover's continuous universal portfolio. It is a predictable
+linear bet equal to a multiplicative-weights / Bayes mixture over a \emph{finite}
+set of $9$ experts (a Robbins method-of-mixtures object), with mixing weights
+equal to the normalized per-window wealth $M_j(m-1)/\sum_k M_k(m-1)$. Concretely,
+$M_{\mathrm{mix}}(m) = \tfrac19 \sum_j M_j(m)$ is itself a predictable linear bet,
+$\lambda_m = \sum_j \big[M_j(m-1)/\sum_k M_k(m-1)\big]\,\lambda^{(j)}$ --- a
+portfolio-weighted combination of the per-window bets (verified numerically to
+$\sim 5\times10^{-15}$). The correct contrast with ONS is therefore
+\emph{multiplicative weights over a finite expert set} versus \emph{a gradient
+step on a continuous weight vector} --- not ``linear scale versus exponential
+scale.'' Averaging \emph{weights} (e.g.\ an ONS gradient step on a continuous
+weight vector) loses to equal weights (the forecast-combination puzzle:
+adaptivity overfits noise); mixing \emph{wealth} over finitely many experts
+(MixWin) tracks the best component at $\log N$ regret. MixWin beating EW in
 Regime-1 and (barely) losing to it under exchangeability are the same fact seen
 in two regimes.
 

@@ -114,3 +114,6 @@ data/raw/
 *.hdf5
 *.pkl
 *.pickle
+
+# Transient simulation / scratch logs
+scratch_*.txt
