@@ -183,17 +183,22 @@ anywhere within a stratum of width $2\varepsilon$), the bet weights satisfy
 $\lambda_k \ge 0$ with the $\ell_1$ budget cap $\sum_k \lambda_k \le 1/b$ and
 $b = 1 + \max_k \delta_k$.
 We work on the filtration $\mathcal{F}_m := \sigma(\theta,\, W_1,\dots,W_m)$,
-where $\theta$ is the fixed difficulty/stratum structure (chosen in advance of
-the sequence) and $W_1,W_2,\dots$ are the observed blocks.
+where $\theta$ is the \emph{stratum-membership design} --- which item sits in
+which difficulty bin, fixed before monitoring begins and observable --- and
+$W_1,W_2,\dots$ are the observed blocks; $\theta$ does \emph{not} include the
+per-stratum marginal probabilities.
 Thus $\theta\in\mathcal{F}_0$, and since $\delta_k = 2\varepsilon_k$ is
 determined by $\theta$, the whole-stream bound $b = 1+\max_k \delta_k$ is
 $\mathcal{F}_0$-measurable --- it is a function of the fixed $\theta$, not of
 the realized stream.
-The betting direction $\lambda_m$ is $\mathcal{F}_{m-1}$-measurable.
+The betting direction $\lambda_m$ is $\mathcal{F}_{m-1}$-measurable from
+(i)~stratum labels, (ii)~the design slacks $\delta_k$, and
+(iii)~past blocks $W_{<m}$; conditioning the per-block null on $\theta$ is
+exactly the $\S$5b difficulty-conditioning semantics.
 The oracle slack $\delta$, the cap $b$, and the bet
-$\lambda$ are all $\mathcal{F}_0$-measurable: the difficulty parameter
-$\theta \in \mathcal{F}_0$ (known at time $0$, i.e.\ fixed in advance of the
-sequence), so $\delta$ and the whole-stream bound $b$ are determined at time $0$.
+$\lambda$ are all $\mathcal{F}_0$-measurable: the stratum-membership design
+$\theta \in \mathcal{F}_0$ (fixed in advance of the sequence), so $\delta$
+and the whole-stream bound $b$ are determined at time $0$.
 Since each $|X_{\tau,k}| \le b$, the $\ell_1$ cap gives
 $\langle \lambda, X_\tau \rangle \ge -(1/b)\,b = -1$, so each factor is
 nonnegative. The running product $M_t = \prod_{\tau=1}^t e_\tau$ is a nonnegative
