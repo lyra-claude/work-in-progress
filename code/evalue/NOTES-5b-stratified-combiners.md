@@ -10,9 +10,9 @@ Items are partitioned into K difficulty strata by equal-width binning of latent 
 
 Within each stratum k, a Method-A cross-item e-process is built:
 - U_s = W_i^s * W_j^s (same-item co-failure)
-- V_s = W_i^s * W_j^{t(s)} where t(s) is a derangement within the stratum
-- delta_k = 2 * epsilon_k, where epsilon_k = (max - min)/2 of marginal probabilities within stratum k
-- Betting fraction lambda is clipped to [0, 1/(1+2*epsilon_k)] per item (ensures non-negative increments)
+- V_s = W_i^s * W_j^{t(s)} where t(s) is a FRESH-PAIR within-block, within-stratum partner (Clio Prop. 3): another same-stratum item in the same block, so neither partner's outcome is in F_{m-1} when the block-m bet is set (anytime-valid)
+- delta_k = 2 * epsilon_k**2 (QUADRATIC slack 1/2 R^2 = 2 eps^2, R = 2 eps; the old linear 2*epsilon_k was valid but loose by a factor 1/epsilon), where epsilon_k = (max - min)/2 of marginal probabilities within stratum k
+- Betting fraction lambda is clipped to [0, 1/(1+2*epsilon_k**2)] per item (ensures non-negative increments, consistent with the quadratic slack)
 - Per-stratum wealth M^(k) built by Robbins-style mixture over lambda in {0.1, 0.2, ..., 0.9}
 
 The per-stratum wealth streams are then combined into a single process via two methods:

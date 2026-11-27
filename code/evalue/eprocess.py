@@ -21,7 +21,9 @@ import numpy as np
 
 # ── Stratification helpers ─────────────────────────────────────────────────────
 
-Q = 5   # number of strata
+Q = 5      # number of strata
+BLOCK = 20 # items per simultaneous-batch block (matches the §5b harness); used by the
+           # fresh-pair within-block pairing that provides anytime validity (Clio Prop. 3).
 
 def assign_strata(theta: np.ndarray, Q: int = Q) -> np.ndarray:
     """
@@ -208,16 +210,29 @@ def accumulate_wealth(
     Args:
         U:            same-item co-failure indicator (N,)
         V:            cross-item product (N,)
-        delta:        per-item conservative slack delta_k = 2*epsilon_k (N,)
+        delta:        per-item conservative slack delta_k = 2*epsilon_k**2 (N,)
+                      (QUADRATIC slack 1/2 R^2 = 2 eps^2, R = 2 eps; see
+                      census_prop1_derivation.md Sec. 3.  The old LINEAR 2*eps was
+                      valid but loose by a factor 1/eps — Clio's Prop. 2 review.)
         lam:          fixed betting fraction
-        clip_lam:     if True, clip lam per item to [0, 1/(1+2*eps)] to keep e_s >= 0
+        clip_lam:     if True, clip lam per item to [0, 1/(1+delta)] to keep e_s >= 0.
+                      The positivity bound is lam <= 1/(1+delta) with delta = 2*eps**2
+                      (increment U-V-delta in [-(1+delta), 1-delta]); this is the tight
+                      per-item cap consistent with the quadratic slack.  With the
+                      universal design bound eps=1/2 (delta=1/2) it reduces to the
+                      b=3/2 => lam_max=2/3 universal bound of Clio's note.
         eps_per_item: required when clip_lam=True; per-item epsilon
 
     Returns:
         M: wealth array of shape (N,), M[t] = product over s=0..t
     """
     if clip_lam and eps_per_item is not None:
-        lam_max = 1.0 / (1.0 + 2.0 * eps_per_item)
+        # Positivity cap consistent with the QUADRATIC slack delta = 2*eps**2:
+        # increment U - V - delta lies in [-(1+delta), 1-delta], so the factor
+        # 1 + lam*(U-V-delta) >= 0 requires lam <= 1/(1+delta) = 1/(1+2*eps**2).
+        # (The old 1/(1+2*eps) was tied to the linear slack; it is still valid here
+        # since 2*eps >= 2*eps**2, but 1/(1+2*eps**2) is the tight per-item cap.)
+        lam_max = 1.0 / (1.0 + 2.0 * eps_per_item ** 2)
         lam_eff = np.minimum(lam, lam_max)
     else:
         lam_eff = lam
@@ -291,7 +306,8 @@ def accumulate_wealth_online(
     N = len(U)
 
     if clip_lam and eps_per_item is not None:
-        lam_max = 1.0 / (1.0 + 2.0 * eps_per_item)
+        # Positivity cap for the QUADRATIC slack delta = 2*eps**2 (see accumulate_wealth).
+        lam_max = 1.0 / (1.0 + 2.0 * eps_per_item ** 2)
         lam_eff = np.minimum(lam, lam_max)
     else:
         lam_eff = np.full(N, lam) if np.isscalar(lam) else np.array(lam, dtype=float)
@@ -335,9 +351,13 @@ def accumulate_wealth_online_mixture(
 def method_A(data: dict, rng: np.random.Generator) -> dict:
     """
     Method A — STRATIFIED cross-item e-process (the proposed method).
-    t(s) is a derangement WITHIN the same stratum.
-    delta_k = 2 * epsilon_k (stratum-specific conservative slack).
-    lambda clipped to [0, 1/(1+2*eps)] per item.
+    t(s) is a FRESH-PAIR within-block, within-stratum partner (Clio Prop. 3):
+    neither partner's outcome is in F_{m-1} when the block-m bet is set, so the
+    e-process is anytime-valid (unlike the old whole-stream derangement / past-only
+    pairing).  rng is accepted for signature compatibility but unused: the fresh-pair
+    map is a deterministic cyclic roll within each (block, stratum) cell.
+    delta_k = 2 * epsilon_k**2 (QUADRATIC slack 1/2 R^2 = 2 eps^2, R = 2 eps;
+    census_prop1_derivation.md Sec. 3).  lambda clipped to [0, 1/(1+2*eps**2)] per item.
     Returns dict with 'M_fixed', 'M_mix', 'delta_per_item', 'eps_per_item'.
     """
     W_i, W_j = data['W_i'], data['W_j']
@@ -347,13 +367,14 @@ def method_A(data: dict, rng: np.random.Generator) -> dict:
 
     strata = assign_strata(theta)
     eps_k = stratum_epsilon(p_i, p_j, strata)   # shape (Q,)
-    t = make_derangement_within_strata(strata, rng)
+    block_ids = np.arange(N) // BLOCK
+    t = make_within_block_pairing(strata, block_ids)   # fresh disjoint-item pairs
 
     U = W_i * W_j
     V = W_i[np.arange(N)] * W_j[t]              # i on item s, j on different item t(s)
 
     eps_per_item = eps_k[strata]                 # shape (N,)
-    delta = 2.0 * eps_per_item
+    delta = 2.0 * eps_per_item ** 2             # QUADRATIC slack (1/2 R^2 = 2 eps^2)
 
     M_fixed = accumulate_wealth(U, V, delta, lam=0.5, clip_lam=True, eps_per_item=eps_per_item)
     M_mix   = accumulate_wealth_mixture(U, V, delta, clip_lam=True, eps_per_item=eps_per_item)
@@ -363,13 +384,19 @@ def method_A(data: dict, rng: np.random.Generator) -> dict:
 
 def method_A_online(data: dict, rng: np.random.Generator) -> dict:
     """
-    Method A (online/past-only) — STRATIFIED cross-item e-process with predictable pairing.
+    Method A (online/anytime-valid) — STRATIFIED cross-item e-process with predictable
+    FRESH-PAIR pairing.
 
-    Uses make_online_past_pairing so that t(s) is strictly a past item (F_{s-1}-measurable).
-    Items with no prior same-stratum partner make no bet (factor = 1).
-    This satisfies the anytime/sequential validity requirement.
+    Uses make_within_block_pairing (Clio Prop. 3): t(s) is another SAME-stratum item in
+    the SAME block, so when the block-m bet is set (F_{m-1}-measurable) neither W_j[s] nor
+    W_j[t(s)] has been revealed.  This is the correct anytime/sequential-validity
+    construction.  (The previous make_online_past_pairing is DEPRECATED/BUGGY — its
+    partner outcome is already F_{s-1}-measurable, letting a predictable bettor drive
+    Type-I to 1.000 on the observable {W_j[t(s)]=0} event; see its docstring.)
+    rng is accepted for signature compatibility but unused (deterministic cyclic roll).
+    Cells of size < 2 make no bet (factor = 1), via the has_partner sentinel.
 
-    Identical to method_A in every other respect: stratification, delta_k, lambda clipping.
+    delta_k = 2 * epsilon_k**2 (quadratic slack); lambda clipped to [0, 1/(1+2*eps**2)].
     Returns dict with 'M_fixed', 'M_mix', 'delta_per_item', 'eps_per_item'.
     """
     W_i, W_j = data['W_i'], data['W_j']
@@ -379,10 +406,11 @@ def method_A_online(data: dict, rng: np.random.Generator) -> dict:
 
     strata = assign_strata(theta)
     eps_k = stratum_epsilon(p_i, p_j, strata)
-    t = make_online_past_pairing(strata, rng)
+    block_ids = np.arange(N) // BLOCK
+    t = make_within_block_pairing(strata, block_ids)   # fresh disjoint-item pairs
 
-    # has_partner[s] is True iff t[s] < s (a valid F_{s-1}-measurable past partner exists)
-    # Sentinel: t[s] == s (no prior same-stratum item); these make no bet (factor=1).
+    # has_partner[s] is True iff t[s] != s (the cell has >= 2 items so a fresh partner
+    # exists).  Sentinel: t[s] == s (singleton cell); these make no bet (factor=1).
     has_partner = (t != np.arange(N))
 
     U = W_i * W_j
@@ -391,7 +419,7 @@ def method_A_online(data: dict, rng: np.random.Generator) -> dict:
     V = W_i * W_j[t]
 
     eps_per_item = eps_k[strata]
-    delta = 2.0 * eps_per_item
+    delta = 2.0 * eps_per_item ** 2             # QUADRATIC slack (1/2 R^2 = 2 eps^2)
 
     M_fixed = accumulate_wealth_online(U, V, delta, has_partner, lam=0.5,
                                         clip_lam=True, eps_per_item=eps_per_item)
@@ -406,6 +434,11 @@ def method_B(data: dict, rng: np.random.Generator) -> dict:
     Method B — UNSTRATIFIED cross-item e-process (ablation).
     t(s) is a derangement over the WHOLE stream (ignores strata).
     delta = 0. Expected to pick up shared-difficulty covariance under H0.
+
+    NOTE: this is a deliberately-INVALID ablation (no stratification, delta=0) kept to
+    demonstrate that the unstratified version falsely fires on shared-difficulty
+    marginal correlation.  It is NOT a validity claim, so it intentionally does NOT use
+    the fresh-pair within-block construction (that would change what the ablation shows).
     """
     W_i, W_j = data['W_i'], data['W_j']
     N = len(W_i)

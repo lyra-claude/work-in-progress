@@ -6,7 +6,7 @@ For each Q reports:
   - Type-I error on NULL DGP
   - Power on ALT gamma=0.05 and ALT gamma=0.10
   - Median detection time on ALT gamma=0.10 (among runs that fire)
-  - Realized-bias diagnostic: eps_bar, delta=2*eps_bar, mean within-stratum bias, ratio
+  - Realized-bias diagnostic: eps_bar, delta=2*eps_bar**2, mean within-stratum bias, ratio
 
 Fixed params: N=2000, R=500, alpha=0.05, threshold=20, seed=42.
 Lambda modes: mixture over {0.1,...,0.9} AND fixed lambda=0.5.
@@ -20,8 +20,9 @@ import numpy as np
 
 from dgp import null_dgp, alt_dgp
 from eprocess import (
-    assign_strata, stratum_epsilon, make_derangement_within_strata,
-    accumulate_wealth, accumulate_wealth_mixture, ville_reject, THRESHOLD
+    assign_strata, stratum_epsilon, make_within_block_pairing,
+    accumulate_wealth, accumulate_wealth_mixture, ville_reject, THRESHOLD,
+    BLOCK,
 )
 
 # ── Parameters ──────────────────────────────────────────────────────────────────
@@ -46,13 +47,14 @@ def method_A_Q(data: dict, rng: np.random.Generator, Q: int) -> dict:
 
     strata       = assign_strata(theta, Q=Q)
     eps_k        = stratum_epsilon(p_i, p_j, strata, Q=Q)
-    t            = make_derangement_within_strata(strata, rng, Q=Q)
+    block_ids    = np.arange(N_items) // BLOCK
+    t            = make_within_block_pairing(strata, block_ids, Q=Q)  # fresh disjoint pairs
 
     U            = W_i * W_j
     V            = W_i[np.arange(N_items)] * W_j[t]
 
     eps_per_item = eps_k[strata]
-    delta        = 2.0 * eps_per_item
+    delta        = 2.0 * eps_per_item ** 2   # QUADRATIC slack (1/2 R^2 = 2 eps^2)
 
     M_fixed = accumulate_wealth(U, V, delta, lam=0.5, clip_lam=True,
                                 eps_per_item=eps_per_item)
@@ -71,7 +73,7 @@ def realized_bias_for_Q(Q: int, seed: int, R_diag: int = 200) -> dict:
     = E[U - V] per stratum (should be ~0 under H0, but within-stratum
     variation in p(theta) means a single cross-pair can have nonzero mean).
 
-    Returns eps_bar (mean eps over strata), delta=2*eps_bar,
+    Returns eps_bar (mean eps over strata), delta=2*eps_bar**2 (quadratic slack),
     realized_bias (mean over strata of per-stratum |E[U-V]| on null data),
     and the ratio delta/realized_bias.
     """
@@ -90,6 +92,14 @@ def realized_bias_for_Q(Q: int, seed: int, R_diag: int = 200) -> dict:
     W_j_all = (rng.uniform(size=N_big) < p_j_all).astype(int)
 
     strata_all = assign_strata(theta_all, Q=Q)
+    # Build the SAME fresh-pair within-block partner map used by method_A_Q, so the
+    # realized-bias diagnostic measures E[U - V] under the exact pairing the e-process
+    # bets on (not an ad-hoc whole-stratum np.roll).
+    block_ids_all = np.arange(N_big) // BLOCK
+    t_all = make_within_block_pairing(strata_all, block_ids_all, Q=Q)
+    has_partner = (t_all != np.arange(N_big))
+    U_all = W_i_all * W_j_all
+    V_all = W_i_all * W_j_all[t_all]
 
     eps_k   = np.zeros(Q)
     bias_k  = np.zeros(Q)
@@ -105,17 +115,15 @@ def realized_bias_for_Q(Q: int, seed: int, R_diag: int = 200) -> dict:
             (p_i_all[mask].max() - p_i_all[mask].min()) / 2.0,
             (p_j_all[mask].max() - p_j_all[mask].min()) / 2.0,
         )
-        # within-stratum cross-product: pair items sequentially
-        # (a derangement would be ideal but sequential shift suffices for expectation)
-        idx = np.where(mask)[0]
-        # Shift by 1 within stratum
-        t_k  = np.roll(idx, 1)
-        U_k  = W_i_all[idx] * W_j_all[idx]
-        V_k  = W_i_all[idx] * W_j_all[t_k]
-        bias_k[k] = np.abs((U_k - V_k).mean())
+        # within-stratum cross-item bias, over items that have a fresh-pair partner
+        cell = mask & has_partner
+        if cell.sum() == 0:
+            bias_k[k] = 0.0
+            continue
+        bias_k[k] = np.abs((U_all[cell] - V_all[cell]).mean())
 
     eps_bar       = float(eps_k.mean())
-    delta_bar     = 2.0 * eps_bar
+    delta_bar     = 2.0 * eps_bar ** 2    # QUADRATIC slack (1/2 R^2 = 2 eps^2)
     bias_bar      = float(bias_k.mean())
     ratio         = delta_bar / bias_bar if bias_bar > 1e-12 else float('inf')
 
@@ -260,7 +268,7 @@ def main():
     print("=" * 70)
     print("REALIZED-BIAS TABLE — NULL DGP, per-stratum diagnostic")
     print("=" * 70)
-    bh = f"{'Q':>4}  {'eps_bar':>8}  {'delta=2eps':>10}  {'real_bias':>10}  {'ratio':>7}"
+    bh = f"{'Q':>4}  {'eps_bar':>8}  {'delta=2eps^2':>12}  {'real_bias':>10}  {'ratio':>7}"
     print(bh)
     print("-" * 70)
     for bd in bias_rows:
