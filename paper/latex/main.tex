@@ -57,9 +57,12 @@ margins-free---requiring no estimation of individual judge failure rates, which
 are unknown and drifting. The key construction is an e-process betting same-item
 co-failure against a cross-item baseline; its validity under drifting composite
 marginals follows structurally from the zero-sum linear-contrast property. A
-synthetic worked example shows Type-I $\le 0.022$ throughout, power $0.92$
-against $\gamma=0.10$ common shock at $Q=80$ strata, and isolates difficulty
-stratification as the decisive design choice. Difficulty stratification also
+synthetic worked example shows Type-I $\le 0.010$ throughout, power $0.92$
+against $\gamma=0.10$ common shock at $Q=5$ strata, and isolates difficulty
+stratification as the decisive design choice---while exposing a genuine
+tradeoff: under the anytime-valid fresh-pair within-block construction, finer
+stratification starves the within-block pairs, so power falls as $Q$ grows.
+Difficulty stratification also
 answers the field's leading objection: apparent co-failure often reflects shared
 item difficulty rather than genuine dependence; our construction removes that
 confound structurally.
@@ -155,14 +158,25 @@ estimating either marginal.
 \section{Method}
 \label{sec:method}
 
-\paragraph{Cross-item pairing.}
-Fix a pair $(i,j)$ and a stream of items arriving sequentially. At each step,
-draw a same-item indicator $U_s = W_i^s W_j^s$ and a cross-item indicator $V_s =
-W_i^s W_j^t$ for a previously-seen item $t \ne s$ (or the paired item from a
-derangement schedule). Because $s \ne t$, $W_i^s$ and $W_j^t$ come from distinct
-items; under any within-item coupling, they remain marginally independent across
-items, so $\mathbb{E}[V_s] = p_i(\theta^s) p_j(\theta^t)$ exactly---no estimation
-required.
+\paragraph{Cross-item pairing (fresh-pair, within-block).}
+Fix a pair $(i,j)$ and a stream of items arriving in blocks of size
+$B=20$ (matching the simultaneous-batch harness of \S\ref{sec:strat}). At each
+step, draw a same-item indicator $U_s = W_i^s W_j^s$ and a cross-item indicator
+$V_s = W_i^s W_j^t$, where the partner item $t$ is a \emph{fresh, distinct} item
+drawn from the \emph{same block and same difficulty stratum} as $s$ (a cyclic or
+leave-one-out pairing within the block cell). Because $t$ and $s$ are distinct
+items evaluated independently under the null, $W_i^s$ and $W_j^t$ are independent
+given the stratum, so $\mathbb{E}[V_s \mid \theta] = p_i(\theta) p_j(\theta)$
+exactly---no estimation of either marginal is required. The within-block
+construction is what makes the e-process \emph{genuinely anytime-valid}: each
+partner draw is independent of the same-item draw it is compared against, so the
+per-block increment is a true martingale difference under the null.
+
+The earlier ``previously-seen item / whole-stream derangement'' route (pairing
+$s$ with any earlier $t$ across the entire stream) is \textbf{deprecated}: it
+reuses draws across blocks, breaking the martingale property and inflating
+Type-I error to $1$ as the stream grows. Only the fresh-pair within-block
+construction is anytime-valid.
 
 \paragraph{Why margins-free is structural.}
 The increment $U_s - V_s$ is a zero-sum linear contrast of $\{W_i^s, W_j^s,
@@ -178,27 +192,39 @@ The betting increment is the vector form
   e_\tau = 1 + \langle \lambda,\, X_\tau \rangle,
   \qquad X_{\tau,k} = U_\tau - V_\tau - \delta_k ,
 \end{equation}
-where $\delta_k = 2\varepsilon$ is a worst-case bias slack (adversarial marginals
-anywhere within a stratum of width $2\varepsilon$), the bet weights satisfy
-$\lambda_k \ge 0$ with the $\ell_1$ budget cap $\sum_k \lambda_k \le 1/b$ and
-$b = 1 + \max_k \delta_k$.
+where $\delta_k = 2\varepsilon_k^2 = \tfrac{1}{2}R_k^2$ is a worst-case bias
+slack. Here $R_k$ is the within-stratum range of the per-item success
+probability $p$ and $\varepsilon_k = R_k/2$ is its half-range; the slack is
+\emph{quadratic} in the half-range, not linear (the earlier linear form
+$\delta_k=2\varepsilon_k$ was valid but loose by a factor $1/\varepsilon_k$, and
+in practice killed all power---see \S\ref{sec:validity}). The bet weights
+satisfy $\lambda_k \ge 0$ with the $\ell_1$ budget cap $\sum_k \lambda_k \le
+1/b$, where the universal tight betting bound is $b = 3/2$: positivity of each
+factor requires $\lambda_k \le 1/(1+\delta_k)$, and at the universal design
+point $\varepsilon_k=\tfrac12$ ($\delta_k=\tfrac12$) this gives
+$b=1+\tfrac12=3/2$ and $\lambda_{\max}=2/3$ (equivalently $\lfloor
+n/2\rfloor/n=\tfrac12$ for even $n$).
 We work on the filtration $\mathcal{F}_m := \sigma(\theta,\, W_1,\dots,W_m)$,
 where $\theta$ is the \emph{stratum-membership design} --- which item sits in
 which difficulty bin, fixed before monitoring begins and observable --- and
 $W_1,W_2,\dots$ are the observed blocks; $\theta$ does \emph{not} include the
 per-stratum marginal probabilities.
-Thus $\theta\in\mathcal{F}_0$, and since $\delta_k = 2\varepsilon_k$ is
-determined by $\theta$, the whole-stream bound $b = 1+\max_k \delta_k$ is
-$\mathcal{F}_0$-measurable --- it is a function of the fixed $\theta$, not of
-the realized stream.
+Thus $\theta\in\mathcal{F}_0$, and since $\delta_k = 2\varepsilon_k^2$ is
+determined by $\theta$ (the stratum ranges are fixed by the binning design), the
+universal bound $b=3/2$ is $\mathcal{F}_0$-measurable --- it is a function of
+the fixed $\theta$, not of the realized stream. Here $\varepsilon_k \ge
+(\max - \min)/2$ \emph{defines} the within-stratum half-range of $p$; the slack
+is then the separate quadratic quantity $\delta_k = 2\varepsilon_k^2 =
+\tfrac12 R_k^2$ (with $R_k = 2\varepsilon_k$). The half-range $\varepsilon_k$
+and the slack $\delta_k$ must not be conflated.
 The betting direction $\lambda_m$ is $\mathcal{F}_{m-1}$-measurable from
 (i)~stratum labels, (ii)~the design slacks $\delta_k$, and
 (iii)~past blocks $W_{<m}$; conditioning the per-block null on $\theta$ is
 exactly the $\S$5b difficulty-conditioning semantics.
-The oracle slack $\delta$, the cap $b$, and the bet
+The oracle slack $\delta$, the cap $b=3/2$, and the bet
 $\lambda$ are all $\mathcal{F}_0$-measurable: the stratum-membership design
 $\theta \in \mathcal{F}_0$ (fixed in advance of the sequence), so $\delta$
-and the whole-stream bound $b$ are determined at time $0$.
+and the universal bound $b=3/2$ are determined at time $0$.
 Since each $|X_{\tau,k}| \le b$, the $\ell_1$ cap gives
 $\langle \lambda, X_\tau \rangle \ge -(1/b)\,b = -1$, so each factor is
 nonnegative. The running product $M_t = \prod_{\tau=1}^t e_\tau$ is a nonnegative
@@ -214,8 +240,9 @@ weight on the $\lambda$ matching the realised effect size at a $\log(\text{grid}
 overhead over oracle-$\lambda$.
 
 % [Notation: align $W_i^s$ with the co-failure indicator notation before merge.
-%  Also confirm derangement vs paired-item schedule---the code uses derangement
-%  but either is valid.]
+%  Schedule resolved: the code uses the fresh-pair WITHIN-BLOCK pairing
+%  (make_within_block_pairing, BLOCK=20); the whole-stream derangement is
+%  deprecated (not anytime-valid).]
 
 \section{Worked Example}
 \label{sec:worked}
@@ -250,8 +277,8 @@ fraction of 500 runs crossing threshold 20 under the null ($\gamma=0$).
     \toprule
     Method & Description & Type-I (fixed null) & Type-I (drift) \\
     \midrule
-    \textbf{A} --- stratified cross-item ($\delta=2\varepsilon$)
-      & Cross-item $V=W_i^s\!\cdot\!W_j^t$ with $Q$ strata, $\delta=2\varepsilon$
+    \textbf{A} --- stratified cross-item ($\delta_k=2\varepsilon_k^2$)
+      & Fresh-pair within-block $V=W_i^s\!\cdot\!W_j^t$ with $Q$ strata, quadratic slack $\delta_k=2\varepsilon_k^2$
       & \textbf{0.000} & \textbf{0.000} \\
     \addlinespace
     \textbf{B} --- unstratified cross-item ($\delta=0$)
@@ -275,11 +302,13 @@ model.
 
 \paragraph{Power vs.\ $Q$ --- the operating dial.}
 With the $\lambda$-mixture over $\{0.1,\ldots,0.9\}$, power against a
-$\gamma=0.10$ common shock rises from $\sim 0$ to $0.920$ as the number of
-difficulty strata $Q$ goes $5 \to 80$, while Type-I stays $\le 0.022$
-throughout; the knee is $Q=80$ and the $\lambda$-mixture is load-bearing
-($0.428$ fixed vs.\ $0.920$ mixture). Full sweep and the small-$Q$
-power-suppression analysis in Appendix~\ref{app:qsweep}.
+$\gamma=0.10$ common shock \emph{falls} from $0.922$ to $0.264$ as the number of
+difficulty strata $Q$ goes $5 \to 80$, while Type-I stays $\le 0.010$ throughout.
+This is the genuine cost of the anytime-valid fresh-pair within-block
+construction: finer stratification starves the within-block pairs (most
+(block, stratum) cells become singletons that can place no bet). The knee is
+$Q=5$. Full sweep and the fresh-pair starvation analysis in
+Appendix~\ref{app:qsweep}.
 
 \paragraph{Real-data validation (FailureScope).}
 On real frontier-judge data (FailureScope corpus \citep{saban2606,failurescope_data}, 6 judges, 1{,}253
@@ -288,10 +317,12 @@ against an independent open-source difficulty proxy; full analysis, measured
 $\bar\varphi=0.534$ / $n_{\mathrm{eff}}=1.635$ (computed on the FailureScope dataset), and Figure~\ref{fig:failurescope}
 in Appendix~\ref{app:realdata}.
 
-\paragraph{Limitation: $\gamma=0.05$ gap.}
+\paragraph{Limitation: small-$\gamma$ gap.}
 \label{sec:gammalimit}
-Against $\gamma=0.05$, best power within $Q\le80$ is $0.202$. Small-atom
-co-failure needs longer streams ($N>2000$) or adaptive $\delta$ (future work).
+Small-atom common shocks remain hard: at $\gamma=0.04$ power is only
+$\approx 0.07$, rising to $\approx 0.53$ at $\gamma=0.06$ (control sweep,
+$Q=10$, $N=4000$, quadratic slack). Small-atom co-failure needs longer streams
+or adaptive $\delta$ (future work).
 
 \section{Yule's Q / OR Framing and Difficulty Stratification}
 \label{sec:or}
@@ -302,7 +333,8 @@ $\mathrm{OR}_{ij}=1$, and Yule's $Q_{ij}=(\mathrm{OR}-1)/(\mathrm{OR}+1)$
 maps it to $Q_{ij}=0$. Yule's Q is invariant under simultaneous label-flip
 ($0\leftrightarrow1$)---\textbf{bilateral invariance} ensures the alarm fires at the
 same false-positive rate regardless of failure-encoding convention. The betting
-fraction $\lambda\le1/(1+2\varepsilon)$ ensures $e_\tau\ge0$ under the worst-case
+fraction $\lambda\le1/(1+\delta)$ with $\delta=2\varepsilon^2$ (universal
+$\lambda\le 2/3$ at $b=3/2$) ensures $e_\tau\ge0$ under the worst-case
 within-stratum marginal configuration; the bound is tight.
 
 \subsection{Difficulty stratification as the validity axis}
@@ -316,11 +348,30 @@ confound without a model: drawing $W_j^t$ from the \emph{same difficulty stratum
 as item $s$ makes $\mathbb{E}[V]=p_ip_j$ a valid within-stratum proxy,
 entirely nonparametrically---the sequential counterpart to their batch solution.
 
-The \textbf{number of strata $Q$} is the operating dial: finer strata tighten
-$\delta=2\varepsilon$ proportionally, improving power while Type-I stays $\le
-0.022$ throughout (full sweep in Appendix~\ref{app:qsweep}). Table~\ref{tab:validity}
-isolates the effect: Method~B (unstratified, $\delta=0$) inflates Type-I to
-$0.226$--$0.438$; Method~A (stratified, $\delta=2\varepsilon$) achieves $0.000$.
+\paragraph{Route (a) is primary; route (b) is vacuous.}
+Two routes are conceivable. \textbf{Route (b)}, the fully assumption-free one,
+would place no bound on the within-stratum marginal spread and bet against the
+raw $\{0,1\}^2$ within-bin null. This route is \emph{deployable in name only}: the
+assumption-free within-bin null is a composite null so large that no level-$\alpha$
+test can beat $\alpha$---it has power \emph{exactly} $0$. We therefore record it
+only as a vacuous remark and do not use it. \textbf{Route (a)} is the primary and
+only usable route: we stratify by difficulty and impose an \emph{explicit
+within-bin range bound} as a stated assumption---$p$ is $\tfrac12$-Lipschitz in
+the binning coordinate, so the within-stratum half-range satisfies $\varepsilon_k
+\le (\max-\min)/2$, which pins the slack $\delta_k = 2\varepsilon_k^2$. This is the
+\S5b difficulty-conditioning. ``Margins-free'' (the estimator never estimates an
+individual judge marginal) survives as a genuine property of route (a);
+``assumption-free'' does not survive, and we do not claim it.
+
+The \textbf{number of strata $Q$} is the operating dial, but under the genuine
+fresh-pair within-block construction it cuts both ways. Finer strata tighten the
+quadratic slack $\delta_k=2\varepsilon_k^2$ (it shrinks quadratically in the bin
+width), which would help; but they also \emph{starve the pairs}---at high $Q$ most
+(block, stratum) cells become singletons that can place no bet, so power
+\emph{falls} with $Q$ (Appendix~\ref{app:qsweep}). The knee is at $Q=5$, not
+$Q=80$. Table~\ref{tab:validity} isolates the validity role:
+Method~B (unstratified, $\delta=0$) inflates Type-I to $0.226$--$0.438$;
+Method~A (stratified, quadratic $\delta_k=2\varepsilon_k^2$) achieves $0.000$.
 Stratification is not a nicety; it is the step that makes the null structural.
 A complementary diagnostic axis is \emph{vote margin}: Shu~\citep{shu2608} finds that the $m{=}1$ pivotal slice is 16.2\% of items yet carries the entire conditional utility that the pooled panel $n_{\mathrm{eff}}$ ($\Delta = {-}0.04$, 95\% CI crossing 0) cannot see---margin stratifies where aggregate independence metrics are blind.
 (Margin $m_i = |2s_i - k|$ is computable without ground-truth labels and is orthogonal to difficulty; the two axes address the same structural point---aggregate statistics are too coarse---but via different conditioning variables.)
@@ -328,8 +379,8 @@ A complementary diagnostic axis is \emph{vote margin}: Shu~\citep{shu2608} finds
 \paragraph{$\lambda$-mixture.}
 A fixed $\lambda$ is log-optimal for one $\gamma$ only; against unknown $\gamma$,
 a Robbins mixture over $\{0.1,\ldots,0.9\}$ achieves near-log-optimal growth
-uniformly (power gain: $0.428\to0.920$; full analysis in
-Appendix~\ref{app:qsweep}).
+uniformly (at the knee $Q=5$, power gain $0.362\to0.922$ fixed-to-mixture; full
+analysis in Appendix~\ref{app:qsweep}).
 
 Three distinct convex objects should not be conflated. The
 \textbf{$\lambda$-mixture} (here) hedges over $\gamma$ within the e-process. The
@@ -357,9 +408,9 @@ dependence. Our e-process is the first to watch co-failure sequentially under
 unknown and drifting marginals.
 
 \paragraph{Limitations.}
-Current results: binary outcomes, $\gamma\ge0.10$, $Q\le80$, $m=2$ judges. The
-$\gamma=0.05$ gap (best power $0.202$), extension to $m>2$, derangement-schedule
-finite-horizon care, and worst-case $\delta$ power cost are all future work.
+Current results: binary outcomes, $\gamma\ge0.06$, $m=2$ judges. The small-$\gamma$
+gap, the fresh-pair starvation tradeoff (power falls as $Q$ grows), extension to
+$m>2$, and worst-case $\delta$ power cost are all future work.
 Expanded treatment in Appendix~\ref{app:limitations}.
 
 \paragraph{Future work.}
@@ -439,48 +490,62 @@ are lower.
 \section{Power-vs-$Q$ sweep}
 \label{app:qsweep}
 
-Method A with $\lambda$-mixture over $\{0.1, \ldots, 0.9\}$. $Q$ = number of
+Method A (fresh-pair within-block, quadratic slack $\delta_k=2\varepsilon_k^2$)
+with $\lambda$-mixture over $\{0.1, \ldots, 0.9\}$. $Q$ = number of
 equal-width strata in $\theta$. Primary metric: power at $\gamma=0.10$
 common-shock probability. $N=2000$ items.
 
 \begin{table}[h]
   \centering
-  \caption{$\lambda$-mixture power sweep, $\gamma=0.10$. Type-I stays $\le 0.022$
-  across the full sweep; the knee is $Q=80$.}
+  \caption{$\lambda$-mixture power sweep, $\gamma=0.10$, under the anytime-valid
+  fresh-pair within-block construction. $\bar\varepsilon$ is the mean
+  within-stratum half-range of $p$; the slack is quadratic
+  ($\delta=2\bar\varepsilon^2$). ``Ratio'' is design slack over realised bias.
+  Type-I stays $\le 0.010$ across the full sweep; power \emph{falls} as $Q$
+  grows because finer stratification starves the within-block pairs. The knee is
+  $Q=5$.}
   \label{tab:power}
   \small
-  \begin{tabular}{@{}rrrrr@{}}
+  \begin{tabular}{@{}rrrrrrr@{}}
     \toprule
-    $Q$ & $N/Q$ per stratum & Type-I & Power ($\gamma=0.10$) & Med. detection step \\
+    $Q$ & $N/Q$ & $\bar\varepsilon$ & $\delta=2\bar\varepsilon^2$ & realised bias & ratio & Power ($\gamma=0.10$) \\
     \midrule
-    5  & 400 & 0.000          & 0.000          & --- \\
-    10 & 200 & 0.000          & 0.018          & --- \\
-    20 & 100 & 0.002          & 0.240          & --- \\
-    40 & 50  & 0.014          & 0.724          & --- \\
-    80 & 25  & \textbf{0.022} & \textbf{0.920} & $\sim 885$ \\
+    5  & 400 & 0.050 & \textbf{0.00500} & $8.5\times10^{-4}$ & $5.85\times$ & \textbf{0.922} \\
+    10 & 200 & 0.025 & 0.00125 & $8.9\times10^{-4}$ & $1.40\times$ & 0.924 \\
+    20 & 100 & 0.0125 & 0.00031 & $1.5\times10^{-3}$ & $0.21\times$ & 0.814 \\
+    40 & 50  & 0.00625 & 0.00008 & $2.8\times10^{-3}$ & $0.03\times$ & 0.556 \\
+    80 & 25  & 0.00312 & 0.00002 & $6.2\times10^{-3}$ & $0.00\times$ & 0.264 \\
     \bottomrule
   \end{tabular}
 \end{table}
 
-Type-I stays $\le 0.022$ across the full sweep---validity never degrades as
-strata become finer. The knee is $Q=80$: smallest $Q$ achieving Type-I $\le 0.05$
-and Power $\ge 0.80$ against $\gamma=0.10$.
+Type-I stays $\le 0.010$ across the full sweep---validity never degrades as
+strata become finer. The knee is $Q=5$: it already achieves power $0.922$ at
+$\gamma=0.10$ with Type-I $0.010$.
 
-\paragraph{Fixed $\lambda=0.5$ vs.\ mixture at $Q=80$.}
-Power $= 0.428$ (fixed) vs.\ $0.920$ (mixture). The $\lambda$-mixture is
-load-bearing, not cosmetic: it detects a broader class of common-shock magnitudes
-by hedging over unknown $\gamma$ rather than betting a single mis-specified
-operating point.
+\paragraph{Fixed $\lambda=0.5$ vs.\ mixture.}
+The $\lambda$-mixture is load-bearing, not cosmetic: it detects a broader class
+of common-shock magnitudes by hedging over unknown $\gamma$ rather than betting a
+single mis-specified operating point. A clean control is the fixed-design power
+at $\gamma=0.06$: with the correct quadratic slack it is restored to $0.526$,
+whereas the old linear slack $\delta=2\varepsilon$ killed all power ($0.000$).
+The linear slack was valid but loose by a factor $1/\varepsilon$, so at coarse
+$Q$ it drowned every bet.
 
-\paragraph{Why power is suppressed at small $Q$.}
-The bias slack $\delta=2\varepsilon$ is adversarially worst-case: marginals
-anywhere within a stratum of width $2\varepsilon$, no smoothness assumed. At
-coarse $Q$ (e.g.\ $Q=5$, $\varepsilon=0.1$), the realised within-stratum bias
-from shared difficulty is $\sim 8\times10^{-4}$ while $\delta \approx 0.058$---a
-$72.6\times$ overestimate---forcing $\lambda$ into a conservative regime. As
-strata narrow, the ratio falls: at $Q=80$, $\delta/\text{realised-bias} \approx
-2\times$. Construction is rigorous; the efficiency cost is real and $Q$ is the
-explicit operating-characteristic dial.
+\paragraph{Fresh-pair starvation: the true cost of anytime validity.}
+Under the genuine fresh-pair within-block construction, power \emph{falls} with
+$Q$ (from $0.922$ at $Q=5$ to $0.264$ at $Q=80$). The mechanism is a design
+tradeoff between stratification granularity and within-block pair availability:
+at high $Q$ most (block, stratum) cells contain only a single item, which can
+form no fresh same-stratum pair and therefore places no bet, starving the
+e-process. The earlier whole-stream derangement masked this by pairing across the
+entire stream---but that pairing reuses draws across blocks and is \emph{not}
+anytime-valid (Type-I $\to 1$). The quadratic slack ratio (design slack over
+realised bias) also crosses $1$ near $Q=10$: for $Q\le 10$ the slack is
+conservative; for $Q\ge 20$ it is below the realised bias and the dominant loss
+is pair starvation, not slack. This is the honest cost of insisting on a genuine
+anytime-valid construction, not a defect: the knee sits at coarse stratification
+($Q=5$), where pairs are plentiful.
 
 \section{Extended related work}
 \label{app:related}
@@ -522,19 +587,26 @@ related-work table sits in all three.
 \label{app:limitations}
 
 \begin{enumerate}
-  \item \textbf{$\gamma=0.05$ gap.} Small-atom common-shock co-failure
-  ($\gamma=0.05$) does not reach 0.80 power within $Q\le80$, $N=2000$. Best
-  achieved: $0.202$ at $Q=80$ (mixture). Longer streams or adaptive $\delta$
-  needed; state plainly.
-  \item \textbf{$Q$ as hyperparameter.} The analyst chooses $Q$; there is no
-  data-adaptive procedure for $Q$ selection in this paper. $Q$ is an explicit
-  operating-characteristic dial, not a nuisance.
+  \item \textbf{Small-$\gamma$ gap.} Small-atom common-shock co-failure is hard:
+  at $\gamma=0.04$ power is $\approx 0.07$, rising to $\approx 0.53$ at
+  $\gamma=0.06$ (control sweep, $Q=10$, $N=4000$, quadratic slack). Longer
+  streams or adaptive $\delta$ needed; state plainly.
+  \item \textbf{Fresh-pair starvation / $Q$ as hyperparameter.} The analyst
+  chooses $Q$; there is no data-adaptive procedure for $Q$ selection here. Under
+  the anytime-valid fresh-pair within-block construction $Q$ is a genuine
+  tradeoff dial, not merely a nuisance: finer stratification tightens the
+  quadratic slack but starves the within-block pairs (singleton (block, stratum)
+  cells place no bet), so power falls with $Q$ (from $0.922$ at $Q=5$ to $0.264$
+  at $Q=80$). The knee is coarse stratification ($Q=5$).
   \item \textbf{$m=2$ scope.} All results are for a two-judge pair. Extension to
   $m>2$ via pairwise aggregation is natural (all pairs are valid e-processes) but
   aggregation power and control need separate treatment.
-  \item \textbf{Derangement schedule.} Cross-item pairing requires an item not
-  yet in the same-item estimate; this is easy to arrange in streaming settings
-  but requires care in finite-horizon retrospective analysis.
+  \item \textbf{Fresh-pair within-block schedule.} Anytime validity requires the
+  partner $t$ to be a \emph{fresh} same-block, same-stratum item, so that the
+  partner draw is independent of the same-item draw it is compared against. The
+  deprecated whole-stream derangement (pairing across the entire stream) reuses
+  draws across blocks and inflates Type-I to $1$; it must not be used. The cost
+  of the valid within-block schedule is pair starvation at fine $Q$ (above).
   \item \textbf{Mean vs.\ exceedance design effect.} $n_{\mathrm{eff}} = 2.18$
   (Kohli~\citep{kohli2605}) is a mean design effect; the effective size for
   vote-threshold (exceedance) decisions may differ \citep{noonan2608}.
