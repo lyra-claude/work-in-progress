@@ -21,6 +21,7 @@ import numpy as np
 from dgp import null_dgp, alt_dgp
 from eprocess import (
     assign_strata, stratum_epsilon, make_within_block_pairing,
+    make_theta_neighbour_block_pairing,
     accumulate_wealth, accumulate_wealth_mixture, ville_reject, THRESHOLD,
     BLOCK,
 )
@@ -35,26 +36,45 @@ Q_GRID  = [5, 10, 20, 40, 80]
 
 # ── Method A with variable Q ─────────────────────────────────────────────────────
 
-def method_A_Q(data: dict, rng: np.random.Generator, Q: int) -> dict:
+def method_A_Q(data: dict, rng: np.random.Generator, Q: int,
+               pairing: str = 'within_block') -> dict:
     """
-    Method A parameterised with a given number of strata Q.
+    Method A parameterised with a given number of strata Q and a pairing mode.
+
+    pairing='within_block'  : (block, stratum) fresh-pair cyclic roll (the OLD map that
+                              starves at large Q — expected items/cell = BLOCK/Q).
+    pairing='theta_neighbour': theta-neighbour within-block pairing (Clio's repair):
+                              sort each block by theta, pair adjacent items -> BLOCK/2
+                              pairs regardless of Q; per-pair Prop-1 slack; bet assigned
+                              to the midpoint-theta stratum.  Q enters ONLY the midpoint
+                              bin assignment (diagnostic), not the pair count.
+
+    Both use the SAME product-over-items wealth with per-item positivity clip
+    lam <= 1/(1+2*eps**2); each paired item contributes one factor, sentinels contribute 1.
     Returns M_fixed (lambda=0.5) and M_mix.
     """
     W_i, W_j = data['W_i'], data['W_j']
     p_i, p_j = data['p_i'], data['p_j']
     theta     = data['theta']
     N_items   = len(W_i)
+    block_ids = np.arange(N_items) // BLOCK
 
-    strata       = assign_strata(theta, Q=Q)
-    eps_k        = stratum_epsilon(p_i, p_j, strata, Q=Q)
-    block_ids    = np.arange(N_items) // BLOCK
-    t            = make_within_block_pairing(strata, block_ids, Q=Q)  # fresh disjoint pairs
+    if pairing == 'within_block':
+        strata       = assign_strata(theta, Q=Q)
+        eps_k        = stratum_epsilon(p_i, p_j, strata, Q=Q)
+        t            = make_within_block_pairing(strata, block_ids, Q=Q)
+        eps_per_item = eps_k[strata]
+        delta        = 2.0 * eps_per_item ** 2   # QUADRATIC slack (1/2 R^2 = 2 eps^2)
+    elif pairing == 'theta_neighbour':
+        t, delta, eps_per_item, _ = make_theta_neighbour_block_pairing(
+            theta, p_i, p_j, block_ids, Q=Q)
+    else:
+        raise ValueError(f"unknown pairing mode: {pairing!r}")
 
     U            = W_i * W_j
     V            = W_i[np.arange(N_items)] * W_j[t]
-
-    eps_per_item = eps_k[strata]
-    delta        = 2.0 * eps_per_item ** 2   # QUADRATIC slack (1/2 R^2 = 2 eps^2)
+    # Sentinel items (t[s]==s) get delta=0 and eps=0 for theta_neighbour, and for
+    # within_block they bet a self-pair where U-V=0; either way they contribute ~factor 1.
 
     M_fixed = accumulate_wealth(U, V, delta, lam=0.5, clip_lam=True,
                                 eps_per_item=eps_per_item)

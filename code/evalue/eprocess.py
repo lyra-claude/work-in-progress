@@ -123,6 +123,76 @@ def make_within_block_pairing(strata: np.ndarray, block_ids: np.ndarray,
     return t
 
 
+def make_theta_neighbour_block_pairing(theta: np.ndarray, p_i: np.ndarray, p_j: np.ndarray,
+                                       block_ids: np.ndarray, Q: int = Q
+                                       ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """
+    THETA-NEIGHBOUR within-block pairing (Clio's starvation repair).
+
+    The (block, stratum) fresh-pair map (make_within_block_pairing) STARVES at large Q:
+    with BLOCK fixed and Q large, each (block, stratum) cell has BLOCK/Q items, so cells
+    become singletons that place no bet and power collapses.  This map instead forms a
+    Q-INDEPENDENT set of pairs:
+
+      1. Sort the block's items by theta (F_0-measurable: theta is a difficulty covariate
+         known at time 0, NOT an outcome).
+      2. Pair ADJACENT items in that sorted order: (1,2), (3,4), ...  For BLOCK=20 this
+         yields exactly 10 pairs, REGARDLESS of Q.  (An odd leftover item is a no-bet
+         sentinel.)
+      3. Each pair is an n=2 micro-cell.  Its slack uses the Prop-1 pair bound: the pair's
+         OWN half-range eps_pair = max over the two judges of (max-min)/2 of that judge's
+         two within-pair marginals, giving delta_pair = 2*eps_pair**2 = 1/2 R^2 with
+         R = 2 eps_pair (census_prop1_derivation.md Sec. 3).
+      4. The pair's BET is ASSIGNED to the stratum of the pair's MIDPOINT theta (which of
+         the Q equal-width bins (theta_s + theta_t)/2 falls in).  This is F_0-measurable,
+         depends only on theta, never on any observed W.
+
+    WHY VALIDITY HOLDS.  Both members of every pair are drawn from the SAME block m, so
+    when the block-m bet is set (F_{m-1}-measurable: the map depends only on theta and
+    block structure) NEITHER W_j[s] NOR W_j[t(s)] has been revealed — the fresh-pair
+    property of make_within_block_pairing is preserved.  Adjacency in theta makes the two
+    partners as close in difficulty as possible, so the within-pair marginal gap (hence
+    eps_pair, hence the bias E[W_i^s(W_j^s - W_j^{t(s)})]) is SMALL, and
+      E[U - V | F_{m-1}, theta] = p_i(s)(p_j(s) - p_j(t(s))) <= p_i * 2 eps_pair <= delta_pair,
+    so E[increment | F_{m-1}] <= 0 for every predictable lambda.
+
+    Returns (t, delta_per_item, eps_per_item, stratum_per_item):
+      t[s]               global index of s's theta-neighbour partner (t[s]==s = no-bet sentinel)
+      delta_per_item[s]  pair slack delta_pair = 2*eps_pair**2 (0 for sentinels)
+      eps_per_item[s]    pair half-range eps_pair (0 for sentinels)
+      stratum_per_item[s] midpoint-theta stratum of the pair (for diagnostics; -1 for sentinels)
+    """
+    N = len(theta)
+    t = np.arange(N, dtype=int)                 # default: self-pair = no bet
+    delta_per_item = np.zeros(N)
+    eps_per_item = np.zeros(N)
+    stratum_per_item = np.full(N, -1, dtype=int)
+
+    bins = np.linspace(0.0, 1.0, Q + 1)
+    for m in np.unique(block_ids):
+        blk = np.where(block_ids == m)[0]       # global indices in this block
+        order = blk[np.argsort(theta[blk], kind='stable')]  # sorted by theta
+        n_pairs = len(order) // 2
+        for p in range(n_pairs):
+            a = order[2 * p]
+            b = order[2 * p + 1]
+            t[a] = b
+            t[b] = a
+            # pair's own half-range per judge; eps_pair = max over judges
+            eps_i = abs(p_i[a] - p_i[b]) / 2.0
+            eps_j = abs(p_j[a] - p_j[b]) / 2.0
+            eps_pair = max(eps_i, eps_j)
+            delta_pair = 2.0 * eps_pair ** 2
+            eps_per_item[a] = eps_per_item[b] = eps_pair
+            delta_per_item[a] = delta_per_item[b] = delta_pair
+            # stratum of the pair's MIDPOINT theta (F_0-measurable)
+            mid = 0.5 * (theta[a] + theta[b])
+            k = int(np.searchsorted(bins[1:], mid, side='left'))
+            k = min(max(k, 0), Q - 1)
+            stratum_per_item[a] = stratum_per_item[b] = k
+    return t, delta_per_item, eps_per_item, stratum_per_item
+
+
 def make_online_past_pairing(strata: np.ndarray, rng: np.random.Generator, Q: int = Q) -> np.ndarray:
     """
     DEPRECATED / BUGGY (Clio's Prop. 2): this PAST-ONLY pairing BREAKS anytime validity.

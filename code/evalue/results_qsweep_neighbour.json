@@ -1,0 +1,101 @@
+{
+  "config": {
+    "N": 2000,
+    "R": 500,
+    "alpha": 0.05,
+    "seed": 42,
+    "threshold": 20.0,
+    "Q_grid": [
+      5,
+      10,
+      20,
+      40,
+      80
+    ],
+    "block": 20,
+    "dgp": "alt_dgp Marshall-Olkin atom"
+  },
+  "rows": [
+    {
+      "Q": 5,
+      "items_per_cell_old": 4.0,
+      "typeI_fixed_old": 0.006,
+      "typeI_mix_old": 0.01,
+      "pw05_fixed_old": 0.046,
+      "pw05_mix_old": 0.16,
+      "pw10_fixed_old": 0.362,
+      "pw10_mix_old": 0.922,
+      "typeI_fixed_new": 0.012,
+      "typeI_mix_new": 0.012,
+      "pw05_fixed_new": 0.104,
+      "pw05_mix_new": 0.346,
+      "pw10_fixed_new": 0.518,
+      "pw10_mix_new": 0.982
+    },
+    {
+      "Q": 10,
+      "items_per_cell_old": 2.0,
+      "typeI_fixed_old": 0.008,
+      "typeI_mix_old": 0.01,
+      "pw05_fixed_old": 0.09,
+      "pw05_mix_old": 0.24,
+      "pw10_fixed_old": 0.482,
+      "pw10_mix_old": 0.924,
+      "typeI_fixed_new": 0.012,
+      "typeI_mix_new": 0.012,
+      "pw05_fixed_new": 0.104,
+      "pw05_mix_new": 0.346,
+      "pw10_fixed_new": 0.518,
+      "pw10_mix_new": 0.982
+    },
+    {
+      "Q": 20,
+      "items_per_cell_old": 1.0,
+      "typeI_fixed_old": 0.008,
+      "typeI_mix_old": 0.006,
+      "pw05_fixed_old": 0.106,
+      "pw05_mix_old": 0.174,
+      "pw10_fixed_old": 0.46,
+      "pw10_mix_old": 0.814,
+      "typeI_fixed_new": 0.012,
+      "typeI_mix_new": 0.012,
+      "pw05_fixed_new": 0.104,
+      "pw05_mix_new": 0.346,
+      "pw10_fixed_new": 0.518,
+      "pw10_mix_new": 0.982
+    },
+    {
+      "Q": 40,
+      "items_per_cell_old": 0.5,
+      "typeI_fixed_old": 0.008,
+      "typeI_mix_old": 0.004,
+      "pw05_fixed_old": 0.128,
+      "pw05_mix_old": 0.114,
+      "pw10_fixed_old": 0.39,
+      "pw10_mix_old": 0.556,
+      "typeI_fixed_new": 0.012,
+      "typeI_mix_new": 0.012,
+      "pw05_fixed_new": 0.104,
+      "pw05_mix_new": 0.346,
+      "pw10_fixed_new": 0.518,
+      "pw10_mix_new": 0.982
+    },
+    {
+      "Q": 80,
+      "items_per_cell_old": 0.25,
+      "typeI_fixed_old": 0.008,
+      "typeI_mix_old": 0.004,
+      "pw05_fixed_old": 0.096,
+      "pw05_mix_old": 0.074,
+      "pw10_fixed_old": 0.322,
+      "pw10_mix_old": 0.264,
+      "typeI_fixed_new": 0.012,
+      "typeI_mix_new": 0.012,
+      "pw05_fixed_new": 0.104,
+      "pw05_mix_new": 0.346,
+      "pw10_fixed_new": 0.518,
+      "pw10_mix_new": 0.982
+    }
+  ],
+  "worst_typeI_new": 0.012
+}
